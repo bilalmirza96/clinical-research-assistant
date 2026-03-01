@@ -1,0 +1,8 @@
+{
+  "name": "clinical-research-assistant",
+  "description": "Interactive clinical research assistant plugin for Claude Code and Cowork. Guides surgical residents through rigorous, publication-ready statistical analysis, figure generation, and manuscript writing with step-by-step approval. Includes three commands: /analyze (statistical analysis with Excel output), /visualize (publication-quality figures), and /write-methods-results (manuscript Methods and Results sections).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Bilal Mirza"
+  }
+}
