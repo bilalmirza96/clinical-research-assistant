@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clinical-research-assistant",
+  "description": "Clinical research tools for surgical residents — statistical analysis, visualization, and manuscript writing",
+  "owner": {
+    "name": "Bilal Mirza"
+  },
+  "plugins": [
+    {
+      "name": "clinical-research-assistant",
+      "description": "Interactive clinical research assistant with 3 commands: /analyze (statistics + Excel tables), /visualize (publication-quality figures), /write-methods-results (manuscript sections)",
+      "version": "1.0.0",
+      "source": "./plugins/clinical-research-assistant",
+      "category": "research"
+    }
+  ]
+}
