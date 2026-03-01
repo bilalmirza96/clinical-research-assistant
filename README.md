@@ -1,26 +1,29 @@
 # Clinical Research Assistant — Plugin for Claude Code & Cowork
 
-An interactive clinical research assistant plugin that guides general surgery residents through deep literature review, rigorous publication-ready statistical analysis, figure generation, and manuscript writing — step by step, with approval gates at every stage.
+An interactive clinical research assistant plugin that guides general surgery residents through deep literature review, rigorous publication-ready statistical analysis, figure generation, and full manuscript writing — step by step, with approval gates at every stage.
 
 Built for **general surgery** and all subspecialties: surgical oncology, transplant, bariatric, minimally invasive surgery, trauma/critical care, and more.
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `/literature-review` | Deep PubMed/bioRxiv search, evidence synthesis, gap analysis, novelty assessment, and research question refinement |
-| `/analyze` | Full statistical analysis pipeline: data intake → cleaning → univariate → multivariate → sensitivity analyses → formatted Excel file |
-| `/visualize` | Publication-quality figures (forest plots, ROC curves, KM curves, etc.) for high-impact journals |
-| `/write-methods-results` | Manuscript-ready Statistical Methods and Results sections in AMA style |
+| Command | Purpose | Output |
+|---|---|---|
+| `/literature-review` | Deep PubMed/bioRxiv search, evidence synthesis, gap analysis, novelty assessment, research question refinement | Chat (tables + narrative) |
+| `/analyze` | Full statistical analysis pipeline: data intake → cleaning → univariate → multivariate → sensitivity analyses | Excel file (.xlsx) |
+| `/visualize` | Publication-quality figures (forest plots, ROC curves, KM curves, etc.) for high-impact journals | PDF/PNG files |
+| `/write-introduction` | Introduction section — funnel-down 4-paragraph structure (Aga & Nissar 2022) with numbered references | Chat |
+| `/write-methods-results` | Statistical Methods and Results sections in AMA style with figure legends and limitations | Chat |
+| `/write-discussion` | Discussion and Conclusion — reverse-funnel 6-paragraph structure with 3Cs framework | Chat |
 
 ## Key Features
 
 - **Interactive workflow** — Claude stops after every step and waits for your approval before proceeding
 - **No black-box analysis** — every decision is explained and logged
-- **Literature-powered** — deep PubMed/bioRxiv search with evidence tables, gap analysis, and novelty assessment
-- **Publication-ready output** — Excel tables formatted with Times New Roman 12pt, centered, black borders
+- **Literature-powered** — deep PubMed/bioRxiv/Scholar Gateway search with evidence tables, gap analysis, and novelty assessment
+- **Publication-ready tables** — Excel tables formatted with Times New Roman 12pt, centered, black borders
 - **Journal-quality figures** — 600 DPI, colorblind-safe palettes, minimalist design
-- **Manuscript text** — Methods and Results written in the exact order of your tables and figures
+- **Full manuscript writing** — Introduction, Methods, Results, Discussion, and Conclusion all written in chat with approval gates
+- **Structured writing** — Introduction uses funnel-down structure, Discussion uses reverse-funnel pyramid (based on Aga & Nissar 2022)
 - **Reproducible** — complete Python code bundle with fixed random seed
 - **Domain-aware** — covers all general surgery subspecialties, registries (NCDB, NSQIP, SEER, UNOS, NTDB, MBSAQIP), and clinical definitions
 - **Methodologically rigorous** — flags EPV violations, immortal time bias, overadjustment, collider bias, and other common pitfalls
@@ -69,7 +72,9 @@ clinical-research-assistant/
 │       │   ├── literature-review.md              # /literature-review command
 │       │   ├── analyze.md                        # /analyze command
 │       │   ├── visualize.md                      # /visualize command
-│       │   └── write-methods-results.md          # /write-methods-results command
+│       │   ├── write-introduction.md             # /write-introduction command
+│       │   ├── write-methods-results.md          # /write-methods-results command
+│       │   └── write-discussion.md               # /write-discussion command
 │       ├── skills/
 │       │   └── data-analysis/
 │       │       └── SKILL.md                      # Auto-triggered skill
@@ -80,20 +85,25 @@ clinical-research-assistant/
 ## Workflow
 
 ```
-/literature-review  →  /analyze  →  /visualize  →  /write-methods-results
-        │                  │              │                    │
-        ▼                  ▼              ▼                    ▼
-  Research question    Excel file    PDF/PNG figures    Word document
-  + evidence table    (all tables)   (all figures)     (Methods + Results)
+/literature-review → /analyze → /visualize → /write-introduction → /write-methods-results → /write-discussion
+        │                │            │               │                       │                      │
+        ▼                ▼            ▼               ▼                       ▼                      ▼
+  Research question  Excel file  PDF/PNG files   Introduction          Methods & Results      Discussion &
+  + evidence table  (all tables) (all figures)    (in chat)              (in chat)            Conclusion
+                                                                                              (in chat)
 ```
 
-1. **`/literature-review`**: Describe your research interest. Claude searches PubMed and bioRxiv, builds evidence summary tables, synthesizes current knowledge, identifies gaps, assesses novelty, and recommends 2–3 refined research questions ranked by impact and feasibility. Deep dives on your chosen question with 20–30 papers, provides methodological recommendations, drafts an Introduction skeleton, and alerts to competing preprints.
+1. **`/literature-review`**: Describe your research interest. Claude searches PubMed, bioRxiv, Scholar Gateway, and ClinicalTrials.gov. Builds evidence summary tables, synthesizes current knowledge, identifies gaps, assesses novelty, and recommends 2–3 refined research questions ranked by impact and feasibility. Deep dives on your chosen question with 20–30 papers and provides methodological recommendations.
 
 2. **`/analyze`**: Upload your data and data dictionary. Claude walks you through cleaning, research question definition, univariate analysis, multivariate modeling, assumption checks, sensitivity analyses. Outputs a single Excel file with all manuscript and supplementary tables.
 
 3. **`/visualize`**: Claude determines which figures are appropriate for your study, generates them one at a time with journal-quality aesthetics. Outputs PDF and PNG files.
 
-4. **`/write-methods-results`**: Claude writes the Statistical Methods and Results sections following the exact order of your tables and figures. Also writes figure legends and a limitations paragraph. Outputs a formatted Word document.
+4. **`/write-introduction`**: Claude writes the Introduction using a funnel-down 4-paragraph structure (Aga & Nissar 2022): clinical context → limitations of evidence → specific gap → study aim. Written directly in chat with numbered references.
+
+5. **`/write-methods-results`**: Claude writes the Statistical Methods and Results sections following the exact order of your tables and figures. Also writes figure legends and a limitations paragraph. Written directly in chat.
+
+6. **`/write-discussion`**: Claude writes the Discussion and Conclusion using a reverse-funnel 6-paragraph structure: key findings → concordant literature → discordant literature → clinical implications → strengths/limitations → conclusion. Uses the 3Cs (Content-Context-Conclusion) framework. Written directly in chat.
 
 ## Domain Expertise
 

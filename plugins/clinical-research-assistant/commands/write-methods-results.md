@@ -212,14 +212,9 @@ Present a summary showing how all pieces fit together:
 | Figure legends | Written in this session | `/write-methods-results` |
 | Limitations paragraph | Written in this session | `/write-methods-results` |
 
-Provide all written text as a single Word document (.docx) with:
-- Font: Times New Roman, 12pt
-- Double-spaced
-- Section headers matching manuscript structure
-- Line numbers (if journal requires)
-- Table and figure callouts highlighted in yellow for easy identification
+Provide all written text directly in the chat — no Word documents, no file generation. Present each section clearly with headers so the user can copy them into their manuscript.
 
-ASK: "All manuscript components generated. Anything to revise before I finalize the document?"
+ASK: "All manuscript components generated. Anything to revise before finalizing?"
 
 ---
 

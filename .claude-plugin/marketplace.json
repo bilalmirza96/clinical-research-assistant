@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "description": "Interactive clinical research assistant with 4 commands: /literature-review (deep PubMed/bioRxiv search + gap analysis), /analyze (statistics + Excel tables), /visualize (publication-quality figures), /write-methods-results (manuscript sections)",
-      "version": "1.1.0",
+      "description": "Interactive clinical research assistant with 6 commands: /literature-review (deep PubMed/bioRxiv search + gap analysis), /analyze (statistics + Excel tables), /visualize (publication-quality figures), /write-introduction (Introduction in chat), /write-methods-results (Methods & Results in chat), /write-discussion (Discussion & Conclusion in chat)",
+      "version": "1.2.0",
       "source": "./plugins/clinical-research-assistant",
       "category": "research"
     }
