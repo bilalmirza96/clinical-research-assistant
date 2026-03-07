@@ -1,41 +1,90 @@
+
 ---
-description: Full manuscript draft orchestrator — chains literature review, analysis, figures, and all writing sections into a single guided pipeline with state tracking between steps
+description: Full manuscript orchestrator for clinical research. Coordinates literature review, statistical analysis, figures, manuscript section drafting, abstract writing, and final consistency audit using verified outputs from each prior phase.
 ---
 
-# Full Manuscript Orchestrator
+# /write-manuscript
 
-## Role
+## Purpose
 
-You are a senior surgical research mentor guiding a general surgery resident through the complete process of drafting a clinical research manuscript — from literature review through final assembled draft. You coordinate all six sub-commands in sequence, maintain state between them, and ensure every section is internally consistent.
+Use this command when the user wants to build a clinical research manuscript from a research question, dataset, completed analysis, partial draft, or mixed materials.
 
-## When to Use This Command
+This command is an orchestrator. It does not replace the individual phase commands. It coordinates them, tracks progress, carries verified outputs forward, and enforces consistency across all manuscript sections.
+
+---
+
+## When to Use
 
 Use `/write-manuscript` when the user wants to:
-- Draft an entire manuscript from start to finish
-- "Write up" a completed analysis into a paper
-- Go from raw data or a research question to a full first draft
-- Assemble all sections of a paper in one guided session
 
-This command does NOT replace the individual commands — it orchestrates them. Each step internally follows the full specification of its corresponding command file.
+* draft an entire manuscript from start to finish
+* go from a research question to a manuscript plan
+* turn completed analyses into a full first draft
+* assemble Introduction, Methods, Results, Discussion, and Abstract into one coherent paper
+* continue a manuscript workflow that was started earlier
 
-## Critical Interaction Rules
+Do not use this command for isolated tasks that are better handled by a single dedicated command, such as:
 
-- Work INTERACTIVELY — complete one phase at a time, get approval before the next
-- NEVER skip a phase without explicit user permission
-- At each phase boundary, summarize what was completed and what comes next
-- Maintain a running **Manuscript State Tracker** (see below) visible to the user
-- If the user has already completed some phases (e.g., already ran `/analyze`), skip those phases and pick up where they left off
-- If the user wants to skip a phase entirely, warn them of downstream consequences but respect their decision
+* literature review only
+* statistical analysis only
+* figure generation only
+* introduction only
+* methods/results only
+* discussion only
+
+---
+
+## Core Rules
+
+* Work phase-by-phase.
+* Complete only one major phase at a time.
+* Present the current Manuscript State Tracker at each phase transition.
+* Start at the earliest phase whose required outputs are not yet available and verified.
+* Do not skip analytically necessary phases unless:
+  * the required outputs already exist and are verified, or
+  * the user explicitly chooses to skip them after being warned of downstream consequences.
+* Before using outputs from a prior phase, verify that they are:
+  * present
+  * internally consistent
+  * sufficient for the next phase
+* If a prior phase is claimed to be complete but the required outputs are missing, treat that phase as incomplete until the missing information is reconstructed or confirmed.
+* Never fabricate:
+  * results
+  * references
+  * tables
+  * figures
+  * statistical methods
+  * sample size details
+* Never imply causality from observational data unless causal inference is justified by design and analysis.
+* Prefer verified outputs over user memory when there is a discrepancy.
+* If the user requests a shortened workflow, support a minimum-viable manuscript path using the verified components available, and mark skipped phases clearly in the tracker.
+
+---
+
+## Preferred Workflow Order
+
+1. Manuscript Setup
+2. Literature Review
+3. Data Analysis
+4. Figures
+5. Introduction
+6. Methods & Results
+7. Discussion
+8. Abstract
+9. Final Assembly & Audit
+
+This sequence is preferred, but the actual starting point depends on what has already been completed and verified.
 
 ---
 
 ## Manuscript State Tracker
 
-Maintain this tracker throughout the session. Update it after each phase completes. Present it at every phase transition so the user always knows where they stand.
+Maintain and update this throughout the session.
 
-```
+```text
 MANUSCRIPT STATE TRACKER
 ========================
+Phase 0 — Setup:                [ ] Not started
 Phase 1 — Literature Review:    [ ] Not started
 Phase 2 — Data Analysis:        [ ] Not started
 Phase 3 — Figures:              [ ] Not started
@@ -45,432 +94,528 @@ Phase 6 — Discussion:           [ ] Not started
 Phase 7 — Abstract:             [ ] Not started
 Phase 8 — Final Assembly:       [ ] Not started
 ========================
-```
-
-Mark each phase as:
-- `[✓]` Completed
-- `[→]` In progress
-- `[—]` Skipped (user chose to skip)
-- `[ ]` Not started
-
----
-
-## PHASE 0: Manuscript Setup
-
-Before starting any phase, gather the essential information that all phases need:
-
-### 0a. Ask the user:
-
-1. "What is your research question? (1–2 sentences)"
-2. "What is the study design? (retrospective cohort, prospective, case-control, etc.)"
-3. "What is the data source? (institutional, NCDB, NSQIP, UNOS, SEER, etc.)"
-4. "What is the primary outcome?"
-5. "What is the primary exposure or predictor?"
-6. "Do you already have a completed dataset uploaded, or do we need to start from the literature review?"
-
-### 0b. Determine starting point
-
-Based on the user's answers, determine where to begin:
-
-- **User has a research question but no data** → Start at Phase 1 (Literature Review)
-- **User has a question and dataset ready** → Start at Phase 2 (Data Analysis), offer to skip Phase 1
-- **User has completed analysis and wants to write** → Start at Phase 4 (Introduction), confirm they have tables/figures
-- **User has everything and just needs the manuscript assembled** → Start at Phase 8 (Final Assembly)
-
-### 0c. Create the Manuscript Context Block
-
-Build a context block that persists across all phases. Update it as information becomes available:
-
-```
+Allowed status labels:
+[✓] Completed
+[→] In progress
+[—] Skipped
+[ ] Not started
+If a phase was previously considered complete but later lacks required details for downstream work, change it back to [→] In progress until resolved.
+Manuscript Context Block
+Build and update this throughout the session. Carry it forward across all phases.
 MANUSCRIPT CONTEXT
 ==================
-Research Question: [from user]
-Study Design: [from user]
-Data Source: [from user]
-Primary Outcome: [from user]
-Primary Exposure: [from user]
-Sample Size: [from Phase 2]
-Key Finding (primary): [from Phase 2]
-Key Finding (secondary): [from Phase 2]
-Key References: [from Phase 1]
-Tables: [list from Phase 2]
-Figures: [list from Phase 3]
+Research Question:
+Study Objective:
+Study Design:
+Data Source:
+Study Period:
+Population:
+Inclusion Criteria:
+Exclusion Criteria:
+Primary Outcome:
+Primary Exposure:
+Secondary Outcomes:
+Covariates:
+Missing Data Approach:
+Target Journal:
+Statistical Software:
+Sample Size:
+Key Finding (primary):
+Key Findings (secondary):
+Key References:
+Tables:
+Figures:
 ==================
-```
-
-ASK: "Here's my understanding of your study. Is this correct? Where should we start?"
-
-Present the Manuscript State Tracker.
-
----
-
-## PHASE 1: Literature Review
-
-**Executes:** Full `/literature-review` command specification
-
-### Entry
-- Tell the user: "Starting Phase 1 — Literature Review. I'll search PubMed, bioRxiv, and scholarly databases to map the existing evidence, identify gaps, and confirm your question is novel."
-- Follow the complete `/literature-review` workflow (Steps 1–5)
-
-### Exit Criteria
-- Evidence summary table completed
-- Gap analysis completed
-- Research question confirmed or refined
-- Key references captured (minimum 15–20 for Introduction and Discussion use)
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- Refined research question (if changed)
-- Key references list with: Author, Year, Journal, Key Finding, and which manuscript section each is most relevant to (Introduction vs Discussion concordant vs Discussion discordant)
-- Gap statement (exact wording to be used in Introduction Paragraph 3)
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Literature review complete. Ready to move to data analysis? If you haven't uploaded your dataset yet, now is the time."
-
----
-
-## PHASE 2: Data Analysis
-
-**Executes:** Full `/analyze` command specification
-
-### Entry
-- Tell the user: "Starting Phase 2 — Data Analysis. Upload your dataset and I'll walk you through cleaning, descriptive statistics, and modeling step by step."
-- Follow the complete `/analyze` workflow (Steps 1–9)
-
-### Exit Criteria
-- Clean dataset confirmed
-- Table 1 (baseline characteristics) approved
-- Univariate analysis complete
-- Multivariate model complete with assumption checks
-- Sensitivity analyses complete
-- Excel file with all tables generated
-- Reproducible code bundle delivered
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- Final analytic N
-- Primary effect estimate (adjusted OR/HR/β with 95% CI and p-value)
-- Secondary findings (up to 3 key results)
-- List of all tables with titles and sheet names
-- Manuscript allocation guide (which tables go in body vs supplement)
-- Key methodological decisions (model type, covariates, missing data approach, sensitivity analyses performed)
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Analysis complete. Ready to generate figures, or would you prefer to go straight to writing?"
-
----
-
-## PHASE 3: Figures
-
-**Executes:** Full `/visualize` command specification
-
-### Entry
-- Tell the user: "Starting Phase 3 — Figure Generation. Based on your analysis, I'll propose the figures needed and generate them one at a time."
-- Follow the complete `/visualize` workflow (Steps 1–3)
-
-### Exit Criteria
-- All manuscript figures generated and approved
-- All supplementary figures generated (if applicable)
-- Figure legends drafted
-- Figure files saved (PDF + PNG)
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- List of all figures with: Figure number, type, title, manuscript vs supplementary
-- Figure legend text for each
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Figures complete. Now let's write the manuscript. Starting with the Introduction."
-
----
-
-## PHASE 4: Introduction
-
-**Executes:** Full `/write-introduction` command specification
-
-### Entry
-- Tell the user: "Starting Phase 4 — Introduction. I'll use the literature review findings to write a 4-paragraph funnel-down Introduction."
-- **Auto-populate prerequisites from state:**
-  - Research question → from Manuscript Context
-  - Key references → from Phase 1 state handoff (use the references tagged for Introduction)
-  - Study design and data source → from Manuscript Context
-  - Gap statement → from Phase 1 state handoff
-- Follow the complete `/write-introduction` workflow (Steps 2–6)
-
-### Cross-Reference Enforcement
-- The gap statement in Paragraph 3 must use the exact gap identified in Phase 1
-- The aim statement in Paragraph 4 must match the research question in the Manuscript Context
-- References must come from the Phase 1 evidence table — do not introduce new unsearched references without flagging them
-
-### Exit Criteria
-- All 4 paragraphs approved
-- Funnel structure verified
-- Reference list generated (numbered starting at [1])
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- Introduction word count
-- Number of references used (and their numbers)
-- The exact gap statement from Paragraph 3 (needed for Discussion Conclusion to close the loop)
-- The exact aim statement from Paragraph 4
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Introduction complete. Moving to Methods and Results next."
-
----
-
-## PHASE 5: Methods & Results
-
-**Executes:** Full `/write-methods-results` command specification
-
-### Entry
-- Tell the user: "Starting Phase 5 — Methods and Results. I'll write the Statistical Methods section and then narrate the Results following your table and figure sequence."
-- **Auto-populate prerequisites from state:**
-  - All analysis details → from Phase 2 state handoff
-  - Table list and contents → from Phase 2
-  - Figure list → from Phase 3
-- Follow the complete `/write-methods-results` workflow (Steps 2–6)
-
-### Cross-Reference Enforcement
-- Every table from Phase 2 must be referenced in the Results text
-- Every figure from Phase 3 must be referenced in the Results text
-- Effect estimates in the text must exactly match the Excel tables from Phase 2 — no rounding discrepancies
-- The Methods section must describe every analysis that appears in the Results
-- Statistical software and package versions must match the reproducible code bundle from Phase 2
-
-### Exit Criteria
-- Statistical Methods section approved
-- Results section approved (all subsections)
-- Figure legends approved
-- All tables and figures referenced
-- No results/methods mismatch
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- Methods word count
-- Results word count
-- Limitations paragraph text (drafted in this phase)
-- E-value (if computed)
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Methods and Results complete. Moving to the Discussion."
-
----
-
-## PHASE 6: Discussion
-
-**Executes:** Full `/write-discussion` command specification
-
-### Entry
-- Tell the user: "Starting Phase 6 — Discussion. I'll write a 6-paragraph reverse-funnel Discussion using your findings and the literature review."
-- **Auto-populate prerequisites from state:**
-  - Primary findings → from Phase 2 state handoff
-  - Concordant literature → from Phase 1 (references tagged as concordant)
-  - Discordant literature → from Phase 1 (references tagged as discordant)
-  - Introduction gap statement → from Phase 4 state handoff (needed for Conclusion loop-closing)
-  - Limitations and E-value → from Phase 5 state handoff
-- Follow the complete `/write-discussion` workflow (Steps 2–8)
-
-### Cross-Reference Enforcement
-- Paragraph 1 must restate findings from Phase 2 conceptually — no copy-paste from Results
-- Paragraphs 2–3 must use references from Phase 1 — tag which are concordant vs discordant
-- Paragraph 5 (Strengths/Limitations) must reference the E-value and sensitivity analyses from Phase 2
-- Paragraph 6 (Conclusion) must explicitly close the loop from the Introduction's Paragraph 3 gap statement
-- No new data or analyses may be introduced in the Discussion
-
-### Exit Criteria
-- All 6 paragraphs approved
-- Reverse-funnel structure verified
-- Toggle Rule audit passed (no >3 consecutive sentences about own results without literature comparison)
-- Association language audit passed (no causal language for observational studies)
-- Loop closure verified (Conclusion addresses Introduction gap)
-- Reference list updated (continuing numbering from Introduction)
-
-### State Handoff
-After completion, update the Manuscript Context Block with:
-- Discussion word count
-- Total references used across all sections
-- Complete reference list
-
-Update the Manuscript State Tracker and present it.
-
-ASK: "Discussion complete. Would you like me to draft the Abstract now?"
-
----
-
-## PHASE 7: Abstract
-
-### Entry
-- Tell the user: "Starting Phase 7 — Abstract. I'll draft a structured abstract summarizing your manuscript."
-
-### Abstract Structure (Structured Format)
-
-Write a structured abstract with these sections:
-
-**Background/Objective**
-- 2–3 sentences: clinical context, knowledge gap, and study aim
-- Must mirror Introduction Paragraphs 1, 3, and 4
-- Do not introduce information absent from the Introduction
-
-**Methods**
-- 2–3 sentences: study design, data source, time period, sample size, primary outcome, primary exposure, statistical approach
-- Must be consistent with the Methods section from Phase 5
-
-**Results**
-- 3–5 sentences: final N, key baseline differences (1 sentence), primary finding with full statistics (OR/HR, 95% CI, p-value), 1–2 secondary findings
-- Every number must exactly match the Results section from Phase 5
-
-**Conclusion**
-- 1–2 sentences: main take-home message and clinical implication
-- Must match the Discussion Conclusion from Phase 6 — not introduce new interpretation
-- Use association language for observational studies
-
-### Word Count
-- Target 250–350 words (standard for most surgical journals)
-- Count and report the word count after drafting
-- If over limit, identify which sentences to trim
-
-### Writing Rules
-- The abstract must be a self-contained summary — a reader should understand the study without reading the full paper
-- Every number in the abstract must match the manuscript body exactly
-- Do not cite references in the abstract (most journals prohibit this)
-- Do not use abbreviations unless defined within the abstract
-- Use past tense throughout
-
-### Cross-Reference Enforcement
-- Run a consistency check: compare every number in the abstract against the Results text and Excel tables
-- Flag any discrepancies
-
-ASK: "Does the abstract accurately summarize the manuscript? Any adjustments?"
-
-Update the Manuscript State Tracker.
-
----
-
-## PHASE 8: Final Assembly & Consistency Audit
-
-### 8a. Present the Complete Manuscript Structure
-
-Show the user the full manuscript layout:
-
-```
+Only populate fields when known or verified. Do not invent missing items.
+Phase 0 — Manuscript Setup
+Goal
+Establish the minimum study context needed to determine where the manuscript workflow should begin.
+Required Intake Questions
+Ask for:
+Research question
+Study design
+Data source
+Primary outcome
+Primary exposure or predictor
+Current project status:
+idea only
+literature reviewed
+dataset ready
+analysis complete
+manuscript partly written
+near-final draft
+Whether the user has any of the following already available:
+dataset
+data dictionary
+tables
+figures
+code
+references
+manuscript text
+Target journal, if known
+Determine Starting Point
+Start at the earliest phase whose required outputs are not yet available and verified.
+Examples:
+
+Research question only, no extracted evidence, no dataset → start at Phase 1
+Dataset available, but no verified descriptive analysis or model output → start at Phase 2
+Verified tables and primary estimates already available, but no manuscript drafting done → start at Phase 4 or 5 depending on what exists
+Draft manuscript largely complete, but no final audit performed → start at Phase 8
+Setup Output
+After intake, present:
+the populated Manuscript Context Block
+the current Manuscript State Tracker
+the proposed starting phase
+Then ask:
+"Here is my understanding of your study and current status. Is this correct? We should begin at Phase X unless you want to revise anything."
+
+Exit Criteria
+Phase 0 is complete when:
+the minimum study context is defined
+the starting phase is determined
+the initial tracker is set
+Phase 1 — Literature Review
+Function
+Call the /literature-review workflow and record only the outputs needed by later phases.
+Entry Conditions
+Begin Phase 1 if:
+the user has not yet established the study rationale, gap, and key references, or
+the available literature framing is insufficient for Introduction and Discussion drafting
+Objectives
+Produce a verified evidence foundation for the manuscript.
+Required Outputs
+concise evidence synthesis
+gap analysis
+refined or confirmed research question
+study positioning statement
+key references sufficient to support Introduction and Discussion
+reference tags indicating likely use:
+Introduction
+Discussion concordant
+Discussion discordant
+Methods background if needed
+Preferred Evidence Priorities
+Prioritize:
+peer-reviewed literature
+major observational studies
+randomized studies when applicable
+systematic reviews and meta-analyses
+recent specialty-specific evidence
+Clearly label any preprints or non-peer-reviewed sources.
+State Handoff
+After Phase 1, update the Manuscript Context Block with:
+refined research question if changed
+key references
+literature gap statement
+study positioning statement
+Also create a structured handoff:
+LITERATURE HANDOFF
+==================
+Clinical Problem:
+What Is Known:
+What Remains Uncertain:
+Gap Statement:
+Study Positioning:
+Key References for Introduction:
+Key References for Discussion (concordant):
+Key References for Discussion (discordant):
+==================
+Exit Criteria
+Phase 1 is complete when:
+the evidence synthesis is adequate to justify the study
+the gap is clearly stated
+sufficient references exist for later writing phases
+Transition Prompt
+"Literature review complete. The study rationale and key references are now defined. Next is Phase 2 — Data Analysis, unless you already have verified analysis outputs."
+Phase 2 — Data Analysis
+Function
+Call the /analyze workflow and record only the outputs needed by later phases.
+Entry Conditions
+Begin Phase 2 if:
+verified analysis outputs do not yet exist, or
+existing analysis outputs are incomplete, inconsistent, or insufficient for manuscript writing
+Objectives
+Produce a reproducible, manuscript-ready statistical output package.
+Required Outputs
+final analytic cohort
+variable definitions used in analysis
+descriptive statistics
+Table 1
+primary analysis
+secondary analyses if applicable
+sensitivity analyses if applicable
+model diagnostics and assumption checks
+final effect estimates with 95% CI and p-values
+final table package
+reproducible code or clearly documented analysis workflow, if available within the analysis command
+State Handoff
+After Phase 2, update the Manuscript Context Block with:
+sample size
+primary effect estimate
+key secondary findings
+list of tables
+missing data approach
+covariate strategy
+statistical software if known
+Also create a structured handoff:
+ANALYSIS HANDOFF
+================
+Final Analytic Cohort:
+Primary Outcome Definition:
+Primary Exposure Definition:
+Secondary Outcome Definitions:
+Primary Model:
+Adjusted Covariates:
+Reference Category:
+Primary Effect Estimate:
+Secondary Findings:
+Sensitivity Analyses:
+Subgroup Analyses:
+Missing Data Handling:
+Assumption Checks:
+Tables Produced:
+Supplementary Tables:
+Code Verified:
+================
+Exit Criteria
+Phase 2 is complete when:
+the main analytic results are verified
+the key tables needed for manuscript writing exist
+model assumptions and major diagnostics have been addressed
+the downstream writing phases can cite exact numbers without guessing
+Transition Prompt
+"Analysis complete. The manuscript now has verified quantitative results. Next is Phase 3 — Figures, if figures are needed, or we can proceed directly to writing."
+Phase 3 — Figures
+Function
+Call the /visualize workflow and record only the outputs needed by later phases.
+Entry Conditions
+Begin Phase 3 if:
+the manuscript would benefit from figures, and
+verified analysis outputs already exist
+Do not force figures if tables alone are sufficient.
+Objectives
+Create the figure plan and figure metadata needed for manuscript drafting.
+Required Outputs
+list of manuscript figures
+list of supplementary figures if applicable
+figure titles
+figure types
+figure legends or legend drafts
+designation of body vs supplementary placement
+State Handoff
+After Phase 3, update the Manuscript Context Block with:
+list of figures
+figure titles
+figure placement
+legend text or draft legend text
+Also create a structured handoff:
+FIGURE HANDOFF
+==============
+Figure 1:
+Type:
+Title:
+Body or Supplement:
+Legend:
+
+Figure 2:
+Type:
+Title:
+Body or Supplement:
+Legend:
+==============
+Exit Criteria
+Phase 3 is complete when:
+the set of necessary figures is defined and approved, or
+the user elects to skip figure generation and this is documented
+Transition Prompt
+"Figures are complete or intentionally omitted. Next is Phase 4 — Introduction."
+Phase 4 — Introduction
+Function
+Call the /write-introduction workflow using verified outputs from prior phases.
+Entry Conditions
+Begin Phase 4 when:
+the manuscript rationale is defined sufficiently to draft an Introduction
+Objectives
+Write a concise, journal-style Introduction that establishes:
+the clinical problem
+the evidence gap
+the study objective
+Preferred Structure
+Usually 3–4 paragraphs:
+clinical burden and relevance
+what is known
+what remains uncertain
+study objective and hypothesis, when appropriate
+Adapt paragraph count if needed for topic or journal style.
+Cross-Phase Requirements
+The gap statement must match the verified literature handoff.
+The objective must match the Manuscript Context.
+References should come from the verified literature phase whenever possible.
+Do not introduce uncited claims or unverified novelty statements.
+State Handoff
+After Phase 4, update the Manuscript Context Block with:
+final Introduction word count
+exact gap statement used
+exact study objective statement used
+references used in the Introduction
+Exit Criteria
+Phase 4 is complete when:
+the Introduction is approved
+the study objective is clearly and accurately stated
+the gap statement is explicit and consistent with Phase 1
+Transition Prompt
+"Introduction complete. Next is Phase 5 — Methods & Results."
+Phase 5 — Methods & Results
+Function
+Call the /write-methods-results workflow using verified analysis and figure outputs.
+Entry Conditions
+Begin Phase 5 when:
+the study design and analytic results are sufficiently defined to support manuscript drafting
+Objectives
+Write a reproducible Methods section and a numerically accurate Results section.
+Methods Requirements
+Methods should include, as applicable:
+study design
+data source
+study period
+eligibility criteria
+variable definitions
+primary and secondary outcomes
+exposure definition
+statistical methods
+missing data approach
+sensitivity analyses
+software used, if known
+Results Requirements
+Results should usually proceed in this order:
+cohort derivation and analytic sample
+baseline characteristics
+primary analysis
+secondary analyses
+sensitivity analyses
+subgroup analyses if applicable
+Cross-Phase Requirements
+Every reported estimate must match verified analysis outputs.
+Results must follow the order of the verified tables and figures.
+Methods must describe all analyses that appear in Results.
+Results must not report analyses absent from the analysis handoff.
+Tables and figures used in Results must be referenced in the text.
+Rounding must follow one manuscript-wide rule.
+State Handoff
+After Phase 5, update the Manuscript Context Block with:
+Methods word count
+Results word count
+limitations relevant to interpretation
+robustness analyses performed, if applicable
+Also create a structured handoff:
+METHODS & RESULTS HANDOFF
+=========================
+Methods Summary:
+Results Summary:
+Primary Estimate in Text Form:
+Secondary Estimates in Text Form:
+Tables Referenced:
+Figures Referenced:
+Major Limitations Identified:
+Robustness Analyses:
+=========================
+Exit Criteria
+Phase 5 is complete when:
+Methods are reproducible and aligned with the analysis
+Results are numerically accurate and complete
+tables and figures are appropriately integrated into the narrative
+Transition Prompt
+"Methods and Results complete. Next is Phase 6 — Discussion."
+Phase 6 — Discussion
+Function
+Call the /write-discussion workflow using verified findings and verified literature context.
+Entry Conditions
+Begin Phase 6 when:
+the principal findings are established
+sufficient literature context exists to interpret them responsibly
+Objectives
+Write a balanced Discussion that:
+interprets the findings
+compares them with prior literature
+addresses implications
+acknowledges strengths and limitations
+ends with a conclusion consistent with the study design
+Preferred Structure
+Usually 5–6 paragraphs:
+principal findings
+comparison with concordant literature
+comparison with discordant or mixed literature
+clinical or scientific implications
+strengths and limitations
+conclusion
+Adapt structure when appropriate.
+Cross-Phase Requirements
+Principal findings must reflect Phase 2 results without copying the Results section verbatim.
+Literature comparisons must rely on verified references from Phase 1 whenever possible.
+Strengths and limitations must reflect the actual design and analyses performed.
+The conclusion must close the loop with the Introduction gap statement.
+No new data, analyses, or unsupported claims may be introduced.
+Discussion Guardrails
+Do not:
+present mechanisms as fact unless supported by evidence
+recommend practice change beyond what the design supports
+overstate novelty
+use causal language for observational associations
+force concordance if the literature is sparse or conflicting
+State Handoff
+After Phase 6, update the Manuscript Context Block with:
+Discussion word count
+final conclusion statement
+total references used across sections
+complete reference list if assembled during workflow
+Exit Criteria
+Phase 6 is complete when:
+the Discussion is scientifically balanced
+the conclusion is consistent with the evidence and study design
+the Introduction-to-Discussion loop is closed
+Transition Prompt
+"Discussion complete. Next is Phase 7 — Abstract."
+Phase 7 — Abstract
+Entry Conditions
+Begin Phase 7 when:
+the manuscript body is sufficiently complete to support an accurate abstract
+Objectives
+Write a structured abstract that stands alone and uses only verified information from the manuscript.
+Preferred Structure
+Unless the target journal requires otherwise, use:
+Background or Objective
+Methods
+Results
+Conclusion
+Abstract Rules
+Draft the abstract last.
+Use only verified information from completed manuscript sections.
+Every number must match the manuscript body exactly.
+Do not introduce new interpretation not already supported in the Discussion.
+Do not cite references in the abstract unless explicitly required by the journal.
+Define abbreviations on first use if included.
+Use association language for observational studies.
+State Handoff
+After Phase 7, update the Manuscript Context Block with:
+abstract word count
+final abstract text status
+any journal-specific abstract adjustments needed
+Exit Criteria
+Phase 7 is complete when:
+the abstract accurately summarizes the manuscript
+all key numbers match the body text
+the word count is appropriate for the intended journal or a standard surgical format
+Transition Prompt
+"Abstract complete. Next is Phase 8 — Final Assembly & Audit."
+Phase 8 — Final Assembly & Audit
+Goal
+Perform a final internal consistency review and summarize the manuscript package.
+Part A — Manuscript Assembly Summary
+Present:
 MANUSCRIPT ASSEMBLY
 ===================
-Title:           [to be finalized by user]
-Abstract:        [Phase 7 — X words]
-Introduction:    [Phase 4 — X words]
-Methods:         [Phase 5 — X words]
-Results:         [Phase 5 — X words]
-Discussion:      [Phase 6 — X words]
+Title:           [if available]
+Abstract:        [status + word count]
+Introduction:    [status + word count]
+Methods:         [status + word count]
+Results:         [status + word count]
+Discussion:      [status + word count]
 -----------------------------------------
-Total body text: X words
-References:      X total
-Tables:          X (body) + X (supplementary)
-Figures:         X (body) + X (supplementary)
+Total body text:
+References:
+Tables:
+Figures:
 ===================
-```
+Part B — Internal Consistency Audit
+Check and report:
+Check	Status	Details
+Abstract numbers match Results	✓/✗	—
+Every table referenced in text	✓/✗	—
+Every figure referenced in text	✓/✗	—
+Methods describes each reported analysis	✓/✗	—
+No results in Methods section	✓/✗	—
+No new data in Discussion	✓/✗	—
+Association language appropriate to design	✓/✗	—
+Introduction gap aligns with conclusion	✓/✗	—
+Reference numbering or order is consistent	✓/✗	—
+Abbreviations defined on first use	✓/✗	—
+Part C — Reporting Guideline Audit
+Select the reporting framework that best matches the study design, such as:
+STROBE
+CONSORT
+STARD
+TRIPOD
+STROCSS
+PRISMA
+Then summarize key checklist compliance in a concise table:
+Checklist Item	Section	Status	Note
+Flag missing reporting elements and suggest where they should be added.
+Part D — Deliverables Summary
+Summarize what exists from the completed workflow, for example:
+Deliverable	Status	Source Phase
+Literature synthesis	Available / Missing	Phase 1
+Analysis tables	Available / Missing	Phase 2
+Reproducible code	Available / Missing	Phase 2
+Figures	Available / Missing	Phase 3
+Introduction text	Available / Missing	Phase 4
+Methods text	Available / Missing	Phase 5
+Results text	Available / Missing	Phase 5
+Discussion text	Available / Missing	Phase 6
+Abstract text	Available / Missing	Phase 7
+Reference list	Available / Missing	Phases 1, 4, 6
+Only claim deliverables that actually exist.
+Part E — Suggested Next Steps
+Provide a concise next-step plan tailored to what is complete, such as:
+assemble text into the manuscript document
+insert tables and figures
+finalize title and author list
+add disclosures, funding, and IRB language
+format references for the target journal
+circulate to co-authors
+return for revisions after feedback
+Exit Criteria
+Phase 8 is complete when:
+the manuscript structure is summarized
+major consistency checks are reported
+missing items are explicitly identified
+next steps are clear
+Handling Interruptions
+If the session stops mid-workflow:
+present the current Manuscript State Tracker
+summarize what is complete
+summarize what remains
+state which phase should be resumed next
+preserve the Manuscript Context Block as the reference state
+When resuming later, reconstruct the context from:
+completed phases
+verified outputs
+any uploaded files
+any manuscript text already drafted
+Do not assume continuity without restating the recovered context.
+Handling Phase Skips
+If the user chooses to skip a phase, respect the decision but document it and warn about downstream consequences.
+Skipped Phase	Consequence
+Literature Review	weaker Introduction/Discussion support unless references are manually provided
+Data Analysis	no verified results for Methods/Results writing
+Figures	no figure integration; text may remain table-only
+Abstract	manuscript can still proceed without it
+Final Assembly	no internal audit performed
+Mark skipped phases as [—].
+Minimum-Viable Manuscript Path
+If the user wants a shortened workflow, support a reduced path using verified available components only.
+Examples:
 
-### 8b. Internal Consistency Audit
-
-Run these checks and report results:
-
-| Check | Status | Details |
-|---|---|---|
-| Abstract numbers match Results | ✓/✗ | List any discrepancies |
-| Every table referenced in text | ✓/✗ | List unreferenced tables |
-| Every figure referenced in text | ✓/✗ | List unreferenced figures |
-| Methods describes every analysis in Results | ✓/✗ | List gaps |
-| No results in Methods section | ✓/✗ | Flag violations |
-| No new data in Discussion | ✓/✗ | Flag violations |
-| Association language (observational) | ✓/✗ | List causal language found |
-| Introduction gap → Discussion conclusion loop | ✓/✗ | Quote both sentences |
-| Reference numbering continuous and correct | ✓/✗ | Flag gaps or duplicates |
-| Abbreviations defined on first use | ✓/✗ | List undefined abbreviations |
-
-### 8c. Reporting Guideline Checklist
-
-Based on study design, run the appropriate checklist:
-
-- **Observational study** → STROBE checklist (22 items)
-- **Randomized trial** → CONSORT checklist (25 items)
-- **Diagnostic accuracy** → STARD checklist
-- **Prediction model** → TRIPOD checklist
-- **Surgical case series** → STROCSS checklist
-- **Systematic review** → PRISMA checklist
-
-Present a summary table:
-
-| Checklist Item | Section | Status | Location / Note |
-|---|---|---|---|
-| Title identifies study design | Title | ✓/✗ | — |
-| Abstract — structured summary | Abstract | ✓/✗ | — |
-| ... | ... | ... | ... |
-
-Flag any missing items and suggest where to add them.
-
-### 8d. Deliverables Summary
-
-Present the complete list of files generated:
-
-| Deliverable | Format | Source Phase |
-|---|---|---|
-| Analysis tables | .xlsx (formatted) | Phase 2 |
-| Reproducible code | .py + requirements.txt | Phase 2 |
-| Manuscript figures | .pdf + .png (600 DPI) | Phase 3 |
-| Introduction text | In chat | Phase 4 |
-| Methods text | In chat | Phase 5 |
-| Results text | In chat | Phase 5 |
-| Figure legends | In chat | Phase 5 |
-| Discussion text | In chat | Phase 6 |
-| Abstract text | In chat | Phase 7 |
-| Reference list | In chat | Phases 4–6 |
-
-### 8e. Suggested Next Steps
-
-Present to the user:
-
-> **Manuscript draft complete.** Here's what to do next:
->
-> 1. **Assemble** — Copy all text sections into your manuscript document in order: Abstract → Introduction → Methods → Results → Discussion
-> 2. **Insert tables and figures** — Place the Excel tables and figure files at the appropriate locations
-> 3. **Title and author list** — Add your title, author names, affiliations, and corresponding author info
-> 4. **Acknowledgments and disclosures** — Add funding sources, conflicts of interest, and IRB statement
-> 5. **Format references** — Import the reference list into your citation manager (EndNote, Zotero, Mendeley) and reformat to your target journal's style
-> 6. **Co-author review** — Circulate the draft to all co-authors for feedback
-> 7. **Revise** — After receiving feedback, return here and describe the changes needed — I can help you revise specific sections
-
----
-
-## Handling Interruptions and Partial Sessions
-
-If the user needs to stop mid-manuscript and return later:
-
-- Present the current Manuscript State Tracker
-- Summarize what has been completed and what remains
-- Tell the user: "When you return, just tell me where we left off and share any files from previous phases. I'll pick up from there."
-
-If the user returns and references a previous session:
-
-- Ask them to share: (1) which phases are done, (2) key findings, (3) any files generated
-- Reconstruct the Manuscript Context Block from their answers
-- Resume from the next incomplete phase
-
----
-
-## Handling Phase Skips
-
-If the user wants to skip a phase:
-
-| Skipped Phase | Downstream Impact | Warning to Give |
-|---|---|---|
-| Phase 1 (Literature) | Introduction will lack cited references; Discussion will lack concordant/discordant comparisons | "Without a literature review, I'll need you to provide key references manually for the Introduction and Discussion." |
-| Phase 2 (Analysis) | No tables, no figures, no numbers for Results | "I cannot write Methods or Results without analysis output. Please provide your tables and key statistics." |
-| Phase 3 (Figures) | Results text will have placeholder figure references | "I'll note where figures should go, but you'll need to generate them separately." |
-| Phase 7 (Abstract) | No abstract | "You can draft the abstract later — it's often easier after the full manuscript is written." |
-
-Always respect the user's decision to skip, but document the gap in the Manuscript State Tracker.
+verified analysis available → draft Introduction, Methods, Results, Discussion, then Abstract
+results and draft sections available → jump to Final Assembly & Audit
+no figures needed → skip Phase 3 and document this
+Always mark omitted phases clearly in the tracker.
+Command Completion Standard
+This command succeeds when it has:
+identified the correct starting phase
+carried verified outputs forward across phases
+maintained a visible state tracker
+enforced consistency across sections
+avoided fabrication
+produced either:
+a full manuscript workflow, or
+a clearly documented partial workflow based on what the user chose to complete
