@@ -1,5 +1,5 @@
 ---
-description: Clinical research manuscript writing and statistical analysis — USE THIS SKILL whenever the user mentions writing a manuscript, drafting a paper, writing up results, submitting to a journal, abstract writing, introduction writing, discussion writing, methods section, results section, literature review, PubMed search, gap analysis, research question development, statistical analysis, Table 1, regression, survival analysis, propensity scores, forest plot, Kaplan-Meier, ROC curve, figure generation, or any clinical research workflow. Also trigger when the user uploads datasets (CSV, Excel, SPSS, Stata, SAS) or mentions NCDB, NSQIP, SEER, NTDB, MBSAQIP, UNOS, cytokines, POPF, transplant outcomes, bariatric outcomes, trauma analysis, biomarker analysis, ACS submission, or any surgical research task. If the user says "write my paper," "draft the manuscript," "help me publish," "write up my data," "I need to submit," "format for journal," or anything suggesting they want to go from data or a research question to a written manuscript, use this skill immediately.
+description: Clinical research manuscript writing and statistical analysis — USE THIS SKILL whenever the user mentions writing a manuscript, drafting a paper, writing up results, submitting to a journal, abstract writing, introduction writing, discussion writing, methods section, results section, literature review, PubMed search, gap analysis, research question development, statistical analysis, Table 1, regression, survival analysis, propensity scores, forest plot, Kaplan-Meier, ROC curve, figure generation, or any clinical research workflow. Also trigger when the user uploads datasets (CSV, Excel, SPSS, Stata, SAS) or mentions NCDB, NSQIP, SEER, NTDB, MBSAQIP, UNOS. If the user says "write my paper," "draft the manuscript," "help me publish," "write up my data," "I need to submit," "format for journal," or anything suggesting they want to go from data or a research question to a written manuscript, use this skill immediately.
 ---
 
 # Clinical Research Assistant — General Surgery
@@ -56,34 +56,7 @@ If the user's intent is unclear, present the available commands and ask which th
 ## Domain Knowledge
 
 Apply domain-specific expertise when relevant:
-
-### General Surgery & Acute Care
-- SSI risk factors and prevention bundles, anastomotic leak, Clavien-Dindo classification, emergency general surgery outcomes
-
-### Surgical Oncology
-- Colorectal (TME, lymph node harvest, NCCN, sidedness), gastric (D2 lymphadenectomy, FLOT, Lauren), hepatobiliary (liver resection, ALPPS, cholangiocarcinoma, HCC — BCLC, Milan), breast (margins, sentinel node, genomic assays), melanoma & sarcoma
-
-### Transplant Surgery
-- Graft survival, rejection, immunosuppression, CMV/BK/EBV, DCD vs DBD, delayed graft function, machine perfusion
-
-### Bariatric Surgery
-- Sleeve, RYGB, OAGB, %EWL/%TWL, MBSAQIP metrics, comorbidity resolution, weight regain
-
-### Minimally Invasive Surgery
-- Robotic vs laparoscopic vs open, learning curves (CUSUM), conversion rates, cost-effectiveness
-
-### Trauma & Critical Care
-- Damage control surgery, TBI, ISS/GCS/TRISS, massive transfusion, REBOA, geriatric trauma
-
-### Pancreatic Surgery
-- POPF (ISGPS B/C), DGE, PPH, drain amylase, pancreatic texture, duct diameter, neoadjuvant PDAC
-
-### Esophageal Cancer
-- TNM (AJCC 8th ed), Mandard TRG, CROSS vs FLOT, MIE vs open, anastomotic leak, survival endpoints
-
-### Biomarker Discovery
-- Cytokine panels, liquid biopsy, ctDNA, ROC/Youden index, multiple testing correction, sensitivity/specificity/PPV/NPV
-
+ 
 ### Registry Analyses
 - **NCDB**: no cause-specific survival, facility-level clustering
 - **NSQIP**: 30-day outcomes, targeted procedures, risk calculator
