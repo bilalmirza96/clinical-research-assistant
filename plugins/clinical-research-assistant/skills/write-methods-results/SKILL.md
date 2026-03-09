@@ -221,9 +221,22 @@ Present a summary showing how all pieces fit together:
 | Figure legends | Written in this session | `/write-methods-results` |
 | Limitations paragraph | Written in this session | `/write-methods-results` |
 
-Provide all written text directly in the chat — no Word documents, no file generation. Present each section clearly with headers so the user can copy them into their manuscript.
+Present all written text in the chat AND generate the following Word documents (.docx) using python-docx (Times New Roman 12pt, double-spaced, 1-inch margins):
 
-ASK: "All manuscript components generated. Anything to revise before finalizing?"
+1. **`methods_results_[date].docx`** — Combined Methods and Results sections with:
+   - All text written in this session
+   - Tables embedded inline at the end (each on its own page with title and footnotes)
+   - Figure legends on a separate page
+   - Figures embedded after legends (each on its own page)
+
+2. **`tables_standalone_[date].docx`** — Tables only:
+   - Each table on its own page with title above and footnotes below
+   - Includes both main tables and supplementary tables
+
+3. **`figures_standalone_[date].docx`** — Figures only:
+   - Each figure on its own page with number, title, and full legend
+
+ASK: "All manuscript components generated and saved as Word documents. Anything to revise before finalizing?"
 
 ---
 

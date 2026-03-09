@@ -38,6 +38,8 @@ Do not use this command for isolated tasks that are better handled by a single d
   * the user explicitly chooses to skip them after being warned of downstream consequences.
 * Before using outputs from a prior phase, verify that they are present, internally consistent, and sufficient for the next phase.
 * If a prior phase is claimed to be complete but the required outputs are missing, treat that phase as incomplete until the missing information is reconstructed or confirmed.
+* Target manuscript length: 3000–4000 words (excluding Abstract). If a section is too short, expand with additional detail; if too long, tighten prose.
+* Target minimum 30 references. If the reference count is below 30 after all sections are written, identify gaps in the Introduction and Discussion where additional citations would strengthen the manuscript and add them.
 * Never fabricate results, references, tables, figures, statistical methods, or sample size details.
 * Never imply causality from observational data unless causal inference is justified by design and analysis.
 * Prefer verified outputs over user memory when there is a discrepancy.
@@ -333,15 +335,65 @@ Present the complete manuscript layout with word counts and status for each sect
 | Introduction gap → Discussion conclusion loop | ✓/✗ | Quote both sentences |
 | Reference numbering continuous and correct | ✓/✗ | Flag gaps or duplicates |
 | Abbreviations defined on first use | ✓/✗ | List undefined abbreviations |
+| Total word count 3000–4000 (excl. Abstract) | ✓/✗ | Report word count per section and total |
+| Total references ≥ 30 | ✓/✗ | Report count; if <30, identify sections needing more citations |
 
 ### Part C — Reporting Guideline Audit
 Select the appropriate framework (STROBE, CONSORT, STARD, TRIPOD, STROCSS, PRISMA) and summarize key checklist compliance. Flag missing reporting elements.
 
-### Part D — Deliverables Summary
-Summarize what exists from the completed workflow. Only claim deliverables that actually exist.
+### Part D — Generate Final Documents
 
-### Part E — Suggested Next Steps
-Provide a concise next-step plan: assemble text, insert tables/figures, finalize title/author list, add disclosures/funding/IRB, format references, circulate to co-authors, return for revisions.
+Generate the following Word documents (.docx) using python-docx. All documents use Times New Roman 12pt, double-spaced, 1-inch margins:
+
+1. **`manuscript_complete_[date].docx`** — Full manuscript with all sections in order:
+   - Title page (title, author placeholders, corresponding author, word count)
+   - Abstract (structured if journal requires it)
+   - Introduction
+   - Methods
+   - Results
+   - Discussion (including Conclusion)
+   - References
+   - Tables embedded inline at the end of the manuscript after References (each table on its own page, with title, footnotes)
+   - Figure legends on a separate page after tables
+   - Figures embedded after figure legends (each figure on its own page with title)
+
+2. **`tables_standalone_[date].docx`** — Separate document with only tables:
+   - Each table on its own page
+   - Table title above, footnotes below
+   - Same formatting as in the complete manuscript
+   - Supplementary tables included after main tables, labeled Table S1, S2, etc.
+
+3. **`figures_standalone_[date].docx`** — Separate document with only figures:
+   - Each figure on its own page
+   - Figure number and title above the image
+   - Full figure legend below the image
+   - Supplementary figures after main figures, labeled Figure S1, S2, etc.
+
+4. **`abstract_standalone_[date].docx`** — Separate document with only the abstract:
+   - Structured or unstructured per journal requirements
+   - Word count noted at the bottom
+   - Keywords if required by journal
+
+All documents should be publication-ready — formatted for direct submission or circulation to co-authors.
+
+### Part E — Deliverables Summary
+Summarize all generated files:
+
+| File | Contents |
+|---|---|
+| `manuscript_complete_[date].docx` | Full manuscript with embedded tables and figures |
+| `tables_standalone_[date].docx` | All tables (main + supplementary) |
+| `figures_standalone_[date].docx` | All figures with legends |
+| `abstract_standalone_[date].docx` | Abstract with keywords |
+| `analysis_tables_[dataset]_[date].xlsx` | Raw analysis tables (from `/analyze`) |
+| `figures_[dataset]_[date]/` | Individual figure files PDF/PNG (from `/visualize`) |
+| `manuscript_state.json` | Workflow state for resuming |
+| `manuscript_context.json` | Study context and metadata |
+
+Only claim deliverables that actually exist.
+
+### Part F — Suggested Next Steps
+Provide a concise next-step plan: review documents, finalize title/author list, add disclosures/funding/IRB, format references per journal style, circulate to co-authors, return for revisions.
 
 ---
 
