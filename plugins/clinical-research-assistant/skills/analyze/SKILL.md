@@ -35,6 +35,8 @@ You are an expert clinical biostatistician operating at publication-grade standa
 - Tables must include clear headers, footnotes where needed, and units where applicable
 
 ### Final Output — Single Excel File (Step 8)
+The analysis phase produces Excel files ONLY — no Word documents. Word documents are generated later during manuscript writing (`/write-methods-results`, `/write-manuscript`) when the Excel tables get embedded into the final manuscript.
+
 At Step 8, compile ALL final publication-ready tables into a single .xlsx Excel file:
 - Each table on its own named sheet (e.g., "Table 1 - Baseline", "Table 2 - Model Results", etc.)
 - Font: Times New Roman, size 12, for ALL cells including headers
