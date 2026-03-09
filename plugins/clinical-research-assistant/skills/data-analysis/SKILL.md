@@ -5,10 +5,7 @@ description: >
   when the user wants to analyze data, write a manuscript, review literature,
   generate figures, or work on any clinical research task involving datasets,
   registries, or manuscript sections.
-metadata:
-  author: Muhammad Bilal Mirza
-  version: 2.0.0
-  category: clinical-research
+user-invocable: false
 ---
 
 # Clinical Statistical Analyst
