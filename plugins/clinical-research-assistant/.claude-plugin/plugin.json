@@ -1,7 +1,7 @@
 {
   "name": "clinical-research-assistant",
-  "description": "Interactive clinical research assistant plugin for Claude Code and Cowork. Built for general surgery residents — guides through deep literature review, rigorous statistical analysis, figure generation, and full manuscript writing with step-by-step approval. Includes seven commands: /write-manuscript (full pipeline orchestrator — chains all steps into one guided session with state tracking), /literature-review (PubMed/bioRxiv/Scholar Gateway search + gap analysis + novelty assessment), /analyze (statistical analysis with Excel output), /visualize (publication-quality figures), /write-introduction (Introduction section in chat), /write-methods-results (Methods & Results sections in chat), /write-discussion (Discussion & Conclusion in chat). All writing outputs are delivered directly in chat.",
-  "version": "1.3.0",
+  "description": "Interactive clinical research assistant for surgical residents. Guides through literature review, statistical analysis, figure generation, and manuscript writing with step-by-step approval gates. Seven commands covering the full research-to-publication pipeline.",
+  "version": "1.4.0",
   "author": {
     "name": "Bilal Mirza"
   }
