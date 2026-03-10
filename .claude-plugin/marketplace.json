@@ -1,17 +1,16 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "clinical-research-assistant",
-  "description": "Clinical research tools for general surgery residents — literature review, statistical analysis, visualization, and manuscript writing",
+  "name": "clinical-research-tools",
+  "description": "Clinical research assistant for surgical residents — literature review, statistical analysis, figure generation, and manuscript writing",
   "owner": {
-    "name": "Bilal Mirza"
+    "name": "Muhammad Bilal Mirza"
   },
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "description": "Interactive clinical research assistant with 7 commands: /write-manuscript (full pipeline orchestrator with state tracking), /literature-review (deep PubMed/bioRxiv search + gap analysis), /analyze (statistics + Excel tables), /visualize (publication-quality figures), /write-introduction (Introduction in chat), /write-methods-results (Methods & Results in chat), /write-discussion (Discussion & Conclusion in chat)",
-      "version": "1.3.0",
-      "source": "./plugins/clinical-research-assistant",
-      "category": "research"
+      "description": "Clinical research assistant with 7 skills for the full research-to-publication pipeline. Outputs Excel during analysis and Word documents for final manuscripts.",
+      "version": "2.0.0",
+      "source": "./plugins/clinical-research-assistant"
     }
   ]
 }
