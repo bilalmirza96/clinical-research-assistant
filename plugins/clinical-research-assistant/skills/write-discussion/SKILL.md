@@ -1,6 +1,21 @@
 ---
 name: write-discussion
 description: Write a publication-ready Discussion and Conclusion for clinical research manuscripts — reverse-funnel pyramid structure based on Aga & Nissar 2022
+allowed-tools:
+  - mcp__claude_ai_PubMed__search_articles
+  - mcp__claude_ai_PubMed__get_article_metadata
+  - mcp__claude_ai_PubMed__find_related_articles
+  - mcp__claude_ai_PubMed__get_full_text_article
+  - mcp__claude_ai_PubMed__convert_article_ids
+  - mcp__claude_ai_Scholar_Gateway__semanticSearch
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - WebSearch
+  - WebFetch
 ---
 
 # Manuscript Discussion & Conclusion Writer

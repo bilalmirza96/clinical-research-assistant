@@ -2,6 +2,15 @@
 name: visualize
 description: Generate publication-quality figures for clinical research manuscripts targeting high-impact surgical and medical journals
 argument-hint: "[figure type or 'all']"
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - mcp__claude_ai_BioRender__search-icons
+  - mcp__claude_ai_BioRender__search-templates
 ---
 
 # Publication-Quality Figure Generator

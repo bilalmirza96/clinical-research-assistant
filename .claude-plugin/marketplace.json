@@ -9,7 +9,7 @@
     {
       "name": "clinical-research-assistant",
       "description": "Clinical research assistant with 7 skills for the full research-to-publication pipeline. Outputs Excel during analysis and Word documents for final manuscripts.",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "source": "./plugins/clinical-research-assistant"
     }
   ]

@@ -2,6 +2,24 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [2.1.0] - 2026-03-10
+
+### Added
+- **Research connector integration**: Each skill now declares exactly which research tools it needs via `allowed-tools` in frontmatter
+- PubMed connector (search articles, get metadata, find related, full text, citation lookup)
+- bioRxiv/medRxiv connector (search preprints, get details, track publications)
+- Scholar Gateway connector (semantic search across academic literature)
+- ClinicalTrials.gov connector (search trials, trial details, sponsor search, endpoint analysis)
+- BioRender connector (search icons and templates for scientific figures)
+- CONNECTOR-SETUP.md guide for enabling all required research connectors
+
+### Changed
+- `/literature-review` now has access to PubMed, bioRxiv, Scholar Gateway, Clinical Trials, and web search
+- `/write-manuscript` (orchestrator) has access to all connectors since it coordinates all phases
+- `/write-introduction` and `/write-discussion` have PubMed + Scholar Gateway for finding additional references
+- `/visualize` has BioRender access for scientific icons and templates
+- `/analyze` and `/write-methods-results` are scoped to local tools only (data crunching, no web access needed)
+
 ## [2.0.0] - 2026-03-08
 
 ### Added
