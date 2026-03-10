@@ -1,19 +1,15 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "clinical-research-tools",
-  "description": "Clinical research assistant for surgical residents — literature review, statistical analysis, figure generation, and manuscript writing",
+  "description": "Clinical research assistant for surgical residents",
   "owner": {
     "name": "Muhammad Bilal Mirza"
   },
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "description": "Clinical research assistant with 7 skills for the full research-to-publication pipeline. Outputs Excel during analysis and Word documents for final manuscripts.",
+      "description": "Clinical research assistant for the full research-to-publication pipeline.",
       "version": "2.1.0",
-      "source": {
-        "source": "github",
-        "repo": "bilalmirza96/clinical-research-assistant"
-      }
+      "source": "."
     }
   ]
 }

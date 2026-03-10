@@ -1,11 +1,6 @@
 ---
 name: clinical-statistical-analyst
-description: >
-  Clinical biostatistics and research assistant for surgical research. Activate
-  when the user wants to analyze data, write a manuscript, review literature,
-  generate figures, or work on any clinical research task involving datasets,
-  registries, or manuscript sections.
-user-invocable: false
+description: Clinical biostatistics and research assistant for surgical research. Activate when the user wants to analyze data, write a manuscript, review literature, generate figures, or work on any clinical research task.
 ---
 
 # Clinical Statistical Analyst
