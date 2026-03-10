@@ -2,29 +2,6 @@
 name: literature-review
 description: Deep literature review — PubMed/bioRxiv search, evidence synthesis, gap analysis, novelty assessment, and research question refinement for surgical research
 argument-hint: "[research question or topic]"
-allowed-tools:
-  - mcp__claude_ai_PubMed__search_articles
-  - mcp__claude_ai_PubMed__get_article_metadata
-  - mcp__claude_ai_PubMed__find_related_articles
-  - mcp__claude_ai_PubMed__get_full_text_article
-  - mcp__claude_ai_PubMed__convert_article_ids
-  - mcp__claude_ai_PubMed__lookup_article_by_citation
-  - mcp__claude_ai_bioRxiv__search_preprints
-  - mcp__claude_ai_bioRxiv__get_preprint
-  - mcp__claude_ai_bioRxiv__search_published_preprints
-  - mcp__claude_ai_Scholar_Gateway__semanticSearch
-  - mcp__claude_ai_Clinical_Trials__search_trials
-  - mcp__claude_ai_Clinical_Trials__get_trial_details
-  - mcp__claude_ai_Clinical_Trials__search_by_sponsor
-  - mcp__claude_ai_Clinical_Trials__analyze_endpoints
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - WebSearch
-  - WebFetch
 ---
 
 # Interactive Literature Review & Research Question Development

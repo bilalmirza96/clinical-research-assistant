@@ -2,13 +2,6 @@
 name: analyze
 description: Start an interactive clinical research data analysis session with step-by-step approval
 argument-hint: "[dataset file path]"
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
 ---
 
 # Interactive Clinical Research Statistician

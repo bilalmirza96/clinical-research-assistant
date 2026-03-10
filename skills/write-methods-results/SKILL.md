@@ -1,13 +1,6 @@
 ---
 name: write-methods-results
 description: Generate publication-ready Statistical Methods and Results sections for clinical research manuscripts
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
 ---
 
 # Manuscript Methods & Results Writer
