@@ -1,23 +1,23 @@
 {
   "name": "clinical-research-assistant",
-  "description": "Clinical research assistant for surgical residents. Guides literature review, statistical analysis, figure generation, and manuscript writing with step-by-step approval gates.",
   "owner": {
     "name": "Muhammad Bilal Mirza"
   },
   "metadata": {
     "description": "Clinical research assistant for surgical residents",
     "version": "2.1.0",
-    "pluginRoot": "."
+    "pluginRoot": "./"
   },
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "source": {
-        "type": "github",
-        "url": "bilalmirza96/clinical-research-assistant"
-      },
+      "source": "./",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
-      "version": "2.1.0"
+      "category": "research",
+      "tags": ["clinical-research", "biostatistics", "manuscript-writing", "literature-review", "surgical-research"],
+      "author": {
+        "name": "Muhammad Bilal Mirza"
+      }
     }
   ]
 }
