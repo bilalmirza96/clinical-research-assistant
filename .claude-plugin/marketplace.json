@@ -9,10 +9,7 @@
       "name": "clinical-research-assistant",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
       "version": "2.1.0",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/bilalmirza96/clinical-research-assistant.git"
-      }
+      "source": "./"
     }
   ]
 }
