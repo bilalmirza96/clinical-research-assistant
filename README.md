@@ -52,6 +52,64 @@ Run the commands in this order. Each one builds on the output of the previous st
 - **Approve or redirect.** Every command pauses at key decision points. Say "approved" to continue or give specific feedback to adjust.
 - **All writing outputs appear in chat.** Copy what you need into your manuscript. References are numbered with a full list at the end of each section.
 
+## Power User Tips
+
+Inspired by how the Claude Code team works — adapted for clinical researchers.
+
+### Run analyses in parallel
+Open 2–3 Claude sessions at once for independent tasks. Use `git worktree` to keep each session isolated:
+```bash
+git worktree add ../analysis-arm-a main
+git worktree add ../literature-search main
+```
+One session can run `/analyze` on your dataset while another runs `/literature-review` for the discussion. Merge the outputs when both are done.
+
+### Plan before you analyze
+For any non-trivial study, **spend time on a detailed research plan before running commands.** Use plan mode (`shift+tab` twice) to have Claude draft the analysis strategy — covariates, model selection, sensitivity analyses — then review it before execution.
+
+> If results look unexpected, stop pushing forward. Switch back to plan mode, re-examine the model structure, and re-plan rather than iterating blindly.
+
+### Write a detailed brief upfront
+The more context you give, the less back-and-forth you need. A strong prompt includes:
+- Study design (retrospective cohort, RCT, registry)
+- Population and inclusion/exclusion criteria
+- Primary and secondary outcomes
+- Covariates and known confounders
+- Target journal or word count
+
+Use voice dictation to produce longer, richer prompts faster than typing.
+
+### Challenge the output
+Don't accept the first draft — ask Claude to justify decisions:
+- *"Explain why you chose logistic regression over a mixed-effects model here."*
+- *"This forest plot looks off — walk me through the confidence interval calculations."*
+- *"Rewrite the limitations paragraph with a more critical eye toward selection bias."*
+
+If a section is mediocre, say so: *"Scrap that and write an elegant version now that you understand the study better."*
+
+### Use subagents for deep dives
+For complex tasks, ask Claude to use subagents to keep context clean:
+- *"Use subagents to run the literature search and the sensitivity analysis in parallel, then synthesize the results."*
+
+This is especially useful when `/literature-review` and `/analyze` need to inform each other without polluting each other's context.
+
+### Treat every correction as a CLAUDE.md update
+When Claude makes a methodological error (wrong reference style, wrong statistical test, misidentified registry variable), correct it **and** ask Claude to update `CLAUDE.md` so the mistake doesn't recur. Over time this creates a project-specific knowledge base tuned to your study.
+
+### Use Claude for data exploration before formal analysis
+Before running `/analyze`, drop your dataset and ask Claude to pull quick descriptive summaries inline:
+```
+Here's my dataset. Before we run the full analysis pipeline, give me:
+- Variable types and missing data percentages
+- Distribution of the primary outcome
+- Any obvious data quality issues I should address first
+```
+
+### Ask for a visual explanation of unfamiliar methods
+If you're unsure about a statistical approach Claude recommends, ask:
+- *"Generate an HTML slide deck explaining propensity score matching to a surgery resident."*
+- *"Draw an ASCII diagram of the analytic pipeline you're about to run."*
+
 ## Key Features
 
 - **Literature-driven** — searches PubMed, bioRxiv, and scholarly databases to map existing evidence and identify gaps before you start
