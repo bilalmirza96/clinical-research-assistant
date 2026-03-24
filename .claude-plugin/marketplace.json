@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "source": "./",
+      "source": "./clinical-research-assistant",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
       "category": "research",
       "tags": ["clinical-research", "biostatistics", "manuscript-writing", "literature-review", "surgical-research"],

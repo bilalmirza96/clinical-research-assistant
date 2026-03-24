@@ -158,20 +158,23 @@ cd clinical-research-assistant
 ## Plugin Structure
 
 ```
-clinical-research-assistant/
+clinical-research-assistant/                         # Marketplace root
 ├── .claude-plugin/
-│   ├── plugin.json                                # Plugin metadata
-│   └── marketplace.json                           # Marketplace catalog
-├── skills/
-│   ├── analyze/                                   # /analyze — interactive statistical analysis
-│   ├── literature-review/                         # /literature-review — PubMed/bioRxiv search
-│   ├── visualize/                                 # /visualize — publication-quality figures
-│   ├── write-introduction/                        # /write-introduction — funnel-down structure
-│   ├── write-methods-results/                     # /write-methods-results — AMA style
-│   ├── write-discussion/                          # /write-discussion — reverse-funnel pyramid
-│   ├── write-manuscript/                          # /write-manuscript — full orchestrator
-│   ├── data-analysis/                             # Auto-triggered biostatistics skill
-│   └── references/                                # Writing style and method guides
+│   └── marketplace.json                             # Marketplace catalog
+├── clinical-research-assistant/                     # Plugin directory
+│   ├── .claude-plugin/
+│   │   └── plugin.json                              # Plugin metadata
+│   ├── skills/
+│   │   ├── analyze/                                 # /analyze — interactive statistical analysis
+│   │   ├── literature-review/                       # /literature-review — PubMed/bioRxiv search
+│   │   ├── visualize/                               # /visualize — publication-quality figures
+│   │   ├── write-introduction/                      # /write-introduction — funnel-down structure
+│   │   ├── write-methods-results/                   # /write-methods-results — AMA style
+│   │   ├── write-discussion/                        # /write-discussion — reverse-funnel pyramid
+│   │   ├── write-manuscript/                        # /write-manuscript — full orchestrator
+│   │   ├── data-analysis/                           # Auto-triggered biostatistics skill
+│   │   └── references/                              # Writing style and method guides
+│   └── CLAUDE.md                                    # Project conventions
 ├── README.md
 ├── CHANGELOG.md
 ├── CONNECTOR-SETUP.md
