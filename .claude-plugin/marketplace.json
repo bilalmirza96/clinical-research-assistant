@@ -12,7 +12,10 @@
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "source": ".",
+      "source": {
+        "type": "github",
+        "url": "bilalmirza96/clinical-research-assistant"
+      },
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
       "version": "2.1.0"
     }
