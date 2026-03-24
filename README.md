@@ -12,6 +12,7 @@ An interactive clinical research assistant plugin that guides general surgery re
 | `/write-introduction` | Introduction section using a 4-paragraph funnel-down structure |
 | `/write-methods-results` | Manuscript-ready Statistical Methods and Results sections in AMA style |
 | `/write-discussion` | Discussion section using a 6-paragraph reverse-funnel pyramid structure |
+| `/write-manuscript` | Full manuscript orchestrator — coordinates all phases from literature review to final draft |
 
 ## Quick Start
 
@@ -159,22 +160,22 @@ cd clinical-research-assistant
 ```
 clinical-research-assistant/
 ├── .claude-plugin/
-│   └── marketplace.json                          # Marketplace catalog
-├── plugins/
-│   └── clinical-research-assistant/
-│       ├── .claude-plugin/
-│       │   └── plugin.json                       # Plugin metadata
-│       ├── commands/
-│       │   ├── literature-review.md              # /literature-review command
-│       │   ├── analyze.md                        # /analyze command
-│       │   ├── visualize.md                      # /visualize command
-│       │   ├── write-introduction.md             # /write-introduction command
-│       │   ├── write-methods-results.md          # /write-methods-results command
-│       │   └── write-discussion.md               # /write-discussion command
-│       └── skills/
-│           └── data-analysis/
-│               └── SKILL.md                      # Auto-triggered skill
-└── README.md
+│   ├── plugin.json                                # Plugin metadata
+│   └── marketplace.json                           # Marketplace catalog
+├── skills/
+│   ├── analyze/                                   # /analyze — interactive statistical analysis
+│   ├── literature-review/                         # /literature-review — PubMed/bioRxiv search
+│   ├── visualize/                                 # /visualize — publication-quality figures
+│   ├── write-introduction/                        # /write-introduction — funnel-down structure
+│   ├── write-methods-results/                     # /write-methods-results — AMA style
+│   ├── write-discussion/                          # /write-discussion — reverse-funnel pyramid
+│   ├── write-manuscript/                          # /write-manuscript — full orchestrator
+│   ├── data-analysis/                             # Auto-triggered biostatistics skill
+│   └── references/                                # Writing style and method guides
+├── README.md
+├── CHANGELOG.md
+├── CONNECTOR-SETUP.md
+└── LICENSE
 ```
 
 ## License
