@@ -4,12 +4,17 @@
   "owner": {
     "name": "Muhammad Bilal Mirza"
   },
+  "metadata": {
+    "description": "Clinical research assistant for surgical residents",
+    "version": "2.1.0",
+    "pluginRoot": "."
+  },
   "plugins": [
     {
       "name": "clinical-research-assistant",
+      "source": ".",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
-      "version": "2.1.0",
-      "source": "./"
+      "version": "2.1.0"
     }
   ]
 }
