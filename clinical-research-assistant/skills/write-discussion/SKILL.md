@@ -34,16 +34,209 @@ Provide all written text in the chat AND save as a Word document (.docx). Write 
 - **Target word count**: The full manuscript should be 3000–4000 words (excluding Abstract). The Discussion typically accounts for 25–35% (750–1400 words).
 - **Target references**: The full manuscript should have at least 30 references. The Discussion should contribute 15–20 references (concordant + discordant literature). If the total reference count across all sections is below 30, add additional literature comparisons.
 
+<state_management>
+## State Management
+
+`/write-discussion` operates in two modes depending on whether state files exist.
+
+### Mode A — Stateful Project Mode
+
+Triggered when `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Read `project_state.json`. Print: `"Resuming project: [project_name]"`
+2. Read `results_registry.json` if it exists. Extract:
+   - `.primary_result` → effect measure, estimate, CI, p-value, N, covariates adjusted. Used for Paragraph 1 (key findings — restate conceptually, not numerically).
+   - `.secondary_results` → used for Paragraph 1 if multiple key findings.
+   - `.diagnostics_summary.issues` → used for Paragraph 5 (limitations — e.g., assumption violations to acknowledge).
+   - `.propensity_analysis` → if `.performed = true`, used for Paragraph 5 (strengths — methodological rigor).
+   - `.cohort.analyzed` → used for Paragraph 1 ("In this [design] of [N] patients...").
+   If `results_registry.json` does not exist, STOP: `"No analysis results found. Run /analyze first, or provide your key findings manually."`
+3. Read `evidence_bank.json` if it exists. Extract:
+   - `.evidence` filtered by `.tags` containing `"discussion_concordant"` → candidate studies for Paragraph 2.
+   - `.evidence` filtered by `.tags` containing `"discussion_discordant"` → candidate studies for Paragraph 3.
+   - `.novelty_assessment` → used to frame what this study adds (Paragraph 2).
+   - `.competing_work_alerts` → used in Paragraph 3 or 5 if overlap exists.
+   Print: `"Found [N] concordant and [M] discordant evidence entries from literature review."`
+4. Read `citation_bank.json` if it exists. Filter `.citations`:
+   - Where `.tags` includes `"discussion_concordant"` → verified citations for Paragraph 2.
+   - Where `.tags` includes `"discussion_discordant"` → verified citations for Paragraph 3.
+   Print: `"Found [N] verified citations tagged for Discussion ([X] concordant, [Y] discordant)."`
+   If fewer than 5 discussion-tagged citations exist, warn: `"Only [N] discussion citations available — may need to verify additional references during drafting."`
+   If fewer than 2 discussion-tagged citations exist, STOP: `"Insufficient verified citations for Discussion. Run /literature-review first, or provide comparative studies manually so I can verify them."`
+5. Read `manuscript_state.json` if it exists. Extract:
+   - `.introduction_context.gap_statement` → REQUIRED for Paragraph 6 (Conclusion loop closure). If missing, warn: `"No gap statement found from Introduction. Run /write-introduction first, or provide the gap statement manually."` Do not proceed to Paragraph 6 without it.
+   - `.introduction_context.aim_statement` → used for Paragraph 1 framing.
+   - `.sections.discussion.status`:
+     - If `"completed"`: print `"Discussion was previously drafted. Revise or skip?"` and wait.
+     - If `"in_progress"`: print `"Discussion was partially drafted. Continuing from Paragraph [N]."`
+   - `.discussion_context.paragraphs_approved` → if present, resume from next unapproved paragraph.
+6. Read `study_spec.json` if it exists. Extract `.study_design`, `.data_source`, `.registry` → used for Paragraph 1 framing and Paragraph 5 (limitations specific to registry/design).
+
+**Citation sourcing rule (Mode A):** Every literature comparison in Paragraphs 2-3 MUST use citations from `citation_bank.json` (`.verified = true`) or be newly verified during this session via DOI/PMID lookup. Never cite from memory. Never compare to a study that is not verified. If a comparison needs a citation and none is available in the citation bank, either:
+- Search for and verify a new reference (add it to citation_bank.json), or
+- Mark the comparison with `[REF NEEDED]` and flag it for the user
+
+### Mode B — Standalone Mode (Backward Compatible)
+
+Triggered when no `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Proceed normally — ask for all inputs per STEP 1.
+2. The user provides key findings, comparative literature, and the Introduction gap statement manually.
+3. After STEP 2 (Paragraph 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
+4. If yes: create `manuscript_state.json` and `citation_bank.json` in the working directory. From that point forward, behave as Mode A for writes.
+5. If no: proceed without state files. Discussion writing still works. No files are written.
+
+**Citation sourcing rule (Mode B):** Since no citation bank exists, verify each comparative reference by confirming DOI or PMID via search tools before including it. If the user opts into state persistence, add each verified reference to `citation_bank.json`.
+
+---
+
+### Introduction-to-Discussion Bridge
+
+The Conclusion paragraph (Paragraph 6) MUST close the loop opened by the Introduction's gap statement. This is a hard requirement — reviewers specifically check for it.
+
+**In Mode A:** Read `manuscript_state.json.introduction_context.gap_statement` and use it to construct the final sentence of the Conclusion. The Conclusion should directly answer the question or gap posed in the Introduction. Print the gap statement before drafting Paragraph 6: `"Gap statement from Introduction: '[exact text]'. The Conclusion must address this."`
+
+**In Mode B:** Ask the user: `"What was the gap statement from your Introduction? The Conclusion must close this loop."` Use the user's answer.
+
+If the gap statement is unavailable in either mode, warn: `"Cannot write the Conclusion without the Introduction gap statement. The loop closure will be incomplete — reviewers will flag this."` Proceed with a best-effort Conclusion but mark `[GAP CLOSURE NEEDED]` in the text.
+
+---
+
+### Checkpoint Writes
+
+Each checkpoint writes specific fields to specific files. Use Python `json.load` / `json.dump` with `indent=2`. Create files from scratch if they do not exist.
+
+#### After STEP 2 (Paragraph 1 — Key Findings Approved)
+
+**`manuscript_state.json`** — create or update:
+```
+.sections.discussion.status = "in_progress"
+.discussion_context.paragraphs_approved = 1
+.discussion_context.principal_findings = [1-2 sentence conceptual summary of the main finding, as written in Paragraph 1]
+.last_updated = [ISO 8601 timestamp]
+```
+
+#### After STEP 3 (Paragraph 2 — Concordant Literature Approved)
+
+**`manuscript_state.json`** — update:
+```
+.discussion_context.paragraphs_approved = 2
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — update for each citation used in Paragraph 2:
+```
+.citations[matching_entry].used_in_sections = [append "discussion" if not present]
+```
+
+#### After STEP 4 (Paragraph 3 — Discordant Literature Approved)
+
+**`manuscript_state.json`** — update:
+```
+.discussion_context.paragraphs_approved = 3
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — update for each citation used in Paragraph 3:
+```
+.citations[matching_entry].used_in_sections = [append "discussion" if not present]
+```
+
+#### After STEP 5 (Paragraph 4 — Clinical Implications Approved)
+
+**`manuscript_state.json`** — update:
+```
+.discussion_context.paragraphs_approved = 4
+.last_updated = [timestamp]
+```
+
+#### After STEP 6 (Paragraph 5 — Strengths & Limitations Approved)
+
+**`manuscript_state.json`** — update:
+```
+.discussion_context.paragraphs_approved = 5
+.discussion_context.limitations_summary = [2-3 sentence summary of the most important limitations]
+.last_updated = [timestamp]
+```
+
+#### After STEP 7 (Paragraph 6 — Conclusion Approved)
+
+**`manuscript_state.json`** — update:
+```
+.discussion_context.paragraphs_approved = 6
+.discussion_context.conclusion_statement = [exact text of the take-home conclusion sentence]
+.discussion_context.loop_closure_verified = [true if the Conclusion explicitly addresses the Introduction gap statement, false if gap statement was unavailable]
+.last_updated = [timestamp]
+```
+
+#### After STEP 8 (Final — Assembly & Word Doc Complete)
+
+This is the completion checkpoint. Write all final state.
+
+**`manuscript_state.json`** — update:
+```
+.sections.discussion.status = "completed"
+.sections.discussion.word_count = [integer]
+.sections.discussion.reference_count = [integer — number of unique NEW references cited in Discussion]
+.sections.discussion.file_path = [path to discussion_conclusion_[date].docx]
+.discussion_context.citation_ids_used = [list of citation bank ids: "ref_005", "ref_008", ...]
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — finalize:
+```
+for each citation used in the Discussion:
+  .citations[matching_entry].used_in_sections = [ensure "discussion" is present]
+```
+
+**`project_state.json`** — update:
+```
+.updated_at = [timestamp]
+.current_phase = "writing"
+```
+
+**`decision_log.md`** — append (only if interpretation or framing was materially refined during drafting):
+```markdown
+### [DATE] — Discussion: Interpretation Finalized
+
+**Decision:** Principal finding framed as: "[conceptual summary]". Conclusion: "[take-home statement]". Loop closure: [verified/not verified].
+
+**Reason:** [e.g., "strengthened causal hedging based on observational design", "reframed clinical implications to emphasize screening rather than treatment change"]
+
+**Alternatives considered:**
+- [alternative interpretation framing if discussed]
+
+**Risks / unresolved issues:**
+- [e.g., "discordant study by [Author] not fully explained — reviewer may push back"]
+```
+
+---
+
+### State Write Implementation
+
+When writing state files, follow these rules:
+- Use `json.dump(data, f, indent=2)` for all JSON files
+- Use `"a"` mode for `decision_log.md` (append, never overwrite)
+- If a file already exists, read it first with `json.load`, merge updates into the existing object, then write back — never overwrite fields you are not updating
+- If a file does not exist, create it with only the fields specified above — do not require the full template structure
+- All timestamps use ISO 8601 format: `"2026-04-01T14:30:00"`
+- Wrap all file I/O in try/except — if a write fails, warn the user but do not halt the writing
+- The `discussion_context` object in `manuscript_state.json` is a new sub-object — create it if it does not exist
+</state_management>
+
 <interaction_rules>
 ## Critical Interaction Rules
 
 - Work INTERACTIVELY — write ONE paragraph at a time, get approval before the next
 - Never generate the entire Discussion at once
 - Ask for the target journal before writing
-- Use findings from `/analyze` — the Discussion must reference your actual results
-- Use literature from `/literature-review` if available — for concordant and discordant comparisons
-- Use the Introduction from `/write-introduction` if available — the Conclusion must close the loop opened in the Introduction
-- If prior command results are not available, ask the user to describe their key findings and relevant literature
+- Use findings from `results_registry.json` — the Discussion must reference actual computed results, not chat memory
+- Use literature from `evidence_bank.json` and `citation_bank.json` — for concordant and discordant comparisons with verified sources
+- Use the Introduction gap statement from `manuscript_state.json` — the Conclusion must close the loop
+- If state files are not available, ask the user to describe their key findings and relevant literature
+- All citations must be verified — never cite from vague memory
 </interaction_rules>
 
 ## Prerequisites
@@ -61,7 +254,14 @@ If any are missing, ask the user to provide them.
 
 ## STEP 1: Gather Information
 
-ASK the user:
+**Mode A (stateful):** Most inputs are pre-filled from state files. Only ask for what is missing:
+- Target journal — ask if not in `manuscript_state.json` or `study_spec.json`
+- Word limit — ask if not known
+- Voice preference — ask if not known
+- Present the pre-filled context:
+  `"From your project state: Primary finding: [effect_measure] [estimate] (95% CI [ci_lower]–[ci_upper], p = [p_value]) from [model]. [N] patients analyzed. [X] concordant and [Y] discordant citations available. Gap statement from Introduction: '[gap_statement]'. Ready to begin drafting?"`
+
+**Mode B (standalone):** ASK the user:
 1. "What is your target journal?"
 2. "What were your primary findings? (key effect estimates and p-values)"
 3. "Have you run `/literature-review`, `/analyze`, and `/write-introduction` already?"
@@ -333,14 +533,23 @@ ASK: "Discussion and Conclusion complete and saved as Word document. Any revisio
 
 ## Next Steps Reminder
 
-After completing the Discussion, inform the user:
+Execute the STEP 8 completion checkpoint writes above, then inform the user:
 
-> "Discussion and Conclusion complete. Word document saved. Your manuscript sections are now:"
+> "Discussion and Conclusion complete. Word document saved."
+
+If running in Mode A (stateful):
+> "State files updated:
+> - `manuscript_state.json` — discussion: completed, [N] words, [M] new references
+> - `citation_bank.json` — [K] citations marked as used in Discussion
+> - Loop closure: [verified / not verified]
+>
+> Your manuscript sections are now:"
+
+Then always:
 > - Introduction → `introduction_[date].docx` from `/write-introduction`
 > - Methods & Results → `methods_results_[date].docx` from `/write-methods-results`
 > - Discussion & Conclusion → `discussion_conclusion_[date].docx` from `/write-discussion`
-> - Tables → `tables_standalone_[date].docx` + Excel from `/analyze`
-> - Figures → `figures_standalone_[date].docx` + PDF/PNG from `/visualize`
-> - Abstract → `abstract_standalone_[date].docx` from `/write-manuscript`
+> - Tables → Excel from `/analyze`
+> - Figures → PDF/PNG from `/visualize`
 >
-> "Use `/write-manuscript` for the complete assembled manuscript with all tables and figures embedded."
+> "Use `/write-manuscript` for the complete assembled manuscript with final audit."

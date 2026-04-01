@@ -1,0 +1,33 @@
+{
+  "outcome_type": "",
+  "exposure_type": "",
+  "study_structure": "",
+  "planned_models": {
+    "unadjusted": "",
+    "adjusted": "",
+    "effect_measure": ""
+  },
+  "covariates_for_adjustment": [],
+  "propensity_methods": {
+    "needed": false,
+    "method": ""
+  },
+  "sensitivity_analyses": [],
+  "missing_data_strategy": "",
+  "alpha": 0.05,
+  "steps_completed": {
+    "data_intake": false,
+    "missing_assessment": false,
+    "cleaning": false,
+    "design_inference": false,
+    "table1": false,
+    "unadjusted": false,
+    "diagnostics": false,
+    "adjusted": false,
+    "causal_inference": false,
+    "sensitivity": false,
+    "bias_warnings": false,
+    "excel_export": false,
+    "code_bundle": false
+  }
+}

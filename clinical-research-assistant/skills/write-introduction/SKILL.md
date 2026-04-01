@@ -31,15 +31,177 @@ Provide all written text in the chat AND save as a Word document (.docx). Write 
 - **Target word count**: The full manuscript should be 3000–4000 words (excluding Abstract). The Introduction typically accounts for 10–15% (300–500 words).
 - **Target references**: The full manuscript should have at least 30 references. The Introduction should contribute 8–12 references to this total.
 
+<state_management>
+## State Management
+
+`/write-introduction` operates in two modes depending on whether state files exist.
+
+### Mode A — Stateful Project Mode
+
+Triggered when `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Read `project_state.json`. Print: `"Resuming project: [project_name]"`
+2. Read `study_spec.json` if it exists. Extract and pre-fill — do not re-ask:
+   - `.study_aim` → used for Paragraph 4 (aim statement)
+   - `.study_design` → used for Paragraph 4
+   - `.data_source` → used for Paragraphs 3-4
+   - `.outcome.name`, `.outcome.type` → used for Paragraph 1 context
+   - `.exposure.name` → used for Paragraph 1 context
+3. Read `evidence_bank.json` if it exists. Extract:
+   - `.gap_analysis` → used to draft Paragraph 3 (the gap)
+   - `.novelty_assessment` → used to frame the gap statement
+   - `.synthesis_narrative` → used to draft Paragraphs 1-2
+   - `.introduction_outline` → if present (from `/literature-review` STEP 5), use as the skeleton for all 4 paragraphs. Print: `"Found introduction outline from literature review. Using it as the drafting skeleton."`
+4. Read `citation_bank.json` if it exists. Filter `.citations` where `.tags` includes `"introduction"`. These are the pre-verified citations to draw from. Print: `"Found [N] verified citations tagged for Introduction."` If fewer than 6 introduction-tagged citations exist, warn: `"Only [N] introduction citations available — may need to verify additional references during drafting."`
+5. Read `manuscript_state.json` if it exists. Check `.sections.introduction.status`:
+   - If `"completed"`: print `"Introduction was previously drafted. Revise or skip?"` and wait for user response.
+   - If `"in_progress"`: print `"Introduction was partially drafted. Continuing from last checkpoint."`
+   - If present, load `.introduction_context.gap_statement` and `.introduction_context.aim_statement` from prior drafts.
+
+**Citation sourcing rule (Mode A):** Every citation used in the Introduction MUST come from `citation_bank.json` (`.verified = true`) or be newly verified during this session via DOI/PMID lookup. Never cite from memory. If a claim needs a citation and none is available in the citation bank, either:
+- Search for and verify a new reference (add it to citation_bank.json), or
+- Mark the claim with `[REF NEEDED]` and flag it for the user
+
+If `citation_bank.json` does not exist or has fewer than 4 introduction-tagged citations, STOP and tell the user: `"Insufficient verified citations for Introduction. Run /literature-review first, or provide references manually so I can verify them."`
+
+### Mode B — Standalone Mode (Backward Compatible)
+
+Triggered when no `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Proceed normally — ask for all inputs per STEP 1.
+2. The user provides references manually or describes prior literature review work.
+3. After STEP 2 (Paragraph 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
+4. If yes: create `manuscript_state.json` and `citation_bank.json` in the working directory. From that point forward, behave as Mode A for writes.
+5. If no: proceed without state files. Introduction writing still works. No files are written.
+
+**Citation sourcing rule (Mode B):** Since no citation bank exists, verify each reference used by confirming DOI or PMID via search tools before including it. If the user opts into state persistence, add each verified reference to `citation_bank.json`.
+
+---
+
+### Checkpoint Writes
+
+Each checkpoint writes specific fields to specific files. Use Python `json.load` / `json.dump` with `indent=2`. Create files from scratch if they do not exist.
+
+#### After STEP 2 (Paragraph 1 Approved)
+
+**`manuscript_state.json`** — create or update:
+```
+.sections.introduction.status = "in_progress"
+.sections.introduction.paragraphs_approved = 1
+.last_updated = [ISO 8601 timestamp]
+```
+
+**`citation_bank.json`** — update for each citation used in Paragraph 1:
+```
+.citations[matching_entry].used_in_sections = [append "introduction" if not present]
+```
+
+#### After STEP 3 (Paragraph 2 Approved)
+
+**`manuscript_state.json`** — update:
+```
+.sections.introduction.paragraphs_approved = 2
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — update for each citation used in Paragraph 2:
+```
+.citations[matching_entry].used_in_sections = [append "introduction" if not present]
+```
+
+#### After STEP 4 (Paragraph 3 Approved) — the gap statement
+
+**`manuscript_state.json`** — update:
+```
+.sections.introduction.paragraphs_approved = 3
+.introduction_context.gap_statement = [exact gap statement text, 1-2 sentences]
+.last_updated = [timestamp]
+```
+
+The gap statement is critical — it is read by `/write-discussion` to close the Introduction-Conclusion loop. Store the exact wording.
+
+**`citation_bank.json`** — update for citations used in Paragraph 3.
+
+#### After STEP 5 (Paragraph 4 Approved) — the aim statement
+
+**`manuscript_state.json`** — update:
+```
+.sections.introduction.paragraphs_approved = 4
+.introduction_context.aim_statement = [exact aim statement text, 1-2 sentences]
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — update for any citations used in Paragraph 4 (usually none).
+
+#### After STEP 6 (Final — Funnel Check & Word Doc Complete)
+
+This is the completion checkpoint. Write all final state.
+
+**`manuscript_state.json`** — update:
+```
+.sections.introduction.status = "completed"
+.sections.introduction.word_count = [integer]
+.sections.introduction.reference_count = [integer — number of unique references used]
+.sections.introduction.file_path = [path to introduction_[date].docx]
+.introduction_context.gap_statement = [final exact text]
+.introduction_context.aim_statement = [final exact text]
+.introduction_context.citation_ids_used = [list of citation bank ids: "ref_001", "ref_003", ...]
+.last_updated = [timestamp]
+```
+
+**`citation_bank.json`** — finalize:
+```
+for each citation used in the Introduction:
+  .citations[matching_entry].used_in_sections = [ensure "introduction" is present]
+```
+
+**`project_state.json`** — update:
+```
+.updated_at = [timestamp]
+.current_phase = "writing"
+```
+
+**`decision_log.md`** — append (only if the gap statement or aim statement was materially refined from what was in `evidence_bank.json`):
+```markdown
+### [DATE] — Introduction: Gap and Aim Finalized
+
+**Decision:** Gap statement: "[exact gap statement]". Aim: "[exact aim statement]".
+
+**Reason:** [brief note on why this framing was chosen — e.g., "narrowed from broad registry gap to specific outcome gap based on reviewer-appeal considerations"]
+
+**Alternatives considered:**
+- [alternative gap framing if discussed]
+
+**Risks / unresolved issues:**
+- [e.g., "gap statement may overlap with [Author Year] preprint — monitor"]
+```
+
+---
+
+### State Write Implementation
+
+When writing state files, follow these rules:
+- Use `json.dump(data, f, indent=2)` for all JSON files
+- Use `"a"` mode for `decision_log.md` (append, never overwrite)
+- If a file already exists, read it first with `json.load`, merge updates into the existing object, then write back — never overwrite fields you are not updating
+- If a file does not exist, create it with only the fields specified above — do not require the full template structure
+- All timestamps use ISO 8601 format: `"2026-04-01T14:30:00"`
+- Wrap all file I/O in try/except — if a write fails, warn the user but do not halt the writing
+- The `introduction_context` object in `manuscript_state.json` is a new sub-object — create it if it does not exist
+</state_management>
+
 <interaction_rules>
 ## Critical Interaction Rules
 
 - Work INTERACTIVELY — write ONE paragraph at a time, get approval before the next
 - Never generate the entire Introduction at once
 - Ask for the target journal before writing (formatting and word limits vary)
-- Use findings from `/literature-review` if available — ask the user to share their literature review results
-- Use study details from `/analyze` if available — ask the user to share their analysis results
-- If neither is available, ask the user to describe their study and key references
+- Use evidence from `evidence_bank.json` and `citation_bank.json` when available — these are the verified sources from `/literature-review`
+- Use study details from `study_spec.json` when available
+- If state files are not available, ask the user to share their literature review results and study details
+- All citations must be verified — use only references from the citation bank or newly verified through search tools
 </interaction_rules>
 
 ## Prerequisites
@@ -57,7 +219,13 @@ If any are missing, ask the user to provide them.
 
 ## STEP 1: Gather Information
 
-ASK the user:
+**Mode A (stateful):** Most inputs are pre-filled from state files. Only ask for what is missing:
+- Target journal — ask if not in `study_spec.json` or `manuscript_state.json`
+- Word limit — ask if not known
+- Voice preference (first-person vs third-person) — ask if not known
+- Present the pre-filled context: `"From your project state: [study aim], [design], [data source], [outcome]. [N] verified citations available for Introduction. Ready to begin drafting?"`
+
+**Mode B (standalone):** ASK the user:
 1. "What is your target journal?"
 2. "What is your research question?"
 3. "What is the study design and data source?"
@@ -234,9 +402,22 @@ ASK: "Introduction complete and saved as Word document. Does the funnel flow nat
 
 ## Next Steps Reminder
 
-After completing the Introduction, inform the user:
+Execute the STEP 6 completion checkpoint writes above, then inform the user:
 
-> "Introduction complete. Word document saved. To continue building your manuscript:"
-> - Type `/write-methods-results` to write the Methods and Results sections
-> - Type `/write-discussion` to write the Discussion and Conclusion
-> - Type `/visualize` to generate publication-quality figures
+> "Introduction complete. Word document saved."
+
+If running in Mode A (stateful):
+> "State files updated:
+> - `manuscript_state.json` — introduction: completed, [N] words, [M] references
+> - `citation_bank.json` — [K] citations marked as used in Introduction
+> - Gap statement and aim statement persisted for Discussion loop closure
+>
+> Next steps:"
+
+If running in Mode B without state:
+> "Next steps:"
+
+Then always:
+> - `/write-methods-results` to write the Methods and Results sections
+> - `/write-discussion` to write the Discussion and Conclusion
+> - `/visualize` to generate publication-quality figures

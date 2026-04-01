@@ -1,0 +1,21 @@
+{
+  "file_path": "",
+  "file_type": "",
+  "loaded_at": "",
+  "rows_raw": null,
+  "columns_raw": null,
+  "rows_after_cleaning": null,
+  "columns_after_cleaning": null,
+  "variables": [],
+  "outcome_variable": "",
+  "exposure_variable": "",
+  "covariates": [],
+  "missing_summary": {
+    "strategy": "",
+    "mechanism": "",
+    "variables_above_20pct": []
+  },
+  "cleaning_log": [],
+  "outlier_flags": [],
+  "data_dictionary_provided": false
+}

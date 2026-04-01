@@ -26,14 +26,228 @@ Before drafting any text, read `skills/references/writing-style.md` and apply AL
 - **Avoid AI-tell phrases**: Never use "delve into," "shed light on," "pave the way," "in the realm of," "robust," "comprehensive," "leveraging," "utilizing"
 </writing_style>
 
+<state_management>
+## State Management
+
+`/write-methods-results` operates in two modes depending on whether state files exist.
+
+### Mode A — Stateful Project Mode
+
+Triggered when `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Read `project_state.json`. Print: `"Resuming project: [project_name]"`
+2. Read `results_registry.json` if it exists. Extract:
+   - `.cohort` → screened, excluded, analyzed, exclusion_reasons. Used for STEP 3a (cohort description).
+   - `.primary_result` → model, effect_measure, estimate, ci_lower, ci_upper, p_value, n_analyzed, covariates_adjusted. Used for STEP 3d (multivariate analysis).
+   - `.secondary_results` → list of secondary findings. Used for additional Results subsections.
+   - `.diagnostics_summary` → vif_max, epv, assumptions_met, issues. Used for STEP 2d (assumption checks in Methods).
+   - `.propensity_analysis` → performed, method, balance_achieved, max_smd_after. Used for STEP 2d (propensity methods in Methods) and STEP 3 (propensity results).
+   - `.tables` → table names and descriptions. Used for in-text table references.
+   - `.excel_path` → path to the analysis Excel file.
+   If `results_registry.json` does not exist, STOP: `"No analysis results found. Run /analyze first, or provide your analysis outputs manually."`
+3. Read `study_spec.json` if it exists. Extract:
+   - `.study_design` → used for STEP 2a (study design and setting).
+   - `.data_source` → used for STEP 2a.
+   - `.study_period` → used for STEP 2a.
+   - `.population.inclusion_criteria` → used for STEP 2b.
+   - `.population.exclusion_criteria` → used for STEP 2b.
+   - `.outcome` → name, type, coding. Used for STEP 2c (variable definitions).
+   - `.exposure` → name, type, reference_group. Used for STEP 2c.
+   - `.covariates` → used for STEP 2c and 2d.
+   - `.design_features` → clustering, repeated_measures, survival, competing_risks. Used for STEP 2d (model justification).
+   - `.registry` → used for STEP 2a and registry-specific Methods language.
+   - `.irb_status` → used for STEP 2a (IRB statement).
+4. Read `dataset_profile.json` if it exists. Extract:
+   - `.rows_raw`, `.rows_after_cleaning` → used for STEP 2b and STEP 3a (cohort flow numbers).
+   - `.cleaning_log` → used for STEP 2d (data handling description in Methods).
+   - `.missing_summary` → strategy, mechanism, variables_above_20pct. Used for STEP 2d (missing data handling).
+   - `.variables` → used for STEP 2c (variable inventory cross-check).
+5. Read `analysis_plan.json` if it exists. Extract:
+   - `.outcome_type`, `.exposure_type`, `.study_structure` → used for STEP 2d (model justification).
+   - `.planned_models` → unadjusted, adjusted, effect_measure. Used for STEP 2d (statistical analysis description).
+   - `.covariates_for_adjustment` → used for STEP 2c and 2d (covariate list with reference groups).
+   - `.propensity_methods` → used for STEP 2d (propensity section in Methods).
+   - `.sensitivity_analyses` → used for STEP 2d (sensitivity analyses list).
+   - `.missing_data_strategy` → used for STEP 2d (missing data handling).
+6. Read `figure_registry.json` if it exists. Extract:
+   - `.figures` → list of {number, type, title, placement}. Used for STEP 3f (figure references in Results text) and STEP 4 (figure legends).
+   Print: `"Found [N] figures for in-text referencing."`
+   If `figure_registry.json` does not exist, note: `"No figure registry found. Figure references will use placeholders — run /visualize to generate figures."`
+7. Read `manuscript_state.json` if it exists. Check:
+   - `.sections.methods.status`:
+     - If `"completed"`: print `"Methods section was previously drafted. Revise or skip?"` and wait.
+     - If `"in_progress"`: print `"Methods section was partially drafted. Resuming."`
+   - `.sections.results.status`:
+     - If `"completed"`: print `"Results section was previously drafted. Revise or skip?"` and wait.
+     - If `"in_progress"`: print `"Results section was partially drafted. Resuming."`
+   - `.methods_results_context.sections_approved` → if present, resume from next unapproved section.
+
+### Mode B — Standalone Mode (Backward Compatible)
+
+Triggered when no `project_state.json` exists in the working directory.
+
+**On entry:**
+1. Proceed normally — ask for all inputs per STEP 1.
+2. The user provides analysis outputs (tables, effect estimates, cohort flow) manually or shares the Excel file.
+3. After STEP 2 (Methods approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
+4. If yes: create `manuscript_state.json` in the working directory. From that point forward, behave as Mode A for writes.
+5. If no: proceed without state files. Methods/Results writing still works. No files are written.
+
+---
+
+### Numeric Cross-Verification — HARD RULE
+
+This is mandatory. It applies in BOTH modes whenever `results_registry.json` is available.
+
+**Before any Results subsection is presented to the user for approval**, run a verification pass:
+
+1. Extract every number from the drafted text: all Ns, effect estimates, CIs, p-values, percentages, cohort flow counts.
+2. Compare each number against `results_registry.json`:
+   - Cohort flow: `.cohort.screened`, `.cohort.excluded`, `.cohort.analyzed`, `.cohort.exclusion_reasons[*].n`
+   - Primary result: `.primary_result.estimate`, `.primary_result.ci_lower`, `.primary_result.ci_upper`, `.primary_result.p_value`, `.primary_result.n_analyzed`
+   - Secondary results: `.secondary_results[*]` — same fields
+   - Propensity: `.propensity_analysis.max_smd_after`
+   - Diagnostics: `.diagnostics_summary.vif_max`, `.diagnostics_summary.epv`
+3. If ANY number does not match:
+   - **STOP. Do not present the subsection to the user.**
+   - Print: `"CROSS-VERIFICATION FAILURE: [field] in text is [X] but results_registry shows [Y]."`
+   - Fix the discrepancy, then re-verify before presenting.
+4. If all numbers match, print at the end of the subsection: `"Cross-verified against results_registry.json — all numbers match."`
+
+**Precision rules for comparison:**
+- Effect estimates: must match to 2 decimal places
+- CIs: must match to 2 decimal places
+- P-values: must match to 3 decimal places (or both use "< 0.001")
+- Ns and cohort counts: must match exactly (integers)
+- Percentages: must match to 1 decimal place
+
+**If `results_registry.json` does not exist (Mode B without state):** Cross-verification cannot be automated. Print a warning: `"No results registry available for cross-verification. Please manually verify all numbers against your analysis tables before submitting."` Proceed with user-provided numbers.
+
+### Association Language Enforcement
+
+Before presenting any Results subsection for approval, scan the drafted text for causal language violations:
+
+| Violation | Replacement |
+|---|---|
+| "led to" | "was associated with" |
+| "caused" | "was independently associated with" |
+| "resulted in" | "was observed in conjunction with" |
+| "due to" | "attributed to" or rephrase |
+| "protective" | "associated with lower risk of" |
+| "prevented" | "was associated with reduced incidence of" |
+| "improved" (as causation) | "was associated with better" |
+
+If any causal language is found, fix it before presenting the subsection. Print: `"Association language check passed."` or `"Fixed [N] causal language violations."`
+
+---
+
+### Checkpoint Writes
+
+Each checkpoint writes specific fields to specific files. Use Python `json.load` / `json.dump` with `indent=2`. Create files from scratch if they do not exist.
+
+#### After STEP 2 (Methods Section Approved)
+
+**`manuscript_state.json`** — create or update:
+```
+.sections.methods.status = "completed"
+.sections.methods.word_count = [integer]
+.methods_results_context.sections_approved = ["methods"]
+.methods_results_context.model_summary = [1-sentence summary: e.g., "Multivariable logistic regression adjusting for age, sex, BMI, ASA class, pancreatic texture, and duct diameter"]
+.methods_results_context.covariates_listed = [list of covariate names as written in Methods]
+.last_updated = [ISO 8601 timestamp]
+```
+
+#### After STEP 3a (Cohort Description Approved)
+
+**`manuscript_state.json`** — update:
+```
+.methods_results_context.sections_approved = [append "cohort"]
+.last_updated = [timestamp]
+```
+
+#### After STEP 3d (Multivariate Analysis Approved) — the main finding
+
+**`manuscript_state.json`** — update:
+```
+.methods_results_context.sections_approved = [append "multivariate"]
+.methods_results_context.primary_result_as_written = [exact sentence with the primary effect estimate as it appears in the text, e.g., "adjusted OR 2.34, 95% CI 1.56–3.52, p < 0.001"]
+.last_updated = [timestamp]
+```
+
+#### After STEP 3g (Sensitivity Analyses Approved) — last Results subsection
+
+**`manuscript_state.json`** — update:
+```
+.sections.results.status = "completed"
+.sections.results.word_count = [integer]
+.methods_results_context.sections_approved = [append "sensitivity"]
+.methods_results_context.table_refs_used = [list of table names referenced in text: "Table 1", "Table 2", ...]
+.methods_results_context.figure_refs_used = [list of figure references used: "Figure 1", "Figure 2", ...]
+.last_updated = [timestamp]
+```
+
+#### After STEP 6 (Final — Word Documents Generated)
+
+This is the completion checkpoint. Write all final state.
+
+**`manuscript_state.json`** — update:
+```
+.sections.methods.status = "completed"
+.sections.methods.word_count = [integer]
+.sections.methods.file_path = [path to methods_results_[date].docx]
+.sections.results.status = "completed"
+.sections.results.word_count = [integer]
+.sections.results.file_path = [path to methods_results_[date].docx]
+.methods_results_context.cross_verification_passed = true
+.methods_results_context.association_language_checked = true
+.last_updated = [timestamp]
+```
+
+**`project_state.json`** — update:
+```
+.updated_at = [timestamp]
+.current_phase = "writing"
+```
+
+**`decision_log.md`** — append (only if a non-obvious methodological framing decision was made during Methods writing, e.g., justification for a specific model choice or reporting approach):
+```markdown
+### [DATE] — Methods/Results: Drafting Complete
+
+**Decision:** Methods and Results sections drafted. Primary result: [effect_measure] [estimate] (95% CI [ci_lower]–[ci_upper], p = [p_value]). Cross-verification: passed.
+
+**Reason:** [brief note if any framing decisions were made]
+
+**Alternatives considered:**
+- N/A (standard reporting)
+
+**Risks / unresolved issues:**
+- [e.g., "Figure references use placeholders — /visualize not yet run"]
+```
+
+---
+
+### State Write Implementation
+
+When writing state files, follow these rules:
+- Use `json.dump(data, f, indent=2)` for all JSON files
+- Use `"a"` mode for `decision_log.md` (append, never overwrite)
+- If a file already exists, read it first with `json.load`, merge updates into the existing object, then write back — never overwrite fields you are not updating
+- If a file does not exist, create it with only the fields specified above — do not require the full template structure
+- All timestamps use ISO 8601 format: `"2026-04-01T14:30:00"`
+- Wrap all file I/O in try/except — if a write fails, warn the user but do not halt the writing
+- The `methods_results_context` object in `manuscript_state.json` is a new sub-object — create it if it does not exist
+</state_management>
+
 <interaction_rules>
 ## Critical Interaction Rules
 
 - Work INTERACTIVELY — write one section at a time, get approval before the next
 - Never generate both Methods and Results at once — one at a time
 - Ask for the target journal before writing (formatting and word limits vary)
-- If the analysis has not been run yet (no `/analyze` results available), ask the user to run `/analyze` first
-- If figures have not been generated yet, note where figure references should go and suggest running `/visualize`
+- If no `results_registry.json` exists and no `/analyze` results are available, ask the user to run `/analyze` first
+- If no `figure_registry.json` exists and figures have not been generated, note where figure references should go and suggest running `/visualize`
+- Every reported number must be traceable to `results_registry.json` or the analysis Excel file
 </interaction_rules>
 
 ## Prerequisites
@@ -50,7 +264,14 @@ If any are missing, ask the user to provide them.
 
 ## STEP 1: Gather Information
 
-ASK the user:
+**Mode A (stateful):** Most inputs are pre-filled from state files. Only ask for what is missing:
+- Target journal — ask if not in `study_spec.json` or `manuscript_state.json`
+- Study title — ask if not known
+- Word limit — ask if not known
+- Present the pre-filled context:
+  `"From your project state: [study_design] using [data_source] ([study_period]). Outcome: [outcome]. Exposure: [exposure]. Primary result: [effect_measure] [estimate] (95% CI [ci_lower]–[ci_upper], p = [p_value]), N = [n_analyzed]. [N] tables, [M] figures available. Ready to begin drafting Methods?"`
+
+**Mode B (standalone):** ASK the user:
 1. "What is your target journal?" (this determines style, word limits, and formatting)
 2. "What is the study title?"
 3. "Do you have a word limit for Methods and/or Results?"
@@ -99,7 +320,7 @@ Write in this order:
 7. **Missing data handling**: percent missing, mechanism assumption, method (multiple imputation with number of datasets, or complete-case with justification)
 8. **Multiple testing correction** (if applicable): method and adjusted threshold
 9. **Sensitivity analyses**: list each one performed and its purpose, in one concise paragraph
-10. **Software statement**: "All analyses were performed using Python [version] with [packages and versions]. A two-sided significance level of 0.05 was used unless otherwise specified."
+10. **Software statement**: "All analyses were performed using Python [version] with [packages and versions]. Figures were generated using R [version] with tidyplots [version] and ggplot2 [version]. A two-sided significance level of 0.05 was used unless otherwise specified."
 
 ### Writing Rules for Methods
 - Use past tense throughout
@@ -253,7 +474,19 @@ Present all written text in the chat AND generate the following Word documents (
 3. **`figures_standalone_[date].docx`** — Figures only:
    - Each figure on its own page with number, title, and full legend
 
+Execute the STEP 6 completion checkpoint writes above.
+
 ASK: "All manuscript components generated and saved as Word documents. Anything to revise before finalizing?"
+
+If running in Mode A (stateful):
+> "State files updated:
+> - `manuscript_state.json` — methods: completed ([N] words), results: completed ([M] words)
+> - Cross-verification: passed
+> - Association language check: passed
+>
+> Next steps:"
+> - `/write-discussion` to write the Discussion and Conclusion
+> - `/write-manuscript` for the complete assembled manuscript with final audit
 
 ---
 

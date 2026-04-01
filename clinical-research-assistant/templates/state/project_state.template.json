@@ -1,0 +1,23 @@
+{
+  "project_id": "",
+  "project_name": "",
+  "created_at": "",
+  "updated_at": "",
+  "status": "initialized",
+  "current_phase": "setup",
+  "phases_completed": [],
+  "study_spec_path": "",
+  "analysis_plan_path": "",
+  "manuscript_state_path": "",
+  "decision_log_path": "",
+  "dataset": {
+    "file_path": "",
+    "file_type": "",
+    "rows": null,
+    "columns": null,
+    "loaded": false
+  },
+  "research_question": "",
+  "target_journal": "",
+  "notes": ""
+}

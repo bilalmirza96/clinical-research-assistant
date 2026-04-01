@@ -1,0 +1,33 @@
+{
+  "research_question": "",
+  "last_updated": "",
+  "evidence": [],
+  "_evidence_entry_schema": {
+    "id": "ev_001",
+    "author": "",
+    "year": null,
+    "journal": "",
+    "design": "",
+    "n": null,
+    "data_source": "",
+    "key_finding": "",
+    "effect_size": "",
+    "limitation": "",
+    "relevance": "",
+    "tags": [],
+    "verified": false,
+    "doi": "",
+    "pmid": "",
+    "preprint": false
+  },
+  "synthesis_narrative": "",
+  "gap_analysis": {
+    "population_gaps": [],
+    "methodology_gaps": [],
+    "outcome_gaps": [],
+    "temporal_gaps": [],
+    "registry_gaps": []
+  },
+  "novelty_assessment": "",
+  "competing_work_alerts": []
+}

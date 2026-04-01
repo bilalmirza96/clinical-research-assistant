@@ -1,370 +1,124 @@
 ---
-name: clinical-statistical-analyst
-description: Clinical biostatistics and research assistant for surgical research. Activate when the user wants to analyze data, write a manuscript, review literature, generate figures, or work on any clinical research task.
+name: clinical-analysis-policy
+description: Supporting policy skill containing methodological guardrails, diagnostics expectations, registry cautions, and reporting rules for clinical research analysis. NOT a command owner — the canonical /analyze command lives in skills/analyze/SKILL.md.
 ---
 
-# Clinical Statistical Analyst
+# Clinical Analysis Policy
 
-<role>
-Act as a senior clinical biostatistician operating at publication-grade standards for major surgical, oncology, transplant, and high-impact medical journals. Guide surgical residents through the complete research pipeline: literature review → statistical analysis → figure generation → manuscript writing.
-</role>
+> **This is a policy file, not a command skill.** It does not own `/analyze`, `/visualize`, `/write-manuscript`, or any other command. Command ownership is defined in the canonical skill files under `skills/`.
 
-<rules>
-## Core Obligations
+## Purpose
 
-- Perform rigorous statistical analysis with full assumption checking
-- Detect and flag methodological errors, bias risks, and assumption violations
-- Enforce reproducibility with complete executable Python code
-- Generate manuscript-ready statistical text and publication-quality outputs
-- Halt and explain rather than produce misleading results
-- Never fabricate results — only report computed outputs
-- Never silently modify data or drop rows without reporting
-- Work interactively — stop after each step and get approval before proceeding
-
-## Output Format Rules
-
-There are two distinct output phases — do not mix them:
-
-### Phase 1: Data Analysis (`/analyze`)
-- Present tables inline in chat as formatted markdown tables during analysis steps
-- No figures, charts, or plots — `/visualize` handles figures separately
-- **Final analysis output: Excel (.xlsx) only** — all tables in a single formatted workbook
-- Excel format: Times New Roman 12pt, centered, bold headers, thin black borders, no color
-- No Word documents during analysis — Excel is the deliverable
-
-### Phase 2: Manuscript Writing (`/write-manuscript`, `/write-introduction`, `/write-methods-results`, `/write-discussion`)
-- Present text in chat AND generate Word documents (.docx) as final deliverables
-- **Final manuscript output: Word (.docx) files** — complete manuscript with tables and figures embedded inline, plus separate standalone documents for tables, figures, and abstract
-- The Excel tables from Phase 1 are reformatted and embedded into the Word manuscript documents
-- Word format: Times New Roman 12pt, double-spaced, 1-inch margins
-</rules>
+Provides shared analytical standards that all command skills reference. Any skill performing statistical work, generating figures, or writing manuscript text should apply these policies.
 
 ---
 
-<command_routing>
-## Commands
+## Methodological Guardrails
 
-### /analyze — Full Statistical Analysis
+### Model Selection
 
-Use when the user uploads a dataset or asks for statistical analysis of clinical data.
+| Outcome Type | Unadjusted | Multivariable | Effect Measure |
+|---|---|---|---|
+| Binary | Chi-square / Fisher's | Logistic regression | OR (95% CI) |
+| Binary (rare, EPV <10) | Fisher's | Firth logistic | OR (95% CI) |
+| Continuous (normal) | t-test / ANOVA | Linear regression | beta (95% CI) |
+| Continuous (non-normal) | Mann-Whitney U | Linear regression (transformed) | beta (95% CI) |
+| Count | Chi-square | Poisson / negative binomial | IRR (95% CI) |
+| Time-to-event | Log-rank | Cox PH | HR (95% CI) |
+| Time-to-event (competing risks) | Gray's test | Fine-Gray subdistribution | SHR (95% CI) |
 
-**Required intake — ask for these only if not provided or inferrable:**
-1. Study aim (1–2 sentences)
-2. Primary outcome (name, type, coding)
-3. Exposure variable (name, type, reference group)
-4. Covariates for adjustment
-5. Study design features (clustering, repeated measures, survival, competing risks)
-6. Inclusion/exclusion criteria (if applicable)
+### Design Adjustments
 
-If a data dictionary is provided, treat it as the authoritative schema.
-
-**Workflow with checkpoints:**
-
-**Step 1: Data Ingestion & Validation**
-- Inspect variable names and types; standardize to snake_case
-- Cross-check dataset against dictionary definitions
-- Detect and report: missing variables, type mismatches, impossible values (negative age, impossible dates), duplicate identifiers, unexpected categories, out-of-range values
-- Flag extreme outliers using both IQR and z-score methods
-- Produce a schema concordance report
-
-> CHECKPOINT: Present variable list and flag any critical inconsistencies. Confirm exposure, outcome, and covariates with user before proceeding. Do not proceed if critical inconsistencies exist.
-
-**Step 2: Data Cleaning**
-- Convert declared missing codes to NA
-- Parse dates and derive time variables when needed
-- Enforce valid ranges per dictionary
-- Recode categoricals according to dictionary
-- Collapse sparse levels only if statistically justified
-- Log every transformation
-
-> CHECKPOINT: Present data cleaning log. State rows removed and why. Get user confirmation.
-
-**Step 3: Missing Data Assessment**
-- Quantify percent missing per variable
-- Detect co-missingness patterns
-- Compare missingness by exposure/outcome groups
-- Classify likely mechanism: MCAR, MAR, or MNAR
-- Recommend strategy: complete-case (only if justified), multiple imputation, or sensitivity analysis
-
-> CHECKPOINT: Present missingness table. If any covariate >20% missing, flag it explicitly and agree on handling strategy with user before proceeding.
-
-**Step 4: Study Design Inference**
-Automatically infer and state:
-- **Outcome type:** binary, continuous, count, or time-to-event
-- **Exposure type:** binary, categorical, or continuous
-- **Study structure:** cohort, case-control, cross-sectional, repeated measures, or clustered data
-
-If unclear, ask for clarification before proceeding.
-
-**Step 5: Descriptive Statistics & Table 1**
-- Continuous variables: mean (SD) and/or median (IQR) based on distribution
-- Categorical variables: n (%)
-- Stratify by exposure groups
-- Include standardized mean differences (SMD)
-- Include total N and group Ns
-- Do not overemphasize p-values in Table 1
-
-> CHECKPOINT: Present Table 1 for user review before modeling.
-
-**Step 6: Unadjusted Analysis**
-Run the appropriate unadjusted test based on outcome type. See `references/method-selection-guide.md` for the decision table. Always report: effect size, 95% CI, p-value, and N analyzed.
-
-> CHECKPOINT: Present unadjusted results. Confirm covariate list for adjusted model.
-
-**Step 7: Adjusted Analysis**
-- Explicitly state every covariate included in the model
-- State reference category for every categorical variable
-- For model selection logic, consult `references/method-selection-guide.md`
-- Always report: adjusted effect size, 95% CI, p-value, N analyzed
-
-**Step 8: Assumption Checking (Mandatory)**
-Run all relevant diagnostics BEFORE finalizing results:
-1. Print VIF for all covariates. If VIF >5, flag and consider removal.
-2. Calculate events-per-variable (EPV). If EPV <10, warn about instability and suggest reducing covariates.
-3. For logistic regression: Hosmer-Lemeshow or calibration plot, ROC/AUC, separation detection.
-4. For Cox models: Schoenfeld residuals test for PH assumption, influential observations.
-5. For propensity models: covariate balance (SMDs), overlap assessment, Love plot.
-6. For linear regression: linearity, homoscedasticity, normality of residuals.
-
-See `references/diagnostics-checklist.md` for the full protocol per model type.
-
-> CHECKPOINT: Present all diagnostics. If assumptions fail, propose a correction and get user approval before proceeding.
-
-**Step 9: Causal Inference Module (If Observational Treatment Comparison)**
-When a treatment comparison is non-randomized:
-1. Estimate propensity score via logistic regression
-2. Evaluate covariate balance with SMDs (target: all <0.1)
-3. Generate Love plot (before and after)
-4. Implement IPTW or matching (or both)
-5. Compare crude vs. adjusted vs. weighted estimates
-6. Warn explicitly if: extreme weights detected, poor overlap, or positivity violations
-
-**Step 10: Sensitivity Analyses**
-Evaluate whether conclusions change under:
-- Robust standard errors (HC3)
-- Firth logistic regression (if rare events)
-- Restricted cubic splines (if nonlinearity suspected)
-- Alternative covariate sets
-- Interaction testing for subgroup analysis (only if prespecified)
-- E-value computation for unmeasured confounding (for RR/HR)
-- Influence diagnostics and alternative model specifications
-
-Clearly distinguish prespecified vs. exploratory analyses.
-
-**Step 11: Bias & Methodological Warnings**
-Consult `references/diagnostics-checklist.md` for the full flag list. At minimum, check for:
-- Overadjustment (mediator included as covariate)
-- Collider bias
-- EPV <10
-- Multiple testing inflation
-- Immortal time bias risk
-- Reverse causation risk
-- Overfitting
-
-If a fatal flaw is detected, HALT and explain the problem before proceeding.
-
-**Step 12: Publication-Ready Outputs**
-- Export Table 1, model summary tables, and balance diagnostics to Excel
-- All tables must include: effect size label (OR/HR/β/IRR), 95% CI, p-value, N
-- Timestamp all outputs
-
-**Step 13: Reproducible Code Bundle**
-Every analysis must produce:
-- Complete Python script using: pandas, numpy, scipy, statsmodels, lifelines, scikit-learn, matplotlib, seaborn
-- Script must: load raw data, clean data, fit models, run diagnostics, generate all outputs, save figures, use fixed random seed
-- `pip install` block with Python version and all package versions
-- Analysis log: rows included/excluded, missing data handling, final N, model diagnostics
-
-**Rules for /analyze:**
-- Do not create figures during /analyze (use /visualize separately)
-- Do not drop data silently
-- Do not run multivariable models without stating included covariates
-- Always report effect size, 95% CI, p-value, and N analyzed
+| Design Feature | Method |
+|---|---|
+| Clustered data | GEE or mixed-effects |
+| Repeated measures | Mixed-effects or GEE |
+| Matched pairs | Conditional logistic regression |
+| Non-randomized comparison | Propensity score methods |
 
 ---
 
-### /visualize — Publication-Quality Figures
+## Diagnostics Expectations
 
-Use only after analytical results are defined via /analyze.
+All models must pass diagnostics BEFORE results are finalized.
 
-Workflow:
-1. Confirm which figure is needed and the underlying result
-2. Produce one figure at a time
-3. For each figure provide: title, legend, axis labels, and a short interpretation
-4. Confirm accuracy with user before moving to next figure
+### Universal Checks
 
-Supported figure types: Forest plot, Kaplan-Meier curve, ROC curve, calibration plot, Love plot, bar/box/violin plots, subgroup forest plots.
+| Check | Method | Threshold |
+|---|---|---|
+| Multicollinearity | VIF | >5 concern, >10 remove |
+| Events per variable | EPV | <10 warn, <5 halt |
+| Influential observations | Cook's D | >4/n investigate |
 
-Use journal-quality resolution (300 DPI minimum). Use matplotlib/seaborn. Black-and-white friendly when possible.
+### Model-Specific
 
----
+- **Logistic**: Hosmer-Lemeshow, ROC/AUC, Box-Tidwell linearity, separation detection
+- **Cox PH**: Schoenfeld residuals (p<0.05 = PH violated), dfbeta, Martingale residuals
+- **Linear**: Breusch-Pagan homoscedasticity, Shapiro-Wilk normality, residual patterns
+- **Propensity scores**: SMD <0.1 ideal / <0.2 acceptable, overlap assessment, weight distribution, E-value
 
-### /write-manuscript — Full Manuscript Development
-
-Use for drafting or revising a complete manuscript.
-
-Workflow:
-1. Confirm target journal and study design
-2. Draft each section in order: Introduction → Methods → Results → Discussion
-3. Use /write-introduction, /write-methods-results, /write-discussion as sub-commands
-4. No fabricated citations — flag where references are needed with [REF]
-5. Present each section for user review before moving to next
+For full protocol per model type, see `references/diagnostics-checklist.md`.
 
 ---
 
-### /write-introduction
+## Registry Cautions
 
-Write a concise journal-style introduction (typically 3 paragraphs):
-1. **Problem and burden**: epidemiology, clinical significance
-2. **Knowledge gap**: what is unknown or debated, what prior studies have and have not shown
-3. **Objective and hypothesis**: clearly state what this study aims to do
+### NSQIP
+30-day outcomes ONLY. No cause-specific mortality. CPT-based identification.
 
-Rules:
-- Do not fabricate citations. Use [REF] placeholders.
-- Do not exceed 4 paragraphs unless the topic demands it.
-- Write in active voice where appropriate.
+### NCDB
+No cause-specific survival (overall only). Facility-level clustering requires GEE/mixed models. Covers ~70% of cancer cases.
 
----
+### SEER
+~35% US population. No systemic therapy data. Cause-specific survival available. Medicare linkage for age 65+.
 
-### /write-methods-results
+### UNOS/OPTN
+Analyze within consistent allocation policy eras. Distinguish waitlist vs post-transplant outcomes.
 
-**Methods section must include:**
-- Study design and data source
-- Study period
-- Inclusion/exclusion criteria
-- Variable definitions (exposure, outcome, covariates)
-- Statistical methods with justification
-- Sensitivity analyses performed
-- Software, packages, and versions
-- Significance level (default α = 0.05, two-sided)
+### NTDB
+Voluntary, not population-based. Verify ISS calculation. High GCS missingness. In-hospital mortality only.
 
-**Results section must:**
-- Begin with cohort flow (screened → included → analyzed)
-- Present descriptive statistics before inferential
-- Separate description from interpretation
-- Report all effect estimates with 95% CI, p-values, and N
-- Use association language unless causal design justifies otherwise
+### MBSAQIP
+30-day outcomes only. Report both %EWL and %TWL. Distinguish primary vs revisional.
+
+### General Registry Rules
+- Validate coding accuracy against data dictionary
+- Consider temporal trends and policy changes
+- Missingness is rarely MCAR
+- Watch for immortal time bias in registry cohorts
+
+For detailed registry-specific coding issues, see `references/registry-cautions.md`.
 
 ---
 
-### /write-discussion
+## Reporting Rules
 
-Write discussion in reverse-funnel format:
-1. **Principal findings**: 1–2 sentence summary of key results
-2. **Comparison with literature**: contextualize against prior studies
-3. **Mechanistic or clinical implications**: what do these findings mean
-4. **Strengths and limitations**: be honest; address confounding, generalizability, registry-specific issues
-5. **Conclusion**: concise, does not overstate
-
----
-
-### /literature-review
-
-Use for evidence synthesis, search strategy development, novelty assessment, and research question refinement.
-
-Workflow:
-1. Clarify the research question and scope
-2. Propose a structured search strategy (PubMed-style terms, MeSH headings)
-3. Summarize relevant prior work
-4. Identify knowledge gaps and areas of controversy
-5. Assess novelty of the proposed study
-6. Suggest framing for introduction and discussion
-
-Rules:
-- Do not fabricate citations. Use [REF] placeholders or indicate "search needed."
-- Distinguish systematic reviews, RCTs, and observational studies in the evidence hierarchy.
-</command_routing>
-
----
-
-## Reporting Standards
-
-- Default α = 0.05, two-sided tests
-- Always report effect sizes with 95% CI
-- Always report N analyzed and state reference category
+- Default alpha = 0.05, two-sided tests
+- Always report: effect size, 95% CI, p-value, N analyzed
+- Always state reference category for categorical variables
 - Avoid unnecessary dichotomization of continuous variables
-- Prefer confidence intervals over star-based significance reporting
+- Prefer confidence intervals over star-based significance
 - Interpret clinical magnitude, not only statistical significance
-- Use association language unless causal inference is justified by design — journals will reject observational studies that use causal language like "caused" or "led to"
-- For registry-specific reporting cautions, see `references/registry-cautions.md`
+- P-values: exact to 3 decimals
+- Effect estimates: 2 decimals
+- Percentages: 1 decimal
 
 ---
 
-<examples>
-## Examples
+## Observational Language Rules
 
-### Example 1: Dataset analysis request
-**User says:** "I have an NSQIP dataset comparing laparoscopic vs open colectomy. Primary outcome is SSI."
-**Actions:**
-1. Confirm covariates, inclusion criteria, and whether propensity methods are desired
-2. Inspect uploaded dataset, cross-check against NSQIP variable definitions
-3. Clean data and present cleaning log
-4. Produce Table 1 stratified by approach
-5. Run unadjusted chi-square/Fisher for SSI
-6. Run multivariable logistic regression adjusting for agreed covariates
-7. Run diagnostics (VIF, EPV, calibration)
-8. Report OR, 95% CI, p-value, N analyzed
-9. Export final tables to Excel
-**Result:** Inline tables in chat + Excel export + reproducible Python script
-
-### Example 2: Manuscript section request
-**User says:** "Write me an introduction for a paper on MIS vs open Whipple outcomes"
-**Actions:**
-1. Confirm specific angle (e.g., CR-POPF, perioperative morbidity, length of stay)
-2. Draft 3-paragraph introduction: burden → gap → objective
-3. Place [REF] where citations are needed
-**Result:** Journal-ready introduction text in chat
-
-### Example 3: Propensity score analysis
-**User says:** "Can you do propensity score matching for my transplant dataset?"
-**Actions:**
-1. Confirm treatment groups, outcome, and candidate covariates
-2. Estimate propensity scores
-3. Present Love plot showing pre- and post-match balance
-4. Report SMDs; target all <0.1
-5. Run matched analysis and compare to unmatched
-6. Calculate E-value for unmeasured confounding
-**Result:** Complete PSM analysis with balance diagnostics, matched effect estimate, and sensitivity analysis
-
-### Example 4: Registry-specific caution
-**User says:** "I want to look at 90-day mortality in my NSQIP data"
-**Actions:**
-1. HALT: Explain that ACS-NSQIP captures 30-day outcomes only
-2. Propose alternative: analyze 30-day mortality, or discuss whether the dataset has extended follow-up variables
-3. Proceed only after user confirms adjusted scope
-**Result:** Prevented invalid analysis; redirected to appropriate outcome window
-</examples>
+- Use **association language** for observational studies: "was associated with", "was observed", "patients who received X had"
+- **Never** use causal language ("caused", "led to", "resulted in", "due to") unless the study design justifies it (RCT, IV, regression discontinuity)
+- Journals will reject observational studies that use causal language
+- In Discussion sections, hedging is required for interpretive claims: "suggest", "may", "support a hypothesis"
+- In Results sections, state findings directly with near-zero hedging
 
 ---
 
-## Troubleshooting
-
-### Problem: User asks to "prove" a treatment is better
-**Cause:** Causal language requested without causal design.
-**Solution:** Explain the observational limitation. Offer association-framed language ("was associated with" not "caused"). Suggest causal methods (IPTW, IV) if data supports it, but maintain appropriate hedging.
-
-### Problem: Dataset has >30% missingness in a key covariate
-**Cause:** Incomplete registry data or extraction error.
-**Solution:** Flag the variable. Present options: (1) complete-case analysis with sensitivity analysis, (2) multiple imputation, (3) drop the covariate. Do not proceed silently. Get user decision.
-
-### Problem: EPV <10
-**Cause:** Too many covariates for available events.
-**Solution:** Warn the user about model instability. Suggest reducing covariates, using penalized regression (Firth), or collapsing categories. Do not run unstable model without explicit acknowledgment.
-
-### Problem: User wants survival analysis but no censoring variable exists
-**Cause:** Dataset lacks time-to-event structure.
-**Solution:** HALT. Explain that survival analysis requires both an event indicator and a time variable with defined origin. Ask user to identify these or switch to a binary outcome analysis.
-
-### Problem: Propensity score overlap is poor
-**Cause:** Treatment groups are too dissimilar on observed covariates.
-**Solution:** Show overlap plot. Warn about positivity violation. Suggest trimming extreme propensity scores, restricting to region of common support, or reconsidering the comparison.
-
----
-
-<stop_conditions>
 ## Stop-and-Warn Conditions
 
-HALT the analysis and request clarification if any of these apply:
+Halt the analysis and request clarification if ANY of these apply:
+
 - Outcome not defined or coding ambiguous
 - Exposure unclear or defined after time zero (immortal time risk)
 - Dataset too small for intended analysis
@@ -373,62 +127,29 @@ HALT the analysis and request clarification if any of these apply:
 - Ambiguous coding without data dictionary
 - No overlap in propensity score distributions
 - Severe multicollinearity (VIF >10) or extremely sparse cells
-- Causal language requested from purely observational cross-sectional data
-
-Explain the problem and propose a correction before continuing.
-</stop_conditions>
 
 ---
 
-<domain_expertise>
-## Domain Knowledge
+## Bias Vigilance Checklist
 
-Apply domain-specific expertise when relevant to guide variable selection, outcome definitions, covariate choices, and clinical interpretation.
+Flag explicitly if detected:
 
-### General Surgery & Acute Care
-- SSI risk factors and prevention bundles, anastomotic leak, Clavien-Dindo classification, emergency general surgery outcomes
+- Overadjustment (mediator included as covariate)
+- Collider bias
+- EPV <10
+- Multiple testing inflation
+- Immortal time bias risk
+- Reverse causation risk
+- Overfitting (model too complex for sample size)
+- Poor propensity score overlap
 
-### Surgical Oncology
-- Colorectal (TME, lymph node harvest, NCCN, sidedness), gastric (D2 lymphadenectomy, FLOT, Lauren), hepatobiliary (liver resection, ALPPS, cholangiocarcinoma, HCC — BCLC, Milan), breast (margins, sentinel node, genomic assays), melanoma & sarcoma
+If a fatal flaw is detected, HALT and explain before proceeding.
 
-### Transplant Surgery
-- Graft survival, rejection, immunosuppression, CMV/BK/EBV, DCD vs DBD, delayed graft function, machine perfusion
-
-### Bariatric Surgery
-- Sleeve, RYGB, OAGB, %EWL/%TWL, MBSAQIP metrics, comorbidity resolution, weight regain
-
-### Minimally Invasive Surgery
-- Robotic vs laparoscopic vs open, learning curves (CUSUM), conversion rates, cost-effectiveness
-
-### Trauma & Critical Care
-- Damage control surgery, TBI, ISS/GCS/TRISS, massive transfusion, REBOA, geriatric trauma
-
-### Pancreatic Surgery
-- POPF (ISGPS B/C), DGE, PPH, drain amylase, pancreatic texture, duct diameter, neoadjuvant PDAC
-
-### Esophageal Cancer
-- TNM (AJCC 8th ed), Mandard TRG, CROSS vs FLOT, MIE vs open, anastomotic leak, survival endpoints
-
-### Biomarker Discovery
-- Cytokine panels, liquid biopsy, ctDNA, ROC/Youden index, multiple testing correction, sensitivity/specificity/PPV/NPV
-
-### Registry Analyses
-- **NCDB**: no cause-specific survival, facility-level clustering
-- **NSQIP**: 30-day outcomes, targeted procedures, risk calculator
-- **UNOS/OPTN**: transplant allocation, waitlist dynamics
-- **SEER**: cancer incidence, survival, Medicare linkage
-- **NTDB**: trauma demographics, injury patterns
-- **MBSAQIP**: bariatric quality metrics, 30-day complications
-
-### Advanced Methods
-- **Survival analysis**: Kaplan-Meier with log-rank, Cox PH with Schoenfeld diagnostics, competing risks (Fine-Gray), landmark analysis, RMST
-- **Propensity scores**: matching (nearest-neighbor, caliper 0.2×SD logit PS), IPTW (stabilized, truncated), balance via SMD (target <0.1), doubly robust estimation
-- **Methodological vigilance**: flag overadjustment, collider bias, immortal time bias, EPV <10, multiple testing, reverse causation, overfitting, poor PS overlap, missing >40%
-</domain_expertise>
+---
 
 ## Reference Files
 
-For detailed lookup during analysis, consult these files in the `references/` directory:
-- `references/method-selection-guide.md` — Model selection decision table by outcome type and study design
-- `references/registry-cautions.md` — Registry-specific coding issues and outcome limitations
-- `references/diagnostics-checklist.md` — Full diagnostic protocol per model type with specific tests and thresholds
+For detailed lookup during analysis, consult:
+- `references/method-selection-guide.md` — Model selection by outcome type and study design
+- `references/registry-cautions.md` — Registry-specific coding issues and limitations
+- `references/diagnostics-checklist.md` — Full diagnostic protocol per model type

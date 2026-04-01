@@ -1,0 +1,42 @@
+{
+  "target_journal": "",
+  "word_limit": null,
+  "reference_count_target": 30,
+  "reporting_guideline": "",
+  "sections": {
+    "introduction": {
+      "status": "not_started",
+      "word_count": null,
+      "reference_count": null,
+      "file_path": ""
+    },
+    "methods": {
+      "status": "not_started",
+      "word_count": null,
+      "file_path": ""
+    },
+    "results": {
+      "status": "not_started",
+      "word_count": null,
+      "file_path": ""
+    },
+    "discussion": {
+      "status": "not_started",
+      "word_count": null,
+      "reference_count": null,
+      "file_path": ""
+    },
+    "abstract": {
+      "status": "not_started",
+      "word_count": null,
+      "file_path": ""
+    }
+  },
+  "tables": [],
+  "figures": [],
+  "audit": {
+    "internal_consistency": false,
+    "reporting_guideline_check": false,
+    "association_language_check": false
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "last_updated": "",
+  "cohort": {
+    "screened": null,
+    "excluded": null,
+    "analyzed": null,
+    "exclusion_reasons": []
+  },
+  "primary_result": {
+    "model": "",
+    "effect_measure": "",
+    "estimate": null,
+    "ci_lower": null,
+    "ci_upper": null,
+    "p_value": null,
+    "n_analyzed": null,
+    "covariates_adjusted": []
+  },
+  "secondary_results": [],
+  "table1_summary": {
+    "groups": [],
+    "key_imbalances": []
+  },
+  "sensitivity_results": [],
+  "diagnostics_summary": {
+    "vif_max": null,
+    "epv": null,
+    "assumptions_met": true,
+    "issues": []
+  },
+  "propensity_analysis": {
+    "performed": false,
+    "method": "",
+    "balance_achieved": false,
+    "max_smd_after": null
+  },
+  "tables": [],
+  "excel_path": ""
+}

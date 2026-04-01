@@ -1,0 +1,19 @@
+{
+  "last_updated": "",
+  "figures": [],
+  "_figure_entry_schema": {
+    "id": "fig_001",
+    "number": 1,
+    "type": "",
+    "title": "",
+    "description": "",
+    "backend": "tidyplots",
+    "script_path": "",
+    "file_pdf": "",
+    "file_png": "",
+    "placement": "manuscript",
+    "legend": "",
+    "approved": false
+  },
+  "output_directory": ""
+}

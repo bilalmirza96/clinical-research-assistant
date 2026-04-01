@@ -1,0 +1,29 @@
+{
+  "study_aim": "",
+  "study_design": "",
+  "data_source": "",
+  "study_period": "",
+  "population": {
+    "inclusion_criteria": [],
+    "exclusion_criteria": []
+  },
+  "outcome": {
+    "name": "",
+    "type": "",
+    "coding": ""
+  },
+  "exposure": {
+    "name": "",
+    "type": "",
+    "reference_group": ""
+  },
+  "covariates": [],
+  "design_features": {
+    "clustering": false,
+    "repeated_measures": false,
+    "survival": false,
+    "competing_risks": false
+  },
+  "registry": "",
+  "irb_status": ""
+}

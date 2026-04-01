@@ -73,15 +73,20 @@ This sequence is preferred, but the actual starting point depends on what has al
 ---
 
 <state_management>
-## Manuscript State Tracker
+## State Management — Shared State Layer
 
-Save state to `manuscript_state.json` in the working directory after each phase completes. This ensures progress persists if the context window refreshes. Present the state to the user at every phase transition.
+`/write-manuscript` is the orchestrator that coordinates all sub-commands. It reads and writes the same shared state files used by every other command.
 
-If the context window refreshes, read `manuscript_state.json` and `manuscript_context.json` to resume where you left off. Claude excels at rediscovering state from the filesystem — use this to maintain continuity.
+### On Entry
+1. Look for `project_state.json` in the working directory
+2. If found, load ALL state files: `project_state.json`, `study_spec.json`, `dataset_profile.json`, `analysis_plan.json`, `evidence_bank.json`, `citation_bank.json`, `results_registry.json`, `figure_registry.json`, `manuscript_state.json`
+3. Use `project_state.json` to determine which phases have been completed and which remain
+4. Use `manuscript_state.json` to determine which manuscript sections have been drafted
+5. If no state files exist, fall back to `manuscript_state.json` + `manuscript_context.json` (legacy mode) or start fresh
 
-### State File Structure
+### Phase Completion Tracking
+Track manuscript phases in `manuscript_state.json`. The orchestrator adds a `phases` field on top of the section-level tracking:
 
-**manuscript_state.json:**
 ```json
 {
   "phases": {
@@ -102,39 +107,23 @@ If the context window refreshes, read `manuscript_state.json` and `manuscript_co
 
 Phase status values: `"not_started"`, `"in_progress"`, `"completed"`, `"skipped"`
 
-If a phase was previously considered complete but later lacks required details for downstream work, change it back to `"in_progress"` until resolved.
+### How Sub-Commands Update State
+Each sub-command (`/analyze`, `/visualize`, `/literature-review`, `/write-introduction`, etc.) updates its own state files independently. The orchestrator reads their state to determine progress — it does not need to duplicate their work.
 
-**manuscript_context.json:**
-```json
-{
-  "research_question": "",
-  "study_objective": "",
-  "study_design": "",
-  "data_source": "",
-  "study_period": "",
-  "population": "",
-  "inclusion_criteria": "",
-  "exclusion_criteria": "",
-  "primary_outcome": "",
-  "primary_exposure": "",
-  "secondary_outcomes": "",
-  "covariates": "",
-  "missing_data_approach": "",
-  "target_journal": "",
-  "statistical_software": "",
-  "sample_size": null,
-  "key_finding_primary": "",
-  "key_findings_secondary": [],
-  "key_references": [],
-  "tables": [],
-  "figures": [],
-  "introduction_gap_statement": "",
-  "introduction_aim_statement": "",
-  "word_counts": {}
-}
-```
+| Sub-Command | Reads From | Writes To |
+|---|---|---|
+| `/literature-review` | `study_spec.json` | `evidence_bank.json`, `citation_bank.json` |
+| `/analyze` | `study_spec.json` | `analysis_plan.json`, `dataset_profile.json`, `results_registry.json` |
+| `/visualize` | `results_registry.json` | `figure_registry.json` |
+| `/write-introduction` | `evidence_bank.json`, `citation_bank.json` | `manuscript_state.json` |
+| `/write-methods-results` | `results_registry.json`, `figure_registry.json` | `manuscript_state.json` |
+| `/write-discussion` | `results_registry.json`, `evidence_bank.json`, `citation_bank.json` | `manuscript_state.json` |
 
-Only populate fields when known or verified. Do not invent missing items. Update both files after each phase completes.
+### Legacy Compatibility
+If `manuscript_context.json` exists (from older sessions), read it and migrate relevant fields into the shared state files. This file is kept for backward compatibility but is no longer the primary state store.
+
+### Context Refresh Recovery
+If the context window refreshes mid-manuscript, read all state files from the working directory. The shared state layer provides full recovery — no need to reconstruct from chat history.
 </state_management>
 
 ---
