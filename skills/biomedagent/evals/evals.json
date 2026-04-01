@@ -1,0 +1,23 @@
+{
+  "skill_name": "biomedagent",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a heart disease dataset (heart_disease.csv) with 13 features and a Target column. Can you use random forest to predict which patients have heart disease and tell me how accurate the model is? Also make an ROC curve.",
+      "expected_output": "A complete ML pipeline: data splitting, random forest training, predictions, accuracy/precision/recall/F1 metrics, and an ROC curve image saved to file.",
+      "files": ["heart_disease.csv"]
+    },
+    {
+      "id": 2,
+      "prompt": "Run a t-test to check if Feature1 (age) is significantly different between patients with heart disease (Target > 0) and healthy patients (Target = 0) in heart_disease.csv. Show me a box plot too.",
+      "expected_output": "A t-test result with t-statistic and p-value, a box plot comparing age distributions between groups, and a clear interpretation of whether the difference is statistically significant.",
+      "files": ["heart_disease.csv"]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to cluster the patients in heart_disease.csv into groups using k-means with 3 clusters. Tell me the silhouette score and show me a visualization of the clusters.",
+      "expected_output": "K-means clustering with 3 clusters, silhouette score calculation, a 2D visualization (PCA or UMAP) of the clusters, and a description of what each cluster looks like.",
+      "files": ["heart_disease.csv"]
+    }
+  ]
+}

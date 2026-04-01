@@ -1,0 +1,625 @@
+{
+  "_schema_version": "1.0",
+  "_description": "BioMedAgent self-evolving memory log. Each entry records a successful analysis pattern \u2014 tools, workflow, code, and performance metrics. Claude reads this before starting new analyses to reuse proven approaches and avoid past failures.",
+  "_usage": "Before Phase 1 Step 4 (ToolScorer), search this log for entries matching the current task_category and task_subclass. If a match exists, use its tool_scores, workflow_stages, and code_patterns as a starting point instead of scoring from scratch.",
+  "entries": [
+    {
+      "id": "seed_001",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "M",
+      "task_subclass": "Classification",
+      "question_signature": "binary classification with train/test split, feature selection, multiple classifiers, metrics",
+      "tools_used": [
+        "randomforest",
+        "svm",
+        "logistic_regression",
+        "feature_selection",
+        "data_split"
+      ],
+      "tool_scores": {
+        "randomforest": 10,
+        "svm": 8,
+        "logistic_regression": 9,
+        "feature_selection": 9,
+        "data_split": 10,
+        "roc_curve": 7
+      },
+      "workflow_stages": [
+        "Load data and identify target column",
+        "Encode categoricals with LabelEncoder, fill NaN with median",
+        "Train/test split (80/20) \u2192 save train.csv, test.csv",
+        "Feature selection with SelectKBest(f_classif, k=min(10, n_features)) \u2192 save feature_selected.csv",
+        "StandardScaler on selected features",
+        "Train 3 classifiers: RandomForest(n_jobs=-1), SVC(max_iter=500, probability=True), LogisticRegression(max_iter=500)",
+        "Save predictions per classifier \u2192 {name}_predictions.csv",
+        "Compute accuracy + f1 per classifier \u2192 classification_results.csv",
+        "ROC curve for best classifier \u2192 roc_curve.png"
+      ],
+      "code_patterns": {
+        "performance_critical": "Limit to 3 classifiers. Always n_jobs=-1 on RF. Always max_iter=500 on SVM/LR. StandardScaler before SVM/LR. Save after EACH model.",
+        "target_detection": "Look for 'Target', 'target', 'label', 'class' column. Fall back to last column.",
+        "separator_detection": "Use '\\t' for .tsv, ',' for .csv"
+      },
+      "failure_history": [
+        {
+          "what_failed": "Running 5+ classifiers including AdaBoost and GradientBoosting",
+          "why": "Timeout at 120s \u2014 too many models on large dataset",
+          "fix": "Reduced to 3 classifiers, added n_jobs=-1"
+        }
+      ],
+      "milestones_achieved": "5/5",
+      "execution_time_seconds": 45
+    },
+    {
+      "id": "seed_002",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "M",
+      "task_subclass": "Regression",
+      "question_signature": "regression with train/test split, feature selection, multiple regressors, MSE/R2 metrics",
+      "tools_used": [
+        "randomforest_regressor",
+        "svr",
+        "linear_regression",
+        "feature_selection",
+        "data_split"
+      ],
+      "tool_scores": {
+        "randomforest_regressor": 10,
+        "svr": 7,
+        "linear_regression": 9,
+        "feature_selection": 9,
+        "data_split": 10
+      },
+      "workflow_stages": [
+        "Load data and identify target column",
+        "Encode categoricals, fill NaN with median",
+        "Train/test split (80/20) \u2192 save train.csv, test.csv",
+        "Feature selection with SelectKBest(f_regression) \u2192 save feature_selected.csv",
+        "StandardScaler on selected features",
+        "Train 3 regressors: RandomForestRegressor(n_jobs=-1), SVR(max_iter=500), LinearRegression",
+        "Save predictions per regressor \u2192 {name}_predictions.csv",
+        "Compute RMSE, R2, MAE per regressor \u2192 regression_results.csv",
+        "Scatter plot actual vs predicted for best model \u2192 regression_plot.png"
+      ],
+      "code_patterns": {
+        "performance_critical": "Limit to 3 regressors. SVR(max_iter=500) prevents hang. StandardScaler required for SVR.",
+        "metric_computation": "Use np.sqrt(mean_squared_error()) for RMSE, not MSE directly"
+      },
+      "failure_history": [
+        {
+          "what_failed": "Running 6 regressors including Ridge, Lasso, AdaBoostRegressor",
+          "why": "Timeout at 120s",
+          "fix": "Reduced to 3 regressors"
+        }
+      ],
+      "milestones_achieved": "4/4",
+      "execution_time_seconds": 38
+    },
+    {
+      "id": "seed_003",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "M",
+      "task_subclass": "Clustering",
+      "question_signature": "clustering with multiple algorithms, silhouette scores, visualization",
+      "tools_used": [
+        "kmeans",
+        "hierarchical_clustering",
+        "dbscan",
+        "pca"
+      ],
+      "tool_scores": {
+        "kmeans": 10,
+        "hierarchical_clustering": 9,
+        "dbscan": 7,
+        "pca": 8,
+        "silhouette": 9
+      },
+      "workflow_stages": [
+        "Load data, select numeric columns, encode categoricals",
+        "StandardScaler on all features",
+        "K-Means(n_clusters=N, n_init=10) \u2192 save kmeans_result.csv",
+        "AgglomerativeClustering(n_clusters=N) \u2192 save hierarchical_result.csv",
+        "DBSCAN with auto-eps from NearestNeighbors \u2192 save dbscan_result.csv",
+        "Silhouette score for each method",
+        "PCA(n_components=2) \u2192 scatter plot colored by cluster \u2192 clustering_visualization.png",
+        "Summary table \u2192 clustering_results.csv"
+      ],
+      "code_patterns": {
+        "n_clusters_detection": "Parse 'N classes' or 'N groups' from question. Default to 3.",
+        "dbscan_eps": "Use NearestNeighbors(n_neighbors=5), eps = 90th percentile of k-distances",
+        "silhouette_guard": "Check n_clusters > 1 before computing silhouette. DBSCAN with 1 cluster \u2192 silhouette = -1"
+      },
+      "failure_history": [],
+      "milestones_achieved": "3/3",
+      "execution_time_seconds": 12
+    },
+    {
+      "id": "seed_004",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "M",
+      "task_subclass": "Association Rules",
+      "question_signature": "frequent itemset mining, association rules from transaction data",
+      "tools_used": [
+        "apriori",
+        "association_rules",
+        "transaction_encoder"
+      ],
+      "tool_scores": {
+        "apriori": 10,
+        "association_rules": 10,
+        "transaction_encoder": 9
+      },
+      "workflow_stages": [
+        "Load data, identify item column and transaction/member ID column",
+        "Group by transaction ID \u2192 list of items per transaction",
+        "TransactionEncoder \u2192 binary matrix",
+        "Apriori(min_support=0.01) \u2192 save frequent_itemsets.csv",
+        "association_rules(metric='confidence', min_threshold=0.1) \u2192 save association_rules.csv"
+      ],
+      "code_patterns": {
+        "library": "mlxtend \u2014 install with pip if missing",
+        "column_detection": "Item column: look for 'item', 'description', 'product'. Transaction column: look for 'member', 'transaction', 'id'.",
+        "frozenset_handling": "Convert frozenset to sorted comma-separated string before saving to CSV"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 15
+    },
+    {
+      "id": "seed_005",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "M",
+      "task_subclass": "Deep Learning",
+      "question_signature": "image segmentation with U-Net on archived image data",
+      "tools_used": [
+        "pytorch",
+        "unet"
+      ],
+      "tool_scores": {
+        "basicunet": 10,
+        "pytorch": 10,
+        "torchvision": 8
+      },
+      "workflow_stages": [
+        "Extract .tar.gz archives with tarfile module",
+        "Install pytorch (CPU: --index-url https://download.pytorch.org/whl/cpu)",
+        "Check torch.cuda.is_available() for GPU",
+        "Build MiniUNet (encoder-decoder with Conv2d/ConvTranspose2d)",
+        "If images found: load, resize to 64x64, normalize",
+        "Forward pass \u2192 threshold at 0.5 \u2192 save segmentation_result.png",
+        "Save model weights \u2192 model.pth"
+      ],
+      "code_patterns": {
+        "archive_handling": "ALWAYS extract .tar.gz BEFORE any other processing. Use tarfile.open(f, 'r:gz')",
+        "gpu_fallback": "If no GPU: reduce to 2 epochs, batch_size=1, image_size=64x64",
+        "image_formats": "glob for *.png, *.tif, *.jpg recursively after extraction"
+      },
+      "failure_history": [
+        {
+          "what_failed": "Tried to pd.read_csv() a .tar.gz file",
+          "why": "Code generator treated archive as tabular data",
+          "fix": "Must detect .tar.gz/.tgz inputs and extract first, before any pd.read_csv"
+        }
+      ],
+      "milestones_achieved": "0/2 (GPU required for full training)",
+      "execution_time_seconds": null
+    },
+    {
+      "id": "seed_006",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "S",
+      "task_subclass": "QQ Plot",
+      "question_signature": "QQ plot with grouping by categorical column, normality assessment",
+      "tools_used": [
+        "scipy_probplot",
+        "matplotlib"
+      ],
+      "tool_scores": {
+        "qq_plot": 10,
+        "scipy_stats": 10,
+        "matplotlib": 10
+      },
+      "workflow_stages": [
+        "Load data with correct separator (\\t for .tsv)",
+        "Identify grouping column from question text (Genotype, Group2, Sex, etc.)",
+        "Identify numeric value column",
+        "For each group: scipy.stats.probplot(data, dist='norm', plot=ax)",
+        "Subplots: 1 per group, side by side",
+        "Save \u2192 qq_plot.png"
+      ],
+      "code_patterns": {
+        "group_column_detection": "Search question for column names that appear in df.columns. Check for 'group', 'genotype', 'type', 'sex', 'treatment'.",
+        "subplot_layout": "fig, axes = plt.subplots(1, len(groups)). Handle single group: axes = [axes]"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 3
+    },
+    {
+      "id": "seed_007",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "S",
+      "task_subclass": "Cross-tabulation",
+      "question_signature": "cross-tabulation / contingency table with proportions from frequency data",
+      "tools_used": [
+        "pandas_crosstab"
+      ],
+      "tool_scores": {
+        "crosstab": 10,
+        "pandas": 10
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify row variable, column variable, and frequency column from question",
+        "pd.crosstab with margins=True for totals",
+        "pd.crosstab with normalize='all' for proportions",
+        "Combine: counts + ' (' + percentages + '%)'",
+        "Save \u2192 cross_tabulation.csv"
+      ],
+      "code_patterns": {
+        "routing_critical": "Trigger on 'cross-tabulation', 'crosstab', 'contingency table', 'proportions', 'frequency table' \u2014 check BOTH question AND milestones for these keywords",
+        "weighted_crosstab": "If data has a Freq/Count column, use pd.crosstab(values=df['Freq'], aggfunc='sum')",
+        "proportion_format": "Round to 1 decimal, format as 'N (X.X%)'"
+      },
+      "failure_history": [
+        {
+          "what_failed": "Question didn't contain 'crosstab' keyword \u2014 only the milestone did",
+          "why": "Routing only checked question text, not milestones",
+          "fix": "Check combined text (question + milestones) for routing keywords"
+        }
+      ],
+      "milestones_achieved": "1/1",
+      "execution_time_seconds": 2
+    },
+    {
+      "id": "seed_008",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "S",
+      "task_subclass": "Cox Regression",
+      "question_signature": "Cox proportional hazards regression with forest plot",
+      "tools_used": [
+        "lifelines_coxph",
+        "matplotlib"
+      ],
+      "tool_scores": {
+        "cox_regression": 10,
+        "lifelines": 10,
+        "forest_plot": 10,
+        "matplotlib": 9
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify time column ('time', 'survival_time') and event column ('status', 'event')",
+        "Select numeric columns, encode categoricals with LabelEncoder",
+        "Drop NaN rows",
+        "CoxPHFitter().fit(df, duration_col=time_col, event_col=status_col)",
+        "cph.plot() \u2192 forest_plot.png",
+        "cph.summary \u2192 cox_results.csv"
+      ],
+      "code_patterns": {
+        "library": "lifelines \u2014 install with pip if missing",
+        "column_detection": "Time: 'time', 'survival_time', 'duration'. Event: 'status', 'event', 'dead', 'censored'.",
+        "forest_plot": "cph.plot(ax=ax) draws the forest plot automatically. Add ax.axvline(x=0) for reference line."
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 5
+    },
+    {
+      "id": "seed_009",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "V",
+      "task_subclass": "Area Chart",
+      "question_signature": "area chart/plot grouped by categorical column",
+      "tools_used": [
+        "matplotlib"
+      ],
+      "tool_scores": {
+        "area_chart": 10,
+        "matplotlib": 10
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify group column and numeric value column",
+        "For each group: ax.fill_between() + ax.plot() for line overlay",
+        "Legend, axis labels, title",
+        "Save \u2192 area_plot.png"
+      ],
+      "code_patterns": {
+        "fill_between": "ax.fill_between(range(len(data)), data, alpha=0.5, label=grp)"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 2
+    },
+    {
+      "id": "seed_010",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "V",
+      "task_subclass": "Pie Chart",
+      "question_signature": "circular pie chart from labels and values columns",
+      "tools_used": [
+        "matplotlib"
+      ],
+      "tool_scores": {
+        "pie_chart": 10,
+        "matplotlib": 10
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify label column ('labels', 'category', 'name') and value column ('values', 'count', 'freq')",
+        "ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)",
+        "Save \u2192 pie_chart.png"
+      ],
+      "code_patterns": {
+        "autopct": "Always include autopct='%1.1f%%' for percentage display"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 2
+    },
+    {
+      "id": "seed_011",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "V",
+      "task_subclass": "Density Plot",
+      "question_signature": "kernel density estimation plot grouped by categorical column",
+      "tools_used": [
+        "matplotlib",
+        "pandas_kde"
+      ],
+      "tool_scores": {
+        "density_plot": 10,
+        "matplotlib": 10,
+        "pandas": 9
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify value column ('Value', first numeric) and group column ('Group', 'Group2')",
+        "For each group: data.plot.kde(ax=ax, label=grp)",
+        "Legend, axis labels",
+        "Check milestone for output format (JPG vs PNG)",
+        "Save \u2192 density_plot.{ext}"
+      ],
+      "code_patterns": {
+        "format_detection": "If milestones mention 'jpg format', save as .jpg. If 'png format', save as .png. Default: .png",
+        "kde": "Use DataFrame.plot.kde() \u2014 simpler than seaborn.kdeplot for basic density"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 3
+    },
+    {
+      "id": "seed_012",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "V",
+      "task_subclass": "Deviation Plot",
+      "question_signature": "z-score deviation bar chart sorted descending",
+      "tools_used": [
+        "matplotlib",
+        "pandas"
+      ],
+      "tool_scores": {
+        "deviation_plot": 10,
+        "matplotlib": 10,
+        "pandas": 9
+      },
+      "workflow_stages": [
+        "Load data",
+        "Identify numeric column (often 'mpg' or first numeric)",
+        "Compute z-score: (x - mean) / std",
+        "Sort descending by z-score",
+        "Color: green if z >= 0, red if z < 0",
+        "ax.barh(range(n), zscores, color=colors)",
+        "ax.axvline(x=0) for center reference",
+        "Y-tick labels from first text column (car name, etc.)",
+        "Save \u2192 deviation_plot.png"
+      ],
+      "code_patterns": {
+        "label_column": "Use first non-numeric column for y-axis labels. Truncate long labels.",
+        "figure_height": "max(8, len(df)*0.2) to scale with data size"
+      },
+      "failure_history": [],
+      "milestones_achieved": "2/2",
+      "execution_time_seconds": 3
+    },
+    {
+      "id": "seed_013",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "S",
+      "task_subclass": "Survival Analysis (R)",
+      "question_signature": "Kaplan-Meier survival curves with risk tables and log-rank test",
+      "tools_used": [
+        "survival",
+        "survminer"
+      ],
+      "tool_scores": {
+        "survival_curve": 10,
+        "kaplan_meier": 10,
+        "log_rank_test": 9,
+        "cox_regression": 8
+      },
+      "workflow_stages": [
+        "Check R availability: shutil.which('Rscript')",
+        "Install R packages if missing: survival, survminer",
+        "Load data in R: read.csv() or read.delim()",
+        "Identify time column, event column, and grouping variable",
+        "Fit survival model: survfit(Surv(time, status) ~ group, data=df)",
+        "Generate KM plot with risk table: ggsurvplot(fit, pval=TRUE, risk.table=TRUE)",
+        "Save as PDF for publication quality: pdf('survival_plot.pdf')",
+        "Export survival summary to CSV: write.csv(surv_summary(fit))",
+        "If Python fallback needed: use lifelines.KaplanMeierFitter"
+      ],
+      "code_patterns": {
+        "r_preferred_because": "survminer produces publication-ready KM plots with integrated risk tables, confidence bands, p-values, and median survival lines \u2014 lifelines cannot match this",
+        "python_fallback": "lifelines.KaplanMeierFitter + lifelines.statistics.logrank_test \u2014 functional but not publication quality",
+        "data_interchange": "Save CSV from Python, read in R, save results as CSV, pick up in Python",
+        "output_format": "Always PDF for R survival plots (vector graphics, publication standard)"
+      },
+      "failure_history": [],
+      "milestones_achieved": "N/A (R seed pattern)",
+      "execution_time_seconds": 8
+    },
+    {
+      "id": "seed_014",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "O",
+      "task_subclass": "Differential Expression (R)",
+      "question_signature": "RNA-seq differential gene expression with DESeq2 or edgeR",
+      "tools_used": [
+        "DESeq2",
+        "edgeR",
+        "ggplot2"
+      ],
+      "tool_scores": {
+        "deg": 10,
+        "deseq2": 10,
+        "edger": 9,
+        "volcano_plot": 8,
+        "gsea": 7
+      },
+      "workflow_stages": [
+        "Check R + Bioconductor availability",
+        "Install packages: BiocManager::install('DESeq2')",
+        "Load count matrix and sample metadata",
+        "Create DESeqDataSet: DESeqDataSetFromMatrix(countData, colData, design=~condition)",
+        "Run DESeq2: dds <- DESeq(dds)",
+        "Extract results: results(dds, alpha=0.05)",
+        "Save full results table: write.csv(as.data.frame(res), 'deseq2_results.csv')",
+        "Generate volcano plot: ggplot with log2FC vs -log10(padj)",
+        "Filter significant genes: padj < 0.05, |log2FC| > 1",
+        "Optional: downstream pathway enrichment with clusterProfiler"
+      ],
+      "code_patterns": {
+        "r_preferred_because": "DESeq2 uses a negative binomial model with shrinkage estimators specifically designed for RNA-seq count data. Python pydeseq2 exists but is less mature and lacks the full feature set.",
+        "python_fallback": "pydeseq2 for basic DEG, or scanpy.tl.rank_genes_groups for single-cell",
+        "count_matrix_format": "Genes as rows, samples as columns. Integer counts, not normalized.",
+        "bioconductor_install": "BiocManager::install('DESeq2', ask=FALSE, quiet=TRUE)"
+      },
+      "failure_history": [
+        {
+          "what_failed": "DESeq2 installation timeout in sandbox",
+          "why": "Bioconductor packages compile from source, can take 5+ minutes",
+          "fix": "Set timeout=600 for Bioconductor installs. Fall back to pydeseq2 if install fails."
+        }
+      ],
+      "milestones_achieved": "N/A (R seed pattern)",
+      "execution_time_seconds": 30
+    },
+    {
+      "id": "seed_015",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "O",
+      "task_subclass": "Microarray Processing (R)",
+      "question_signature": "CEL file processing and normalization with affy or oligo",
+      "tools_used": [
+        "affy",
+        "oligo",
+        "limma"
+      ],
+      "tool_scores": {
+        "microarray": 10,
+        "affy": 10,
+        "oligo": 9,
+        "limma": 9,
+        "rma_normalization": 10
+      },
+      "workflow_stages": [
+        "Check R + Bioconductor availability",
+        "Install packages: affy (or oligo for newer arrays), limma",
+        "Read CEL files: ReadAffy(celfile.path='cel_dir/')",
+        "RMA normalization: eset <- rma(data)",
+        "Export normalized expression: write.csv(exprs(eset), 'normalized.csv')",
+        "Optional: differential expression with limma",
+        "Optional: quality control plots (boxplot, MA plot, density)"
+      ],
+      "code_patterns": {
+        "r_preferred_because": "There is NO Python equivalent for CEL file processing. affy/oligo are the only tools that correctly handle Affymetrix probe-level data with RMA/MAS5 normalization.",
+        "python_fallback": "NONE for CEL files. Must use R.",
+        "platform_annotation": "Need GPL annotation package matching the array platform (e.g., hgu133plus2.db)",
+        "memory_note": "Large CEL datasets (>100 arrays) need 8+ GB RAM"
+      },
+      "failure_history": [],
+      "milestones_achieved": "N/A (R seed pattern)",
+      "execution_time_seconds": 60
+    },
+    {
+      "id": "seed_016",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "O",
+      "task_subclass": "Gene Enrichment (R)",
+      "question_signature": "GO/KEGG pathway enrichment with clusterProfiler",
+      "tools_used": [
+        "clusterProfiler",
+        "org.Hs.eg.db",
+        "ggplot2"
+      ],
+      "tool_scores": {
+        "gsea": 10,
+        "go_enrichment": 10,
+        "kegg_enrichment": 9,
+        "pathway_visualization": 8
+      },
+      "workflow_stages": [
+        "Install clusterProfiler + organism annotation db (org.Hs.eg.db for human)",
+        "Load gene list (from DEG results or user input)",
+        "Convert gene IDs if needed: bitr() for ID conversion",
+        "Run GO enrichment: enrichGO(gene, OrgDb, keyType, ont='BP')",
+        "Run KEGG enrichment: enrichKEGG(gene, organism='hsa')",
+        "Generate dotplot: dotplot(ego, showCategory=20)",
+        "Generate enrichment map: emapplot(ego)",
+        "Save results to CSV and plots to PDF"
+      ],
+      "code_patterns": {
+        "r_preferred_because": "clusterProfiler has built-in access to GO, KEGG, Reactome, MSigDB databases and produces publication-quality enrichment plots. gseapy works but has fewer built-in databases.",
+        "python_fallback": "gseapy.enrichr() or gseapy.gsea() \u2014 functional but fewer plot options",
+        "gene_id_types": "ENSEMBL, ENTREZID, SYMBOL \u2014 use bitr() to convert between them",
+        "organism_dbs": "org.Hs.eg.db (human), org.Mm.eg.db (mouse), org.Rn.eg.db (rat)"
+      },
+      "failure_history": [],
+      "milestones_achieved": "N/A (R seed pattern)",
+      "execution_time_seconds": 20
+    },
+    {
+      "id": "seed_017",
+      "timestamp": "2026-03-31T00:00:00Z",
+      "task_category": "O",
+      "task_subclass": "WGCNA (R)",
+      "question_signature": "weighted gene co-expression network analysis",
+      "tools_used": [
+        "WGCNA",
+        "ggplot2"
+      ],
+      "tool_scores": {
+        "wgcna": 10,
+        "correlation_network": 10,
+        "module_detection": 10
+      },
+      "workflow_stages": [
+        "Install WGCNA (large dependency tree, allow 10+ min install)",
+        "Load normalized expression matrix (genes x samples)",
+        "Check for outlier samples: hclust + cutreeStatic",
+        "Pick soft threshold: pickSoftThreshold()",
+        "Build network: blockwiseModules()",
+        "Export module assignments: write.csv(module_colors)",
+        "Module-trait correlation: cor(MEs, traits)",
+        "Visualize: plotDendroAndColors(), TOMplot()"
+      ],
+      "code_patterns": {
+        "r_preferred_because": "WGCNA has NO Python equivalent of comparable quality. PyWGCNA exists but is experimental.",
+        "python_fallback": "NONE that matches WGCNA functionality. Use R.",
+        "memory_critical": "WGCNA needs lots of RAM for large gene sets. Use blockwiseModules() for >10k genes.",
+        "soft_threshold": "Typical range 6-12 for signed networks. Use pickSoftThreshold() to find optimal."
+      },
+      "failure_history": [
+        {
+          "what_failed": "WGCNA installation took 15+ minutes",
+          "why": "Large number of compiled dependencies (Rcpp, RcppArmadillo, etc.)",
+          "fix": "Set timeout=900 for WGCNA install. Warn user it will take time."
+        }
+      ],
+      "milestones_achieved": "N/A (R seed pattern)",
+      "execution_time_seconds": 120
+    }
+  ]
+}
