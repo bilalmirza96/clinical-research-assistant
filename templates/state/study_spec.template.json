@@ -1,0 +1,31 @@
+{
+  "research_question": "",
+  "study_objective": "",
+  "hypothesis": "",
+  "study_design": "",
+  "data_source": "",
+  "study_period": "",
+  "population": "",
+  "inclusion_criteria": [],
+  "exclusion_criteria": [],
+  "primary_outcome": {
+    "name": "",
+    "type": "",
+    "coding": "",
+    "time_origin": null,
+    "event_definition": null
+  },
+  "secondary_outcomes": [],
+  "primary_exposure": {
+    "name": "",
+    "type": "",
+    "reference_group": null,
+    "coding": ""
+  },
+  "covariates": [],
+  "subgroups": [],
+  "missing_data_strategy": null,
+  "reporting_guideline": null,
+  "target_journal": null,
+  "house_style": "bilal_default"
+}

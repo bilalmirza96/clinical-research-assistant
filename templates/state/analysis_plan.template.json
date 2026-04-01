@@ -1,0 +1,32 @@
+{
+  "analysis_plan_version": 1,
+  "analysis_archetype": "",
+  "primary_model": {
+    "model_type": "",
+    "justification": "",
+    "effect_measure": "",
+    "covariates": [],
+    "reference_groups": {}
+  },
+  "secondary_models": [],
+  "descriptive_plan": {
+    "table_1_grouping": "",
+    "continuous_summaries": "auto",
+    "categorical_summaries": "n_percent",
+    "smd_required": true
+  },
+  "missing_data_plan": {
+    "strategy": "",
+    "justification": ""
+  },
+  "diagnostics_plan": [],
+  "sensitivity_analyses": [],
+  "propensity_plan": null,
+  "delegated_execution": {
+    "use_biomedagent": false,
+    "reason": null,
+    "expected_return_objects": []
+  },
+  "debate_summary_id": null,
+  "approved": false
+}
