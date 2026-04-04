@@ -4,241 +4,371 @@ This file defines the author's unique writing voice. All writing skills (`/write
 
 ---
 
-## 1. Sentence Architecture
+# Writing Style Reference
 
-### Results sentences
-Short. Single-purpose. Front-load the subject and finding, then attach statistics parenthetically at the end. The claim and the evidence live in one unit — never write a separate sentence just for the numbers.
+## Purpose
 
-**Do this:**
-> Hispanic patients presented with statistically higher rates of HER2-positive gastric cancer compared with non-Hispanic White patients (13.9% vs 9.8%; adjusted OR, 1.48; 95% CI, 1.12–1.96; P < .001).
+This document defines the default writing style for academic manuscripts. It is intended to guide drafting and revision across sections while preserving section-appropriate variation. The goal is not a rigid template, but a consistent authorial identity: sophisticated, analytically controlled, clinically grounded, and publication-ready.
 
-**Not this:**
-> We found that Hispanic patients had higher rates of HER2-positive gastric cancer. The adjusted odds ratio was 1.48 (95% CI, 1.12–1.96), and this was statistically significant (P < .001).
-
-### Discussion sentences
-Longer and more compound. Chain ideas with dashes and commas. Weave mechanism, classification, and implication into single complex sentences when the logic demands it.
-
-**Do this:**
-> These findings align with the established molecular subtyping of gastric adenocarcinoma — the TCGA classification identifies four subtypes: Epstein-Barr virus-positive, microsatellite-unstable, genomically stable, and chromosomal instability — and suggest that the chromosomal instability subtype, which harbors ERBB2 amplification, may be disproportionately represented in Hispanic populations.
+The prose should read as if written by a polished human expert with command of both the literature and the argument. It should never feel generic, inflated, or mechanically “academic.”
 
 ---
 
-## 2. Natural Frequency Anchoring
+## Core Authorial Identity
 
-Translate the most important percentages into "1 in every X" phrasing. Use this selectively — for cohort composition, the key finding prevalence, and critical subgroup prevalence. Not on every number.
+The default voice should combine the following qualities:
 
-**Do this:**
-> Approximately 1 in every 7 Hispanic patients harbored a HER2-positive tumor.
+- Dense and analytic
+- Elegant but restrained
+- Sophisticated without ornament
+- Clinically literate and academically controlled
+- Sharp in argument, disciplined in tone
+- Formal and impersonal by default
 
-**Not this:**
-> The prevalence of HER2-positive tumors among Hispanic patients was 13.9%.
-
-Use both forms when introducing the number for the first time — the anchored phrasing makes it memorable, the percentage makes it precise.
-
----
-
-## 3. Statistical Layering
-
-Present findings in this specific build-up order. Do not jump straight to the final adjusted model. Build credibility incrementally:
-
-1. Raw group percentages
-2. P value (unadjusted comparison)
-3. FDR q-value (if multiple comparisons were corrected)
-4. Adjusted OR/HR with CI and P
-
-Each layer adds rigor. The reader sees the raw signal first, then the corrected and adjusted confirmation.
+The writing should sound intellectually mature. Complexity is acceptable and often desirable, but the logic must remain easy to follow. The prose should feel built, not generated.
 
 ---
 
-## 4. Hedging Pattern
+## Global Writing Priorities
 
-**Data findings** — state directly, no hedging:
-> Hispanic patients presented with statistically higher rates of HER2-positive gastric cancer.
+Across all sections, prioritize the following:
 
-**Interpretive claims** — hedge consistently:
-> These findings suggest that ancestry-linked genomic variation may influence HER2 amplification patterns.
-> This association supports a hypothesis that ERBB2 signaling pathways may be differentially activated.
-> The observed disparity may reflect a potential interaction between genetic predisposition and environmental exposure.
+1. **Clarity of logic**
+   - Each paragraph should have a clear argumentative function.
+   - The sequence of ideas should feel deliberate.
+   - Complex ideas may remain complex, but their logic must be easy to track.
 
-Hedge words: "suggest," "may," "support a hypothesis," "potential," "appears to," "is consistent with."
+2. **Sophistication without inflation**
+   - Avoid filler, empty emphasis, and self-congratulatory novelty language.
+   - Importance should be stated when warranted, not advertised.
+   - Strong claims are acceptable when earned, but rhetoric should remain controlled.
 
-Hedge density by section:
-- Abstract opening: zero hedging
-- Results: near-zero hedging
-- Discussion: high hedging on all interpretive claims
-- Conclusion: moderate hedging
+3. **Precision of tone**
+   - Tone should remain formal, confident, and section-appropriate.
+   - Avoid both robotic flatness and overworked literary flourish.
+   - The prose should feel polished, not mannered.
 
----
-
-## 5. Group Comparison Format
-
-When comparing across groups, use this consistent inline format:
-
-> (Hispanic: 13.9% vs 9.8% non-Hispanic White, 8.1% non-Hispanic Asian, and 11.0% non-Hispanic Black; P < .001)
-
-Rules:
-- Index group comes first, followed by a colon
-- "vs" separates the index group value from the comparators
-- Comparators listed by full group name
-- Semicolon before the P value
-- All in one parenthetical unit
+4. **Sharpness**
+   - Sentences should carry meaning efficiently.
+   - Paragraphs should do argumentative work.
+   - Revision should aim to reduce muddiness, sharpen the point, and align tone with authorial intent.
 
 ---
 
-## 6. Discussion Arc
+## Sentence Architecture
 
-Move through this specific chain within Discussion paragraphs. Each step builds on the last:
+### Default sentence style
+- Prefer medium-length sentences as the baseline.
+- Use longer, more layered sentences for synthesis, interpretation, and conceptual framing.
+- Use shorter, cleaner sentences for data presentation and high-information factual material.
 
-1. **Restate finding in clinical terms** — not statistical terms
-2. **Connect to a biological mechanism by name** — cite the pathway (H. pylori, ERBB2 signaling, chromosomal instability)
-3. **Map onto an established classification system** — name it and define it inline (e.g., "the TCGA classification identifies four molecular subtypes: ...")
-4. **Pivot to therapeutic actionability** — name specific drugs, their FDA status, and the clinical implications
+### Sentence variation
+- Rhythm should vary by section.
+- Maintain an overall controlled cadence.
+- Use occasional longer sentences intentionally for emphasis, synthesis, or interpretive lift.
+- Do not let sentence rhythm become monotonous, but do not chase variation for its own sake.
 
-Do not leave the discussion at the level of statistical association. Always push toward mechanism and therapy.
-
----
-
-## 7. Limitations as Arguments
-
-Each limitation raised must immediately become a recommendation. Do not list weaknesses passively — use them to argue for more diverse cohorts, ancestry-based analyses, and inclusive clinical trials.
-
-**Do this:**
-> The absence of germline sequencing data precludes assessment of inherited ERBB2 variants. Future studies should incorporate whole-genome or whole-exome sequencing in diverse populations to disentangle somatic from germline contributions to the observed disparity.
-
-**Not this:**
-> A limitation of this study is that germline data were not available.
-
-The limitations paragraph should be the longest paragraph in the Discussion.
+### Complexity
+- Preserve intellectual density when needed.
+- Do not flatten complex ideas into simplistic prose.
+- Complexity is acceptable only if the reader can follow the reasoning without strain.
 
 ---
 
-## 8. Funnel Structure
+## Diction
 
-### Introduction — narrows:
-Overall incidence trends → disparity in a specific population → gap in genomic profiling → study objective
+### Preferred diction
+- Elevated but precise
+- Formal, exact, and conceptually mature
+- Field-literate without becoming jargon-heavy for its own sake
 
-### Discussion — widens back out:
-Specific finding → mechanism → classification → therapy → policy
+### Avoid
+- Generic filler
+- Inflated novelty language
+- Empty intensifiers
+- Vague phrasing that substitutes for real precision
 
-These are mirror images of each other.
-
----
-
-## 9. Transition Devices
-
-**Use these:**
-- "Indeed,"
-- "Together with,"
-- "Notably,"
-- "Consistent with these reports,"
-- "Nevertheless,"
-- "As such,"
-
-**Never use these:**
-- "Furthermore,"
-- "Moreover,"
-- "Additionally,"
-- "It is worth noting that"
-- "It is important to note that"
-- "Interestingly,"
+The prose should sound sophisticated because the thinking is sophisticated, not because it uses decorative vocabulary.
 
 ---
 
-## 10. Naming Specificity
+## Point of View
 
-Name everything. Be maximally specific. Never use vague placeholders when a proper name exists.
-
-**Do this:**
-- "the AACR Project GENIE Consortium (v15.0)"
-- "fam-trastuzumab deruxtecan-nxki (Enhertu; Daiichi Sankyo/AstraZeneca)"
-- "R version 4.3.1 (R Foundation for Statistical Computing)"
-- "the Benjamini-Hochberg procedure for false discovery rate correction"
-- "the OncoKB and ClinVar databases"
-
-**Not this:**
-- "a large multi-institutional consortium"
-- "a novel antibody-drug conjugate"
-- "using R software"
-- "after correction for multiple comparisons"
-- "publicly available variant databases"
+- Default to an impersonal academic register.
+- Use first-person constructions sparingly, if at all.
+- Prefer formulations that keep attention on the study, findings, question, or evidence rather than on the authors.
 
 ---
 
-## 11. Equity Framing
+## Section-Specific Style
 
-Use "equitable access," "disproportionate burden," and "critical need" as recurring anchors throughout the manuscript. This language appears in the Abstract, the Discussion, and the Conclusion — bookending the manuscript.
+## Introduction
 
-Rules:
-- Always tie equity language to a specific data point — never freestanding
-- Assertive but evidence-based
-- Integrated naturally, not performative
+### Core function
+The Introduction should begin broad and narrow in deliberate layers. It should move stepwise from the larger clinical or scientific problem toward the precise unresolved question.
 
-**Do this:**
-> The disproportionate burden of HER2-positive gastric cancer among Hispanic patients (13.9% vs 9.8% non-Hispanic White; P < .001) underscores the critical need for equitable access to HER2-targeted therapies, including fam-trastuzumab deruxtecan-nxki, in this population.
+### Preferred structure
+- Open with the broader clinical problem or disease-level context.
+- Narrow progressively through clinically relevant and literature-based layers.
+- Weave literature into the developing logic rather than presenting it as a detached summary.
+- Arrive at the exact gap only after the problem has been built clearly and persuasively.
 
-**Not this:**
-> Health equity is important and more research is needed to address disparities.
+### Tone
+- Formal, analytically controlled, and evidence-rich
+- Dense in citation where appropriate
+- Never generic, slow, or padded
 
----
+### Citation style
+Use citations strategically and often in the Introduction, but with emphasis on quality rather than density alone. Prefer:
+- high-impact clinical trials
+- seminal field-defining studies
+- strong meta-analyses
+- pivotal observational studies when relevant
 
-## 12. Abstract Structure
-
-Open the Abstract with the finding and effect size before any background. The last sentence names a specific therapy. It reads like a conclusion you would say out loud, not a generic "further research is warranted."
-
-**Do this (opening):**
-> Hispanic patients with gastric adenocarcinoma harbored HER2-positive tumors at significantly higher rates than non-Hispanic White patients (13.9% vs 9.8%; adjusted OR, 1.48; P < .001).
-
-**Do this (closing):**
-> These findings support prioritizing enrollment of Hispanic patients in clinical trials of fam-trastuzumab deruxtecan-nxki and other HER2-targeted agents.
-
-**Not this (closing):**
-> Further research is warranted to investigate these disparities.
+The literature should build the argument, not simply decorate background claims.
 
 ---
 
-## 13. Voice and Person
+## Methods
 
-- **Introduction and Methods:** active voice, first person plural ("We assessed," "We compared," "We included")
-- **Results:** shift to third person ("Hispanic patients had," "The cohort comprised," "Rates were higher")
-- **Discussion:** back to first person ("We further analyzed," "Our findings suggest," "We observed")
-- **Passive voice** only in Methods where the agent does not matter ("Variants and frequencies were calculated," "Missing data were handled using")
+### Core function
+Methods should read as formal, precise, and readable. They should remain disciplined while retaining some prose quality.
 
----
+### Preferred style
+- Formal and exact
+- Detailed without being mechanical
+- Elegant where possible, but never stylized
 
-## 14. Words and Phrases to Avoid
+### Tone
+- Controlled
+- Technical
+- Clear enough that methodological logic remains easy to follow
 
-Never use these — they are AI-tell phrases that make prose sound generated:
-
-- "delve into"
-- "it's important to note"
-- "it's worth noting"
-- "a myriad of"
-- "shed light on"
-- "pave the way"
-- "in the realm of"
-- "a testament to"
-- "the landscape of"
-- "underscores the importance"
-- "robust" (when describing results generically)
-- "novel" (unless the finding is genuinely first-in-literature)
-- "comprehensive" (unless describing a genuinely exhaustive analysis)
-- "leveraging" (use "using")
-- "utilizing" (use "using")
-- "facilitating" (use "enabling" or rephrase)
-- "noteworthy" (use "notable" or rephrase)
-- "pivotal" (use "critical" or rephrase)
+Methods should not sound robotic. They should sound authoritative and competent.
 
 ---
 
-## 15. Application Rules for All Writing Skills
+## Results
 
-1. **Read this file before drafting any manuscript text.** Every writing skill must apply these patterns.
-2. **Match section-specific voice** — Results sentences are short and direct; Discussion sentences are long and compound.
-3. **Use the author's transition words** — draw from the approved list, never from the banned list.
-4. **Apply natural frequency anchoring** on the 2-3 most important numbers per section.
-5. **Layer statistics** in the prescribed order — do not skip to the adjusted model.
-6. **Name everything** — databases, drugs, methods, software versions.
-7. **Push Discussion beyond association** — always reach mechanism, classification, and therapy.
-8. **Frame limitations as recommendations** — each weakness argues for a specific future study.
-9. **Tie equity language to data** — never use it as freestanding rhetoric.
-10. **Avoid all AI-tell phrases** listed in Section 14.
+### Core function
+Results should be primarily data-forward.
+
+### Preferred style
+- Lean
+- Direct
+- Shorter sentences than Introduction or Discussion
+- Minimal interpretation
+
+### Narrative stance
+- Present findings cleanly
+- Use brief framing only when needed to orient the reader to why a result matters within the sequence of the paper
+- Do not allow Discussion-style interpretation to bleed into Results
+
+### Claim style
+State what was observed directly and plainly. Avoid over-explaining.
+
+---
+
+## Discussion
+
+### Core function
+The Discussion should make a real argument while remaining disciplined. It should be interpretive and sharp, analytical and measured, clinically grounded, and conceptually broad enough to synthesize without drifting into abstraction.
+
+### Preferred style
+- Interpretive, but controlled
+- Measured, but not timid
+- Clinically grounded
+- Capable of conceptual lift when warranted
+
+### Paragraph construction
+Do not force all Discussion paragraphs into a claim-first or context-first template. Openings should feel deliberate and chosen according to the function of the paragraph.
+
+### Counterpoints and qualifications
+When introducing tension, limitation, or contrast:
+- acknowledge it directly
+- use contrast deliberately
+- sharpen the claim rather than dissolving it
+
+The ideal tone is measured but dialectically active.
+
+### Final Discussion movement
+Discussion should move from interpretation toward implication without becoming promotional. The strongest closing sentences balance the main finding with its implication while avoiding inflation.
+
+---
+
+## Abstracts
+
+### Core function
+Abstracts should be highly compressed, argumentatively coherent, and smooth despite their density.
+
+### Preferred style
+- Efficient
+- Dense but controlled
+- Structured around an intelligible argumentative arc, not just a list of facts
+
+### Tone
+- Precise
+- High-information
+- Clinically meaningful without sounding promotional
+
+The abstract should feel compact and sharp, not cramped.
+
+---
+
+## Claim Strength and Hedging
+
+Claim strength should vary by section and by inference type.
+
+### Findings
+- State findings directly when the data support direct statement.
+- Be confident when support is strong.
+
+### Interpretation
+- Apply more caution when moving from observation to explanation.
+- Hedge appropriately in the context of:
+  - mechanism
+  - causality
+  - broad implication
+  - generalizability
+  - policy-level inference
+
+### General rule
+The writing should be direct about what the study shows and more careful about what the findings mean beyond the observed data.
+
+No single stock claim vocabulary should be enforced across all sections. Use section-appropriate phrasing:
+- cleaner and more direct in Results
+- somewhat stronger in Discussion when warranted
+- more restrained in mechanistic or causal territory
+
+---
+
+## Novelty, Importance, and Significance
+
+Novelty and importance should be handled in a section-appropriate way.
+
+### Rules
+- Do not overstate novelty.
+- Do not use inflated significance language unless truly earned.
+- Let the evidence and framing carry most of the weight.
+- State why the work matters when needed, but avoid sounding self-congratulatory.
+
+Importance should be articulated, not advertised.
+
+This may be slightly stronger in the Abstract and Discussion than in Methods or Results, but the register should remain restrained throughout.
+
+---
+
+## Transitions
+
+Transitions should be clear, restrained, and smooth.
+
+### Preferred qualities
+- explicit enough to guide the reader
+- elegant enough to preserve flow
+- never formulaic or canned
+
+Use transitions to shape logic and rhythm, not to fill space. Paragraph and sentence progression should feel natural and deliberate rather than stitched together by stock phrases.
+
+---
+
+## Paragraph Endings
+
+Paragraph endings should usually:
+- land cleanly
+- feel finished
+- carry a polished conceptual edge
+
+Avoid weak trailing phrases or generic wrap-up sentences. Endings should feel crisp and conclusive.
+
+---
+
+## Clinical Relevance
+
+Clinical relevance should be handled in a section-appropriate way.
+
+### General rule
+- Sometimes it should remain implicit, allowing the reader to perceive the relevance through framing and evidence.
+- Sometimes it should be stated clearly.
+- The choice depends on the section and rhetorical need.
+
+Clinical relevance should never feel bolted on. It should be structurally integrated into the argument.
+
+---
+
+## Evidence Framing
+
+Frame the manuscript around a real clinical problem whenever possible, while integrating literature early and intelligently.
+
+Preferred approach:
+- anchor the question in the clinical problem
+- weave literature into that frame
+- avoid detached literature dumping
+
+The writing should feel connected to actual practice, systems, or clinical decision-making, even when conceptually sophisticated.
+
+---
+
+## Emphasis
+
+Emphasis may come from several sources:
+- sentence structure
+- placement
+- logic and buildup
+- occasionally stronger diction
+
+Use emphasis sparingly and intentionally. Do not rely on adjectives or inflated phrasing to create force.
+
+---
+
+## Revision Priorities
+
+When revising, prioritize the following problems:
+
+1. **Logic or flow is muddy**
+   - tighten sequencing
+   - clarify paragraph function
+   - sharpen transitions
+   - remove structural drift
+
+2. **Tone is off**
+   - restore formal control
+   - remove generic or inflated phrasing
+   - increase sophistication without adding ornament
+
+3. **The writing is not sharp enough**
+   - cut filler
+   - strengthen phrasing
+   - improve argumentative precision
+   - ensure each paragraph earns its place
+
+---
+
+## Self-Audit Checklist
+
+Before finalizing any manuscript section, check the following:
+
+- Does the prose sound intellectually precise?
+- Does it flow naturally even when dense?
+- Does the argument feel controlled?
+- Does this sound like a polished human expert rather than a template?
+- Is the paragraph structure deliberate?
+- Are findings stated directly where appropriate?
+- Is interpretation appropriately hedged?
+- Is the tone section-appropriate?
+- Have filler and inflated language been removed?
+- Are citations being used to build the argument rather than merely populate it?
+- Are paragraph endings crisp and conceptually strong?
+- Has revision improved logic, tone, and sharpness?
+
+---
+
+## Summary Style Target
+
+The ideal finished prose should feel:
+- dense but readable
+- sophisticated but restrained
+- elegant but not ornate
+- clinically grounded
+- analytically sharp
+- logically controlled
+- unmistakably human
