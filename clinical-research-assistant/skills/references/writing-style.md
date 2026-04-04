@@ -75,6 +75,13 @@ Across all sections, prioritize the following:
 
 ---
 
+## Punctuation and Mechanics
+
+- Never use em dashes.
+- Use commas, semicolons, or parentheses instead, depending on the sentence.
+- Prefer syntax that remains clean and controlled without typographic emphasis.
+- If a sentence seems to require an em dash for force or rhythm, rewrite the sentence instead.
+
 ## Diction
 
 ### Preferred diction
