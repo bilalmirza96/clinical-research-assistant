@@ -10,372 +10,316 @@ This file defines the author's unique writing voice. All writing skills (`/write
 
 This document defines the default writing style for academic manuscripts. It is intended to guide drafting and revision across sections while preserving section-appropriate variation. The goal is not a rigid template, but a consistent authorial identity: sophisticated, analytically controlled, clinically grounded, and publication-ready.
 
-The prose should read as if written by a polished human expert with command of both the literature and the argument. It should never feel generic, inflated, or mechanically “academic.”
+The prose # Author Writing Style Reference
+
+This file defines the author's manuscript-writing style for academic and clinical research writing. All writing skills should apply these patterns across drafting and revision. The goal is prose that is professional, publication-ready, clinically grounded, and recognizably human. The writing should sound like a strong academic manuscript, not a generic template.
+
+---
+# Author Writing Style Reference
+
+This file defines the author's manuscript-writing style for academic and clinical research writing. All writing skills should apply these patterns across drafting and revision. The goal is prose that is professional, publication-ready, clinically grounded, and recognizably human. The writing should sound like a strong academic manuscript, not a generic template and not an opinion piece.
 
 ---
 
-## Core Authorial Identity
+## Core Voice
 
-The default voice should combine the following qualities:
+The default voice should be:
 
-- Dense and analytic
-- Elegant but restrained
-- Sophisticated without ornament
-- Clinically literate and academically controlled
-- Sharp in argument, disciplined in tone
-- Formal and impersonal by default
+- formal
+- professional
+- academic
+- clinically anchored
+- data-led
+- interpretive in a controlled way
+- sophisticated without ornament
+- assertive, but not inflated
 
-The writing should sound intellectually mature. Complexity is acceptable and often desirable, but the logic must remain easy to follow. The prose should feel built, not generated.
+The prose should read like a polished manuscript written by a clinician-investigator with command of the data and the literature. It should not sound conversational, literary, promotional, or editorialized.
 
 ---
 
-## Global Writing Priorities
+## Global Principles
 
-Across all sections, prioritize the following:
+### 1. Start from the clinical problem
+The writing should usually begin with the clinical problem, management challenge, or disparity of interest before moving into the mechanistic, molecular, or methodological detail.
 
-1. **Clarity of logic**
-   - Each paragraph should have a clear argumentative function.
-   - The sequence of ideas should feel deliberate.
-   - Complex ideas may remain complex, but their logic must be easy to track.
+### 2. Keep interpretation tethered to data
+Interpretive lift is acceptable and often desirable, but it must follow directly from the observed findings. Do not widen beyond what the data can support.
 
-2. **Sophistication without inflation**
-   - Avoid filler, empty emphasis, and self-congratulatory novelty language.
-   - Importance should be stated when warranted, not advertised.
-   - Strong claims are acceptable when earned, but rhetoric should remain controlled.
+### 3. Prefer structured argument over stylistic display
+The prose should feel well built. Paragraphs should progress logically and each paragraph should have a clear function. Sophistication should come from reasoning, sequencing, and sentence control rather than ornament.
 
-3. **Precision of tone**
-   - Tone should remain formal, confident, and section-appropriate.
-   - Avoid both robotic flatness and overworked literary flourish.
-   - The prose should feel polished, not mannered.
+### 4. Maintain manuscript authority
+The tone should be confident and publication-ready. Avoid flat, over-defensive prose. At the same time, do not sound promotional or overstated.
 
-4. **Sharpness**
-   - Sentences should carry meaning efficiently.
-   - Paragraphs should do argumentative work.
-   - Revision should aim to reduce muddiness, sharpen the point, and align tone with authorial intent.
+### 5. Never use em dashes
+Em dashes are not permitted. Replace them with commas, semicolons, colons, or parentheses as appropriate. Rewrite the sentence if needed.
 
 ---
 
 ## Sentence Architecture
 
-### Default sentence style
+### Default pattern
 - Prefer medium-length sentences as the baseline.
-- Use longer, more layered sentences for synthesis, interpretation, and conceptual framing.
-- Use shorter, cleaner sentences for data presentation and high-information factual material.
+- Use longer sentences when synthesizing findings, discussing mechanisms, or connecting results to broader clinical meaning.
+- Use shorter, cleaner sentences when presenting data or making a direct point.
 
-### Sentence variation
-- Rhythm should vary by section.
-- Maintain an overall controlled cadence.
-- Use occasional longer sentences intentionally for emphasis, synthesis, or interpretive lift.
-- Do not let sentence rhythm become monotonous, but do not chase variation for its own sake.
+### Rhythm
+- Rhythm should remain controlled and section-appropriate.
+- Discussion and Introduction may carry slightly more syntactic lift.
+- Results should be tighter and more direct.
+- Methods should be formal and readable, but not mechanical.
 
-### Complexity
-- Preserve intellectual density when needed.
-- Do not flatten complex ideas into simplistic prose.
-- Complexity is acceptable only if the reader can follow the reasoning without strain.
+### Clause structure
+The author often uses layered sentences with multiple linked clauses, especially in Interpretation and Discussion. This is acceptable as long as the logic remains easy to follow.
 
 ---
-
-## Punctuation and Mechanics
-
-- Never use em dashes.
-- Use commas, semicolons, or parentheses instead, depending on the sentence.
-- Prefer syntax that remains clean and controlled without typographic emphasis.
-- If a sentence seems to require an em dash for force or rhythm, rewrite the sentence instead.
 
 ## Diction
 
 ### Preferred diction
-- Elevated but precise
-- Formal, exact, and conceptually mature
-- Field-literate without becoming jargon-heavy for its own sake
+- elevated but precise
+- formal and exact
+- academically mature
+- clinically literate
 
 ### Avoid
-- Generic filler
-- Inflated novelty language
-- Empty intensifiers
-- Vague phrasing that substitutes for real precision
+- generic filler
+- empty intensifiers
+- self-congratulatory novelty language
+- vague abstractions detached from the data
+- overly literary phrasing
+- commentary-style flourishes
 
-The prose should sound sophisticated because the thinking is sophisticated, not because it uses decorative vocabulary.
+### Important note
+Do not overcorrect into blandness. Standard academic phrases are acceptable when they perform real argumentative work and fit the context.
+
+---
+
+## Tone
+
+The ideal tone is:
+
+- more professional than conversational
+- more authoritative than tentative
+- less inflated than high-impact promotional prose
+- less flat than hyper-restrained copyediting
+
+The writing should sound like a strong clinical manuscript, not a press release and not a neutralized rewrite.
 
 ---
 
 ## Point of View
 
-- Default to an impersonal academic register.
-- Use first-person constructions sparingly, if at all.
-- Prefer formulations that keep attention on the study, findings, question, or evidence rather than on the authors.
+- Prefer an impersonal academic register by default.
+- Use first-person constructions selectively and only when they improve clarity.
+- The emphasis should remain on the study, findings, cohort, clinical problem, or literature rather than on the authors.
 
 ---
 
-## Section-Specific Style
+## Section-Specific Guidance
 
 ## Introduction
 
-### Core function
-The Introduction should begin broad and narrow in deliberate layers. It should move stepwise from the larger clinical or scientific problem toward the precise unresolved question.
+### Function
+The Introduction should establish the clinical importance of the question, narrow progressively, define the specific gap, and end in a focused study objective.
 
-### Preferred structure
-- Open with the broader clinical problem or disease-level context.
-- Narrow progressively through clinically relevant and literature-based layers.
-- Weave literature into the developing logic rather than presenting it as a detached summary.
-- Arrive at the exact gap only after the problem has been built clearly and persuasively.
+### Structure
+- Open with the broader clinical problem.
+- Narrow in logical layers.
+- Use the literature to frame the gap, not merely to summarize background.
+- Build toward the precise unresolved question.
 
 ### Tone
-- Formal, analytically controlled, and evidence-rich
-- Dense in citation where appropriate
-- Never generic, slow, or padded
+- formal
+- clinically motivated
+- evidence-rich
+- controlled in emphasis
 
 ### Citation style
-Use citations strategically and often in the Introduction, but with emphasis on quality rather than density alone. Prefer:
-- high-impact clinical trials
-- seminal field-defining studies
-- strong meta-analyses
-- pivotal observational studies when relevant
-
-The literature should build the argument, not simply decorate background claims.
+Use dense citation support in the Introduction when building a clinical or scientific problem. Prefer high-quality evidence, including major trials, high-impact studies, seminal field-defining papers, and strong meta-analyses.
 
 ---
 
 ## Methods
 
-### Core function
-Methods should read as formal, precise, and readable. They should remain disciplined while retaining some prose quality.
-
-### Preferred style
-- Formal and exact
-- Detailed without being mechanical
-- Elegant where possible, but never stylized
+### Function
+Methods should read as precise, formal, and readable.
 
 ### Tone
-- Controlled
-- Technical
-- Clear enough that methodological logic remains easy to follow
+- technical
+- disciplined
+- not robotic
 
-Methods should not sound robotic. They should sound authoritative and competent.
+### Preferred style
+- clear definitions
+- orderly presentation
+- no unnecessary stylistic flourish
+
+Even in Methods, the prose should remain polished.
 
 ---
 
 ## Results
 
-### Core function
-Results should be primarily data-forward.
+### Function
+Results should present findings directly and efficiently.
+
+### Tone
+- data-forward
+- lean
+- minimally interpretive
 
 ### Preferred style
-- Lean
-- Direct
-- Shorter sentences than Introduction or Discussion
-- Minimal interpretation
+- shorter sentences than Introduction and Discussion
+- let the data lead
+- use framing only when it genuinely helps the reader follow the sequence of findings
 
-### Narrative stance
-- Present findings cleanly
-- Use brief framing only when needed to orient the reader to why a result matters within the sequence of the paper
-- Do not allow Discussion-style interpretation to bleed into Results
-
-### Claim style
-State what was observed directly and plainly. Avoid over-explaining.
+Avoid excessive narration of what the results "mean" inside the Results section.
 
 ---
 
 ## Discussion
 
-### Core function
-The Discussion should make a real argument while remaining disciplined. It should be interpretive and sharp, analytical and measured, clinically grounded, and conceptually broad enough to synthesize without drifting into abstraction.
+### Function
+The Discussion should interpret the findings, compare them with prior literature, explain plausible reasons for concordance or discordance, define the clinical implications, and acknowledge limitations.
 
-### Preferred style
-- Interpretive, but controlled
-- Measured, but not timid
-- Clinically grounded
-- Capable of conceptual lift when warranted
+### Preferred structure
+The author strongly favors a conventional manuscript Discussion structure:
 
-### Paragraph construction
-Do not force all Discussion paragraphs into a claim-first or context-first template. Openings should feel deliberate and chosen according to the function of the paragraph.
+1. open with the principal findings
+2. define why the question matters clinically
+3. compare with supportive prior literature
+4. address conflicting literature
+5. offer plausible explanation or mechanism
+6. define clinical implications
+7. discuss strengths
+8. discuss limitations
+9. close with a disciplined conclusion
 
-### Counterpoints and qualifications
-When introducing tension, limitation, or contrast:
-- acknowledge it directly
-- use contrast deliberately
-- sharpen the claim rather than dissolving it
+### Tone
+- formal
+- assertive
+- structured
+- interpretive, but not editorial
 
-The ideal tone is measured but dialectically active.
+### Paragraph style
+Discussion paragraphs often turn on a hinge:
+- result
+- why it matters
+- what may explain it
+- how it fits with prior literature
 
-### Final Discussion movement
-Discussion should move from interpretation toward implication without becoming promotional. The strongest closing sentences balance the main finding with its implication while avoiding inflation.
+This is a core feature of the author's style and should be preserved.
+
+### Mechanistic discussion
+Mechanistic explanation is welcome when plausible and relevant, but should be framed as explanation or interpretation rather than fact.
+
+### Clinical implications
+Clinical implications may be stated explicitly. However, they should arise from the findings and should not read like advocacy.
 
 ---
 
 ## Abstracts
 
-### Core function
-Abstracts should be highly compressed, argumentatively coherent, and smooth despite their density.
+### Function
+The abstract should be compact, polished, and high-information.
 
 ### Preferred style
-- Efficient
-- Dense but controlled
-- Structured around an intelligible argumentative arc, not just a list of facts
+- direct opening
+- clear statement of question, methods, principal findings, and conclusion
+- concise but not skeletal
+- professional, not overstated
 
-### Tone
-- Precise
-- High-information
-- Clinically meaningful without sounding promotional
-
-The abstract should feel compact and sharp, not cramped.
+The abstract may include a modest degree of interpretive framing, but must remain anchored to the data.
 
 ---
 
 ## Claim Strength and Hedging
 
-Claim strength should vary by section and by inference type.
-
 ### Findings
-- State findings directly when the data support direct statement.
-- Be confident when support is strong.
+State observed findings directly.
 
 ### Interpretation
-- Apply more caution when moving from observation to explanation.
-- Hedge appropriately in the context of:
-  - mechanism
-  - causality
-  - broad implication
-  - generalizability
-  - policy-level inference
+Use careful interpretive language when moving beyond the data, especially for:
+- mechanism
+- causality
+- generalizability
+- implications for practice
+- policy-level or system-level conclusions
 
-### General rule
-The writing should be direct about what the study shows and more careful about what the findings mean beyond the observed data.
-
-No single stock claim vocabulary should be enforced across all sections. Use section-appropriate phrasing:
-- cleaner and more direct in Results
-- somewhat stronger in Discussion when warranted
-- more restrained in mechanistic or causal territory
-
----
-
-## Novelty, Importance, and Significance
-
-Novelty and importance should be handled in a section-appropriate way.
-
-### Rules
-- Do not overstate novelty.
-- Do not use inflated significance language unless truly earned.
-- Let the evidence and framing carry most of the weight.
-- State why the work matters when needed, but avoid sounding self-congratulatory.
-
-Importance should be articulated, not advertised.
-
-This may be slightly stronger in the Abstract and Discussion than in Methods or Results, but the register should remain restrained throughout.
+### Rule
+Do not hedge everything. The prose should not sound timid. Hedge where the inference requires it.
 
 ---
 
 ## Transitions
 
-Transitions should be clear, restrained, and smooth.
+Transitions should be clear and conventional, but not mechanical. The prose should move like a manuscript, not like a list.
 
-### Preferred qualities
-- explicit enough to guide the reader
-- elegant enough to preserve flow
-- never formulaic or canned
-
-Use transitions to shape logic and rhythm, not to fill space. Paragraph and sentence progression should feel natural and deliberate rather than stitched together by stock phrases.
+Acceptable transitions include standard academic phrases when they support structure and flow. Avoid over-stylized connective language.
 
 ---
 
 ## Paragraph Endings
 
 Paragraph endings should usually:
-- land cleanly
-- feel finished
-- carry a polished conceptual edge
+- land clearly
+- carry forward the argument
+- provide slight conceptual or clinical lift when appropriate
 
-Avoid weak trailing phrases or generic wrap-up sentences. Endings should feel crisp and conclusive.
-
----
-
-## Clinical Relevance
-
-Clinical relevance should be handled in a section-appropriate way.
-
-### General rule
-- Sometimes it should remain implicit, allowing the reader to perceive the relevance through framing and evidence.
-- Sometimes it should be stated clearly.
-- The choice depends on the section and rhetorical need.
-
-Clinical relevance should never feel bolted on. It should be structurally integrated into the argument.
+Do not end paragraphs with empty wrap-up lines.
 
 ---
 
-## Evidence Framing
+## Literature Comparison
 
-Frame the manuscript around a real clinical problem whenever possible, while integrating literature early and intelligently.
+A recurring and preferred move in the author's writing is to compare the present findings with prior literature in a structured way:
+- first, studies that align with the findings
+- then, studies that differ
+- then, possible explanation for the discrepancy
 
-Preferred approach:
-- anchor the question in the clinical problem
-- weave literature into that frame
-- avoid detached literature dumping
-
-The writing should feel connected to actual practice, systems, or clinical decision-making, even when conceptually sophisticated.
+This pattern should be preserved, especially in Discussion sections.
 
 ---
 
-## Emphasis
+## What to Avoid
 
-Emphasis may come from several sources:
-- sentence structure
-- placement
-- logic and buildup
-- occasionally stronger diction
+Do not produce prose that is:
+- too flat
+- too generic
+- too cautious
+- too literary
+- too editorial
+- too obviously AI-smoothed
+- too eager to advertise importance
 
-Use emphasis sparingly and intentionally. Do not rely on adjectives or inflated phrasing to create force.
+Do not convert the manuscript into a commentary. Keep it within the rhetorical norms of a strong academic paper.
 
 ---
 
 ## Revision Priorities
 
-When revising, prioritize the following problems:
+When revising, prioritize:
 
-1. **Logic or flow is muddy**
-   - tighten sequencing
-   - clarify paragraph function
-   - sharpen transitions
-   - remove structural drift
-
-2. **Tone is off**
-   - restore formal control
-   - remove generic or inflated phrasing
-   - increase sophistication without adding ornament
-
-3. **The writing is not sharp enough**
-   - cut filler
-   - strengthen phrasing
-   - improve argumentative precision
-   - ensure each paragraph earns its place
+1. clarity of logic
+2. professional academic tone
+3. sharper paragraph structure
+4. removal of grammatical mistakes and awkward phrasing
+5. restraint in overstated lines
+6. preservation of manuscript authority
 
 ---
 
-## Self-Audit Checklist
+## Final Style Target
 
-Before finalizing any manuscript section, check the following:
+The ideal prose should feel:
 
-- Does the prose sound intellectually precise?
-- Does it flow naturally even when dense?
-- Does the argument feel controlled?
-- Does this sound like a polished human expert rather than a template?
-- Is the paragraph structure deliberate?
-- Are findings stated directly where appropriate?
-- Is interpretation appropriately hedged?
-- Is the tone section-appropriate?
-- Have filler and inflated language been removed?
-- Are citations being used to build the argument rather than merely populate it?
-- Are paragraph endings crisp and conceptually strong?
-- Has revision improved logic, tone, and sharpness?
-
----
-
-## Summary Style Target
-
-The ideal finished prose should feel:
-- dense but readable
-- sophisticated but restrained
-- elegant but not ornate
+- professional and academic
 - clinically grounded
-- analytically sharp
-- logically controlled
+- structured and manuscript-like
+- data-led
+- interpretive in a controlled way
+- sophisticated but not ornate
+- assertive without sounding like an opinion piece
 - unmistakably human
