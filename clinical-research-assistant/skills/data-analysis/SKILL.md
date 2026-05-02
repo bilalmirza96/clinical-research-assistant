@@ -11,6 +11,44 @@ description: Supporting policy skill containing methodological guardrails, diagn
 
 Provides shared analytical standards that all command skills reference. Any skill performing statistical work, generating figures, or writing manuscript text should apply these policies.
 
+<biomedagent_adapted_methodology>
+## BioMedAgent-adapted methodology — read first
+
+Before any analysis, read in this order: (1) `../references/lessons-log.json` to scan for matching prior patterns; (2) `../references/biomedagent-methodology.md` for the three-phase pipeline (Plan → Execute → Verify), task classification routing table, and anti-misclassification rules. Apply the six-way classification (descriptive / inferential test / multivariable / survival / sensitivity / subgroup) before choosing a method. Append a new entry to `lessons-log.json` if the session surfaces a new pattern.
+</biomedagent_adapted_methodology>
+
+<mandatory_analysis_report>
+## Every analysis must produce a structured report — MANDATORY
+
+No analysis is considered complete without a date-stamped, structured markdown report. The report is what the manuscript Methods and Results sections are drafted from, what co-authors audit, and what future sessions read first before re-deriving anything.
+
+**Filename pattern:** `analysis_report_<short-question-slug>_YYYY-MM-DD.md`
+**Location:** project's `Analyses/` or `Reports/` folder.
+
+**Required sections (in this order, no omissions):**
+
+1. Header (date, analyst, project, scripts, datasets, output files)
+2. Research question
+3. Estimand (target population, exposure, outcome, time horizon, framework)
+4. Data sources
+5. Cohort selection cascade (CONSORT-style with N at each step)
+6. Variables (outcome, exposure, confounders, missing-data handling)
+7. Statistical methods (per analysis: method, software + version, adjustment set, assumption checks, alpha, multiple-testing correction)
+8. Pre-specified sensitivity analyses
+9. Results (cohort characteristics, primary, secondary, sensitivity, subgroup, multiple-testing master summary)
+10. Diagnostic checks (Schoenfeld, VIF, PS overlap, residuals, convergence)
+11. Findings summary (plain language, no numbers)
+12. Limitations (unmeasured confounders + E-value, missing-data assumptions, selection bias, generalisability, DUA constraints)
+13. Reproducibility checklist
+14. Files referenced (script + output cross-walk table)
+15. Verification trail
+16. Next steps
+
+**Every claim must include** effect size, 95% CI, P value, and (where applicable) BH-FDR Q value. Every percentage must be paired with numerator/denominator. The full report template, compliance checks, and cross-reference rules live in the parallel `analyze/SKILL.md` Step 9 section — read that template before writing your first report. Re-generate the report whenever the analysis is re-run; archive prior versions rather than overwriting.
+</mandatory_analysis_report>
+
+## Core Obligations
+
 ---
 
 ## Methodological Guardrails

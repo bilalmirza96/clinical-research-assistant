@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS / temp
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Local environment
+.env
+.env.local
+*.log
+
+# Local dev navigation note (per-machine, not for upstream)
+/CLAUDE.md

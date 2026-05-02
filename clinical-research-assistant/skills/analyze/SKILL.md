@@ -11,6 +11,26 @@ argument-hint: "[study aim or dataset description]"
 <role>
 Act as a senior clinical biostatistician operating at publication-grade standards for major surgical, oncology, transplant, and high-impact medical journals.
 </role>
+<biomedagent_adapted_methodology>
+## BioMedAgent-adapted methodology — read first
+
+**Before starting any analysis, read these two files in this exact order:**
+
+1. `../references/lessons-log.json` — machine-readable memory of analytic patterns surfaced from prior sessions. Scan `trigger_patterns` for matches to the current task. If a match is found, apply the entry's `action` directly without re-deriving.
+2. `../references/biomedagent-methodology.md` — the four cross-cutting ideas adapted from BioMedAgent (*Nature Biomedical Engineering*, 2026): three-phase pipeline (Plan → Execute → Verify), task classification before method selection, memory retrieval, and anti-misclassification rules.
+
+**Apply the three-phase pipeline to every analysis** (this is the discipline behind the existing 8-step interactive workflow):
+- **Phase 1 (Plan).** Steps 1–3. Restate the question, fix the estimand, list inclusion/exclusion, choose method + assumptions, pre-specify all sensitivity analyses.
+- **Phase 2 (Execute).** Steps 4–7. Code only what the plan specifies; save every script to a date-stamped folder.
+- **Phase 3 (Verify and revise).** Step 8 + audit. Numerical, distributional, and clinical-magnitude checks before any number is reported. If verification fails, return to Phase 1, not Phase 2.
+
+**Classify the task before choosing a method.** Use the six-way routing table in `biomedagent-methodology.md` (descriptive / inferential test / multivariable / survival / sensitivity / subgroup).
+
+**Apply the anti-misclassification rules** in `biomedagent-methodology.md` Section 4 before reporting any effect estimate.
+
+**Append a new lesson at session end** to `../references/lessons-log.json` if the session surfaced a new pattern (pitfall, default sensitivity, classification trap). Format: `id`, `date_added`, `originating_session`, `category`, `trigger_patterns`, `lesson`, `action`.
+</biomedagent_adapted_methodology>
+
 
 ## State Management
 
@@ -165,7 +185,7 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .steps_completed.bias_warnings = true
 ```
 
-#### After STEP 9 (Final — Code Bundle Complete)
+#### After STEP 9b (Final — Analysis Report Complete)
 
 This is the completion checkpoint. Write all final state.
 
@@ -375,18 +395,192 @@ If a data dictionary is provided, treat it as the authoritative schema.
 - Times New Roman 12pt, centered, bold headers, thin black borders, no color
 - Timestamp all outputs
 
-### STEP 9: Reproducible Code Bundle
+### STEP 9a: Reproducible Code Bundle
 - Complete Python script using: pandas, numpy, scipy, statsmodels, lifelines, scikit-learn, openpyxl
 - Script must: load raw data, clean data, fit models, run diagnostics, generate all outputs
 - Fixed random seed (42)
 - `pip install` block with Python version and all package versions
 - Analysis log: rows included/excluded, missing data handling, final N, model diagnostics
 
+
+### STEP 9b: Generate the Analysis Report (MANDATORY)
+
+**Every analysis must end with a date-stamped, structured markdown report.** No analysis is considered complete without this report. The report is the durable deliverable that future sessions, co-authors, and reviewers can audit. It is what gets cited from the manuscript Methods and Results sections, and what gets attached to the regulatory submission packet.
+
+#### Filename and location
+
+Save to the project's `Analyses/` or `Reports/` folder (create if missing) with the filename pattern:
+
+```
+analysis_report_<short-question-slug>_YYYY-MM-DD.md
+```
+
+Example: `analysis_report_NHB_surgery_disparity_2026-04-26.md`
+
+#### Required sections (in this exact order)
+
+Every report must contain all of these sections. Empty sections are not acceptable; if a section does not apply, write "Not applicable — [reason]" rather than omitting it.
+
+```markdown
+# Analysis Report — [Concise Title of the Question]
+
+**Date:** YYYY-MM-DD
+**Analyst:** [Name, role, institution]
+**Project:** [Project name + folder]
+**Scripts:** [paths to all scripts that produced these results, comma-separated]
+**Datasets:** [paths to all input data files with N and date]
+**Output files:** [paths to all generated tables, figures, and intermediate files]
+
+## 1. Research Question
+
+One sentence: the same gap statement used in the manuscript Introduction.
+
+## 2. Estimand
+
+- **Target population:**
+- **Exposure / comparator:**
+- **Outcome:**
+- **Time horizon:**
+- **Estimand framework:** ATE / ATT / per-protocol / intention-to-treat / etc.
+
+## 3. Data Sources
+
+For each source, name + version + date + N (raw) + N (after exclusions) + access date.
+
+## 4. Cohort Selection (CONSORT-Style)
+
+A numbered exclusion cascade with N at each step. Every excluded category has a count and a reason.
+
+## 5. Variables
+
+- **Outcome:** definition, coding, units
+- **Exposure:** definition, coding, reference category
+- **Confounders / covariates:** list with type (categorical / continuous), levels, missing-data handling
+- **Stratification variables (if any):**
+- **Effect modifiers tested (if any):**
+
+## 6. Statistical Methods
+
+For each analysis:
+- **Method** (logistic / Cox / linear / Fisher exact / chi-square / Kruskal-Wallis / etc.)
+- **Software + version** (Python 3.10, statsmodels 0.14, lifelines 0.30, scipy 1.15, etc.)
+- **Adjustment set** (sequential M1 → M5 specification)
+- **Assumption checks** (proportional-hazards, linearity, normality, missing-at-random)
+- **Significance threshold** (alpha = 0.05 two-sided default)
+- **Multiple-testing correction** (BH-FDR / Bonferroni — say which family of tests, how many)
+- **Pre-specified sensitivity analyses** (list before reporting)
+
+## 7. Pre-Specified Sensitivity Analyses
+
+Numbered list. Each entry: rationale + method + decision threshold.
+
+## 8. Results
+
+### 8.1 Cohort Characteristics
+Table 1 reference + 1–2 sentence summary of demographics by exposure.
+
+### 8.2 Primary Analysis
+- **Endpoint:**
+- **Result:** effect size + 95% CI + P value + N
+- **BH-FDR Q value** (if part of a family)
+- **E-value** (for residual confounding, if observational)
+
+### 8.3 Secondary Analyses
+For each: same fields as primary.
+
+### 8.4 Sensitivity Analyses
+For each pre-specified sensitivity: result + interpretation (consistent / discrepant).
+
+### 8.5 Subgroup / Stratified Analyses
+Effect estimates within levels + formal interaction-term P value.
+
+### 8.6 Multiple-Testing Master Summary
+Master significance table with every test in the family: endpoint, primary P, adjusted P, BH-FDR Q, Bonferroni significance.
+
+## 9. Diagnostic Checks
+
+- Schoenfeld residuals (Cox)
+- VIF / multicollinearity (logistic / linear)
+- Propensity-score overlap (counterfactual)
+- Influence statistics, residual plots if relevant
+- Convergence diagnostics
+
+## 10. Findings Summary (Plain Language)
+
+3–5 bullet points stating what was learned. No numbers; just the substantive findings as a clinician would want to read them.
+
+## 11. Limitations
+
+- Unmeasured confounders (and the E-value lower bound)
+- Missing-data assumptions (MAR / MCAR / MNAR rationale)
+- Generalisability constraints (cohort representativeness)
+- Selection bias risks
+- Information bias / measurement bias risks
+- Compliance constraints (DUA cell-N rules, etc.)
+
+## 12. Reproducibility Checklist
+
+- [ ] All scripts saved to date-stamped folder under `Scripts/`
+- [ ] All output files saved with date stamp in filename
+- [ ] Random seeds fixed where stochastic methods used
+- [ ] Software environment documented (Python version + package versions)
+- [ ] Data version frozen (registry submission date / dataset DOI)
+- [ ] Pre-specified analysis plan archived (link)
+- [ ] Master significance table includes BH-FDR + Bonferroni
+- [ ] Every reported number traceable to a script + script line / cell
+
+## 13. Files Referenced
+
+| File | Type | Description |
+|---|---|---|
+| `Scripts/.../V4_xx.py` | Script | What it computes |
+| `Tables/.../v4_t1_baseline_*.csv` | Output | What it contains |
+| `Figures/.../Figure_V4_01_*.png` | Output | What it shows |
+
+## 14. Verification Trail
+
+What independent verification was performed (numerical re-derivation, hand calculation on a 2×2 subset, alternative software, etc.) and what was the result.
+
+## 15. Next Steps
+
+What the analysis suggests should happen next: additional analyses, manuscript writing, peer review, replication in an external cohort.
+```
+
+#### When the report is written
+
+- **Mandatory at Step 8 transition** (Excel file ready). The report is built immediately after the Excel workbook so the two are date-aligned.
+- **Re-generated whenever the analysis is re-run** (e.g., after PI revisions). Treat the report as a versioned artefact; archive prior versions to `Archives/` rather than overwriting in place.
+- **Read first by every subsequent session** that touches this analysis. The report is the single source of truth for what was done; future sessions should not re-derive findings without first reading the latest report.
+
+#### Cross-references
+
+- The report's **Methods section** is the source from which the manuscript's Methods section is drafted; do not write methods text into the manuscript without first reading this report.
+- The report's **Results section** is the source for the manuscript's Results.
+- The report's **Limitations** feed the manuscript Discussion.
+- The report's **Files Referenced** table is the cross-walk for the manuscript's reproducibility statement.
+
+#### Compliance check
+
+Before the report is declared complete, confirm:
+
+- [ ] Every claim in section 8 has an effect size, 95% CI, P value, and (where applicable) BH-FDR Q.
+- [ ] Every percentage is paired with numerator/denominator.
+- [ ] Every table reference resolves to an actual saved file.
+- [ ] Every script reference resolves to an actual saved file.
+- [ ] No internal hypothesis IDs (Q-numbers etc.) in the user-facing text — replace with descriptive endpoint labels.
+- [ ] Section 11 (Limitations) is not empty.
+- [ ] Section 12 (Reproducibility) has every checkbox addressed.
+- [ ] Filename and location follow the convention.
+
+If any check fails, the report is not complete. Do not exit the analysis session until all checks pass.
+
+---
+
 ---
 
 ## After Analysis
 
-Execute the STEP 9 completion checkpoint writes above, then inform the user:
+Execute the STEP 9b completion checkpoint writes above, then inform the user:
 
 > "Analysis complete."
 
@@ -407,3 +601,42 @@ Then always:
 > - `/write-methods-results` to draft the Methods and Results sections
 > - `/write-manuscript` for the full manuscript pipeline
 > - `/resume-project` in a future session to pick up where you left off
+
+## CHANGELOG / Lessons Learned
+
+This section accretes domain-specific lessons from real analyses. Append a new entry whenever a session surfaces a new pattern, gap, or correction worth carrying forward.
+
+### 2026-04-24 — V3 Esophageal Cancer Disparity Analysis (Bilal Mirza, U Arizona)
+
+#### Ten new mandatory checks added based on real-world findings
+
+1. **Within-stratum sanity check for any pp-gap finding (Simpson's-paradox prevention).** A V3 deep-dive claimed NHB tumors were 25% larger at presentation (+10 mm overall, P=10⁻²²); within-stage analysis revealed identical median size in Stage I/II/III/IV strata. The overall finding was a stage-distribution artifact. **Action:** Whenever a continuous-variable pp/percent gap is reported, ALWAYS run a within-stratum analysis on the most-relevant confounder (stage, age, histology). Add a sub-step "6a.5 — Within-stratum sanity for continuous outcomes" before the primary analysis.
+
+2. **Cox HR estimand sensitivity to cohort definition (all-stages vs surgically-curable).** Reporting Cox HR 1.15 on the all-stages cohort understated the disparity in the surgically-curable Stage I-III complete-case cohort (HR 1.45). Stage IV dilutes any access-mediated effect. **Action:** Report HR for BOTH the all-stages cohort AND the mechanism-relevant subset.
+
+3. **Time-stratified Cox as standard for biphasic disparity questions.** Schoenfeld test for race PH was satisfied (p=0.589), but time-stratified Cox in 0–6 / 6–12 / 12–24 / 24+ month windows revealed BIPHASIC disparity (HR 1.53 / 1.19 / 1.42 / 1.34). **Action:** When the research question implicates a time-bound mechanism (e.g., surgical access acts in the first 6 months), include time-stratified Cox even when global PH holds.
+
+4. **Unknown-as-category vs complete-case sensitivity for adjusted models.** Excluding patients with Unknown insurance/CDCC/income gave OR 0.59. Including them as their own categories gave OR 0.75. ~17% of the cohort had Unknown values. **Action:** When >5% of any covariate is Unknown, present BOTH inclusive (Unknown-as-category) and exclusive (complete-case) primary results with rationale.
+
+5. **E-value alongside every fully-adjusted residual effect.** E-value of 2.78 (surgery OR 0.59) is strong; E-value of 1.57 (Cox HR 1.15) is modest. Reporting both side-by-side demonstrates relative robustness. **Action:** Mandatory E-value reporting (point + CI bound) for every fully-adjusted residual exposure effect in the abstract and Table 2. Use VanderWeele-Ding formula. Promote from optional to MANDATORY in Step 5.
+
+6. **Master Significance Table with primary + secondary + BH-FDR for the entire test family.** Reporting 26 separate tests across 16 questions without family-wise correction risks 1+ false positives at α=0.05. BH-FDR revealed that some primary-significant findings (Q21 time-to-surgery, Q23_immuno) lose significance after adjustment. **Action:** For papers with >5 hypothesis tests in the same domain, generate at Step 8 a master table: Test ID, Claim, pp-gap, Primary P, Primary BH-q, Adjusted P, Adjusted BH-q, Verdict.
+
+7. **NCDB Data Use Agreement compliance — cell N≥11 rule.** A supplementary multi-race table contained 3 cells with N<11 (Hispanic/NHAPI minor categories). NCDB DUA prohibits publication of any cell with N<11. **Action:** For any NCDB analysis, generate both a "raw" version (internal) and a DUA-compliant version with cells <11 masked as "<11" — built into Step 8 Excel as a mandatory sheet.
+
+8. **Stage I + Unknown-stage disparity vs late-stage parity.** Late-stage (III/IV) presentation rates were statistically identical between NHB (58.9%) and NHW (59.1%); P=0.557. The disparity was in Stage I underrepresentation (−5.4 pp; P=10⁻⁶³) and Unknown-stage over-representation (+4.4 pp; P=10⁻⁴⁴). **Action:** Decompose into Stage I vs II/III vs IV vs Unknown rather than reporting binary "late-stage" rates. The Unknown-stage rate is itself an outcome (workup-completeness disparity).
+
+9. **Adjuvant-therapy / subgroup analyses need explicit power justification.** Q26 adjuvant nivolumab uptake post-CheckMate-577 had only n=178 NHB (vs 3,702 NHW). The 7.4 pp point estimate was not statistically significant in primary (P=0.056) or adjusted (P=0.23). **Action:** For any subgroup analysis with one arm <500, compute power for the observed effect size before interpreting null findings. Report findings honestly as "trend… not significant; likely underpowered" rather than as confirmed disparities.
+
+10. **Provider-side gating vs patient-side decisions — distinguish in registry data.** NCDB Reason for No Surgery separated "Not recommended" (provider) from "Patient refused" (patient). NHB had 9.75 pp excess in "Not recommended" but identical 0.5% rate of patient refusal — strong evidence for clinician-driven mechanism. **Action:** When studying treatment-receipt disparities, analyze the reason-for-no-treatment field by race. Provider-side excess + identical patient-side refusal = strong evidence for clinician-driven mechanism.
+
+#### Process improvements added to the workflow
+
+- **Step 1 expansion:** Add formal MCAR/MAR/MNAR classification when missing >5% in any covariate; add IQR + z-score outlier scan as standard.
+- **Step 6c expansion:** Add Schoenfeld PH test for the exposure coefficient specifically (not just global) for any Cox model; report p-value separately.
+- **Step 7 expansion:** Add facility-clustered (or institution-clustered) standard errors as standard for any registry analysis (use `cluster_col` in lifelines); flag if clusters have median <5 cases per cluster.
+- **Step 8 expansion:** Master Significance Table with primary + secondary + BH-FDR across all tests in the paper, plus DUA-compliant supplementary table.
+
+---
+
+> **Maintainer note:** Append new lessons here, dated, with the originating session and the action item. This skill should accrete capability over time. If a future session finds a lesson is wrong or superseded, mark it as deprecated rather than deleting — the audit trail matters.

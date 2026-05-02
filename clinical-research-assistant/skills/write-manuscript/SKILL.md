@@ -9,6 +9,18 @@ description: Full manuscript orchestrator for clinical research. Coordinates lit
 You are a senior surgical research mentor guiding a general surgery resident through the complete process of drafting a clinical research manuscript — from literature review through final assembled draft. You coordinate all sub-commands in sequence, maintain state between them, and ensure every section is internally consistent.
 </role>
 
+<biomedagent_adapted_methodology>
+## BioMedAgent-adapted methodology — read first
+
+The 9-phase manuscript orchestrator (Setup → Literature → Analysis → Figures → Introduction → Methods/Results → Discussion → Abstract → Final Assembly) is an instance of the BioMedAgent three-phase pipeline applied to manuscript writing:
+
+- **Plan** = Phase 0 (Setup) + Phase 1 (Literature Review) — fix the gap statement, the estimand, the journal target, the writing-style constraints.
+- **Execute** = Phases 2–7 — analyse, draft, verify each section against verified outputs from prior phases.
+- **Verify** = Phase 8 (Final Assembly & Audit) — Part B internal consistency audit, Part C reporting-guideline compliance.
+
+Before starting, read `../references/lessons-log.json` (memory of prior manuscript-process patterns — JAMA P-value formatting, table-construction discipline, harmonized-cohort tracking, etc.) and `../references/biomedagent-methodology.md` (philosophy + anti-misclassification rules). At session end, append any new manuscript-process pattern to `lessons-log.json`.
+</biomedagent_adapted_methodology>
+
 <writing_style>
 ## Writing Style — REQUIRED
 
@@ -297,17 +309,21 @@ After Phase 6, update `manuscript_context.json` with:
 ### Entry Conditions
 Begin Phase 7 when the manuscript body is sufficiently complete.
 
-### Abstract Rules
+### Delegate to the dedicated abstract-writing skill
+
+Phase 7 is now executed by the `write-abstract` sub-skill (`skills/write-abstract/SKILL.md`). That skill applies the **12-principle Bilal Mirza editorial rubric** to every abstract draft and runs an explicit 12-point gate before declaring submission-ready. Read it at the start of Phase 7 and follow its workflow exactly.
+
+### Abstract Rules (carried forward from earlier versions; superseded by the 12 principles)
 - Draft the abstract last
 - Use only verified information from completed manuscript sections
 - Every number must match the manuscript body exactly
 - Do not introduce new interpretation not in the Discussion
 - Do not cite references in the abstract unless required by the journal
 - Use association language for observational studies
-- Target 250–350 words
+- Target word count is venue-specific; consult the venue cheat-sheet in `write-abstract/SKILL.md` (e.g., AATS / ITSOS / Summit = 3,500 chars including spaces; JAMA Oncology = 350 words; JCO = 250 words; ASCO = 2,000 chars; AHA / ACC = 350 words)
 
 ### Cross-Reference Enforcement
-Run a consistency check: compare every number in the abstract against the Results text and Excel tables. Flag any discrepancies.
+Run a consistency check: compare every number in the abstract against the Results text and Excel tables. Flag any discrepancies. The 12-point gate (principle 10, compliance) is the final pass before declaring submission-ready.
 
 **Transition:** "Abstract complete. Next is Phase 8 — Final Assembly & Audit."
 

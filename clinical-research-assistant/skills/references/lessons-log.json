@@ -1,0 +1,387 @@
+{
+  "_meta": {
+    "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
+    "schema_version": "1.0",
+    "last_updated": "2026-04-25",
+    "maintainer": "clinical-research-assistant skill, sourced from real sessions",
+    "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting."
+  },
+  "lessons": [
+    {
+      "id": "L001-simpsons-paradox-prevention",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis (Bilal Mirza, U Arizona)",
+      "category": "Anti-misclassification: confounding artefact",
+      "trigger_patterns": [
+        "continuous outcome differs between groups",
+        "tumor size by race",
+        "biomarker level by exposure",
+        "any pp-gap reported on a continuous variable"
+      ],
+      "lesson": "An overall continuous-variable gap can be a stage-distribution (or other confounder-distribution) artefact rather than a within-stratum finding.",
+      "action": "Whenever a continuous-variable pp/percent gap is reported, run within-stratum analysis on the most-relevant confounder (stage, age, histology) BEFORE publishing. If the gap disappears within strata, report it as a confounding artefact, not a finding.",
+      "deprecated": false
+    },
+    {
+      "id": "L002-cox-estimand-cohort-sensitivity",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Multivariable model: estimand choice",
+      "trigger_patterns": [
+        "Cox HR for disparity outcome",
+        "all-stages survival comparison",
+        "access-mediated effect"
+      ],
+      "lesson": "Cox HR on the all-stages cohort can understate the disparity in the surgically-curable Stage I-III subset because Stage IV dilutes any access-mediated effect.",
+      "action": "Report HR for both the all-stages cohort AND the mechanism-relevant subset (Stage I-III). State which is primary in the abstract.",
+      "deprecated": false
+    },
+    {
+      "id": "L003-time-stratified-cox-for-biphasic-disparity",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Survival: time-bound mechanism",
+      "trigger_patterns": [
+        "research question implies time-bound mechanism",
+        "surgical access acts in first 6 months",
+        "early vs late disparity",
+        "biphasic hazard"
+      ],
+      "lesson": "Schoenfeld test for race PH may be globally satisfied while time-stratified Cox reveals biphasic disparity.",
+      "action": "When the research question implicates a time-bound mechanism, include time-stratified Cox in 0-6, 6-12, 12-24, and 24+ month windows even when global PH holds. Report HR per window with 95% CI.",
+      "deprecated": false
+    },
+    {
+      "id": "L004-unknown-as-category-vs-complete-case",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Sensitivity: missing-data handling",
+      "trigger_patterns": [
+        "Unknown insurance",
+        "Unknown CDCC",
+        "Unknown income quartile",
+        ">5% Unknown in any covariate"
+      ],
+      "lesson": "Excluding patients with Unknown values for covariates can shift adjusted ORs materially when Unknown rate exceeds 5% (e.g., OR shifted from 0.59 complete-case to 0.75 inclusive).",
+      "action": "When >5% of any covariate is Unknown, present BOTH inclusive (Unknown-as-category) and exclusive (complete-case) results. Add multiple imputation as a third sensitivity. Report all three side-by-side.",
+      "deprecated": false
+    },
+    {
+      "id": "L005-mandatory-e-value",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Sensitivity: unmeasured confounding",
+      "trigger_patterns": [
+        "fully-adjusted residual exposure effect",
+        "primary OR or HR in abstract",
+        "observational study causal-inference question"
+      ],
+      "lesson": "E-value (VanderWeele-Ding) quantifies the magnitude of unmeasured confounding required to explain a residual association. E-value of 2.78 (surgery OR 0.58) is strong; E-value of 1.57 (Cox HR 1.15) is modest.",
+      "action": "Mandatory: report E-value (point estimate + CI bound) for every fully-adjusted residual exposure effect in the abstract and main results table. Use VanderWeele-Ding formula.",
+      "deprecated": false
+    },
+    {
+      "id": "L006-master-significance-table-with-bh-fdr",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Sensitivity: multiple testing",
+      "trigger_patterns": [
+        "more than 5 hypothesis tests in same domain",
+        "family of related claims",
+        "primary + secondary outcomes by race",
+        "multi-question disparity paper"
+      ],
+      "lesson": "Reporting >5 separate tests without family-wise correction risks false positives. BH-FDR can flip primary-significant findings to null after adjustment.",
+      "action": "For papers with >5 hypothesis tests in the same domain, generate a master significance table at the end of analysis: Endpoint, Cohort, Adjusted estimate (95% CI), Primary P, BH-FDR Q, Bonferroni-significant Yes/No.",
+      "deprecated": false
+    },
+    {
+      "id": "L007-ncdb-dua-cell-n11-rule",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Compliance: data-use agreement",
+      "trigger_patterns": [
+        "NCDB Participant User File",
+        "supplementary table with race subcategories",
+        "Hispanic or NHAPI minor-category cell counts"
+      ],
+      "lesson": "NCDB Data Use Agreement prohibits publication of any cell with N<11. Internal worksheets should keep raw counts; publication-facing exports must mask cells with N<11 as '<11'.",
+      "action": "For any NCDB analysis, generate both a raw internal version and a DUA-compliant publication version with cells N<11 masked as '<11'. Include the DUA-compliant version as a separate Excel sheet labelled 'PUBLICATION_READY'.",
+      "deprecated": false
+    },
+    {
+      "id": "L008-stage-decomposition-not-binary-late-stage",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Descriptive: stage-distribution decomposition",
+      "trigger_patterns": [
+        "late-stage presentation by race",
+        "advanced disease at diagnosis",
+        "stage III/IV presentation rate"
+      ],
+      "lesson": "Reporting binary 'late-stage' rates can obscure the actual disparity, which often lives in Stage I underrepresentation and Unknown-stage over-representation rather than Stage III/IV parity.",
+      "action": "Decompose stage distribution into Stage I vs II vs III vs IV vs Unknown rather than binary late-stage. Treat Unknown-stage rate as its own outcome (workup-completeness disparity).",
+      "deprecated": false
+    },
+    {
+      "id": "L009-subgroup-power-justification",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Subgroup: power",
+      "trigger_patterns": [
+        "subgroup analysis with one arm <500",
+        "adjuvant-therapy disparity in small subset",
+        "rare-event endpoint",
+        "post-CheckMate-577 cohort with limited NHB n"
+      ],
+      "lesson": "Subgroup analyses with one arm <500 can yield non-significant findings simply due to insufficient power. The point estimate may be in the same direction as the primary but underpowered to detect.",
+      "action": "For any subgroup analysis with one arm <500, compute power for the observed effect size before interpreting. Report findings honestly as 'trend, not significant; likely underpowered (minimum detectable gap X pp at 80% power)'.",
+      "deprecated": false
+    },
+    {
+      "id": "L010-provider-vs-patient-side-gating",
+      "date_added": "2026-04-24",
+      "originating_session": "V3 Esophageal Cancer Disparity Analysis",
+      "category": "Causal-inference: mechanism identification",
+      "trigger_patterns": [
+        "treatment-receipt disparity",
+        "Reason for No Surgery",
+        "registry-coded reason field"
+      ],
+      "lesson": "Registry data often distinguishes 'Not recommended' (provider) from 'Patient refused' (patient). When the disparity is concentrated in 'Not recommended' with identical 'Patient refused' rates, this is strong evidence for clinician-driven mechanism.",
+      "action": "When studying treatment-receipt disparities, analyze the reason-for-no-treatment field by race. Provider-side excess + identical patient-side refusal = evidence for clinician-driven mechanism. Caveat that registrar-coded reasons are not audited clinical decisions.",
+      "deprecated": false
+    },
+    {
+      "id": "L011-cohort-harmonization-before-cross-cohort-comparison",
+      "date_added": "2026-04-25",
+      "originating_session": "V4 Esophageal Cancer Disparity Analysis (cross-cohort harmonization)",
+      "category": "Study design: cross-cohort comparability",
+      "trigger_patterns": [
+        "comparing SEER and NCDB",
+        "cross-registry analysis",
+        "comparing two national cohorts",
+        "harmonized inclusion criteria"
+      ],
+      "lesson": "Comparing two national cancer registries (SEER, NCDB) without harmonizing inclusion criteria conflates real disparity differences with cohort-definition differences. Histology coding, first/only-primary filtering, and year-window choice all matter.",
+      "action": "Apply identical inclusion criteria to both cohorts before any cross-cohort comparison: (a) ICD-O-3 site, (b) histology codes, (c) first/only-primary filter, (d) year window, (e) age, (f) race-known. Document the harmonization cascade in a CONSORT-style supplementary table.",
+      "deprecated": false
+    },
+    {
+      "id": "L012-jama-table-formatting-discipline",
+      "date_added": "2026-04-25",
+      "originating_session": "V4 Esophageal Cancer Disparity Manuscript",
+      "category": "Reporting: table formatting",
+      "trigger_patterns": [
+        "build manuscript tables",
+        "Table 1 baseline characteristics",
+        "JAMA submission tables",
+        "rebuild tables in standard format"
+      ],
+      "lesson": "Internal hypothesis IDs (Q-numbers, internal labels) leak into manuscript tables if the table generator dumps raw analysis sheets. JAMA tables require lettered footnotes (a, b, c), No./total No. (%) format, exact P-value rules, single-spaced 10-12pt, table grid only.",
+      "action": "When building manuscript tables: (1) replace internal IDs with descriptive endpoint labels; (2) use lettered footnotes (a, b, c) tied to specific cells/headers; (3) format P values as JAMA spec (.56, .003, <.001); (4) include numerator/denominator with %; (5) put SD/IQR inline with mean/median; (6) no merged cells; (7) one piece of data per cell.",
+      "deprecated": false
+    },
+    {
+      "id": "L013-jama-pvalue-formatting",
+      "date_added": "2026-04-25",
+      "originating_session": "V4 Esophageal Cancer Disparity Manuscript",
+      "category": "Reporting: P-value formatting",
+      "trigger_patterns": [
+        "report P value in table",
+        "JAMA P-value rules",
+        "manuscript P-value formatting"
+      ],
+      "lesson": "JAMA Network journals require: 2 digits past decimal (.56); 3 digits if <.01 (.003); <.001 if smaller; never P=0 or P=1; never report P alone without effect size and 95% CI.",
+      "action": "Use a standard P-value formatter that enforces all four rules. Apply to every reported P in tables, results text, and abstract. Always pair with effect size + 95% CI; never use star notation alone.",
+      "deprecated": false
+    },
+    {
+      "id": "L014-three-phase-pipeline-clinical-research",
+      "date_added": "2026-04-25",
+      "originating_session": "BioMedAgent methodology adaptation (Bu et al, Nat Biomed Eng 2026)",
+      "category": "Process: pipeline structure",
+      "trigger_patterns": [
+        "complex multi-step analysis",
+        "any new clinical-research question",
+        "manuscript drafting",
+        "task involves >3 distinct steps"
+      ],
+      "lesson": "Single-shot analysis or single-shot drafting fails for complex clinical-research tasks. The BioMedAgent insight applies: break the work into Plan → Execute → Verify with explicit handoffs and self-correcting feedback.",
+      "action": "Apply three-phase pipeline: Phase 1 Plan (estimand, inclusion criteria, method, sensitivity analyses pre-specified); Phase 2 Execute (script every step, save to date-stamped folder); Phase 3 Verify (numerical, distributional, clinical sanity check). If verification fails, return to Phase 1, not Phase 2.",
+      "deprecated": false
+    },
+    {
+      "id": "L015-task-classification-before-method",
+      "date_added": "2026-04-25",
+      "originating_session": "BioMedAgent methodology adaptation",
+      "category": "Process: task routing",
+      "trigger_patterns": [
+        "user asks for analysis",
+        "research question framed as natural language",
+        "multi-component request"
+      ],
+      "lesson": "BioMedAgent's task classification (omics / precision medicine / ML / stats / viz) maps to clinical-research as: descriptive / inferential test / multivariable / survival / sensitivity / subgroup. Method selection is downstream of classification.",
+      "action": "Before choosing a method, classify the request into one of six categories using the routing table in references/biomedagent-methodology.md. A request that spans categories ('compare groups, adjusted for X, in patients with Y') should be planned as a sequence of steps across the relevant categories, not collapsed into one model.",
+      "deprecated": false
+    },
+    {
+      "id": "L016-memory-retrieval-before-rederiving",
+      "date_added": "2026-04-25",
+      "originating_session": "BioMedAgent methodology adaptation",
+      "category": "Process: memory retrieval",
+      "trigger_patterns": [
+        "session start",
+        "new analysis request",
+        "any clinical research task"
+      ],
+      "lesson": "BioMedAgent's Redis memory cache lets it skip planning steps it has solved before. Re-deriving a known pattern wastes time and risks introducing errors. The clinical-research equivalent is this lessons-log.json.",
+      "action": "At the start of every session, scan trigger_patterns in this file for matches to the current task. If a match is found, apply the entry's action directly. Skip steps that have been solved before. After the session, append new entries for new patterns.",
+      "deprecated": false
+    },
+    {
+      "id": "L017-abstract-coherence-one-story",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy (12-principle rubric)",
+      "category": "Abstract: narrative architecture",
+      "trigger_patterns": [
+        "draft abstract",
+        "revise abstract",
+        "abstract feels overstuffed",
+        "two findings in same abstract"
+      ],
+      "lesson": "Coherence is the primary editing criterion for an abstract. Every element must earn its place by serving a single mechanistic or narrative arc. If a finding can be removed without weakening the story, it should be moved to the manuscript.",
+      "action": "Before submitting any abstract, ask: 'is this one story or two?' If reviewers will wonder why two ideas are in the same abstract, the framing — not the science — is the problem. Demote the secondary thread to manuscript supplementary; rewrite the objective so the surviving thread is clearly the focus. See write-abstract/SKILL.md Principle 1.",
+      "deprecated": false
+    },
+    {
+      "id": "L018-abstract-falsification-arc",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: narrative architecture",
+      "trigger_patterns": [
+        "pre-registered hypothesis failed",
+        "candidate mechanism not supported",
+        "found alternative mechanism",
+        "Mariathasan 2018 architecture"
+      ],
+      "lesson": "Hypothesis-falsification narratives are publication-strong. A pre-registered candidate mechanism that fails, paired with an alternative mechanism that succeeds, is the Mariathasan 2018 architecture and is preferable to either a pure positive finding or a pure negative one.",
+      "action": "Structure: prior literature anchors the candidate -> we tested it -> it failed -> here's what we found instead. Falsification language must appear in three places (objective, results, conclusions) so a fast-scanning reviewer cannot miss the arc. See write-abstract/SKILL.md Principle 2.",
+      "deprecated": false
+    },
+    {
+      "id": "L019-abstract-calibrated-language",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: active editing",
+      "trigger_patterns": [
+        "any abstract draft",
+        "draft uses 'predicts' / 'drives' / 'characterizes' / 'is refuted'",
+        "cross-sectional association",
+        "small-N null result"
+      ],
+      "lesson": "Calibrated language tracks epistemic standing. Null results with N<100 do not 'refute' — they fail to support, provide no evidence for, do not predict. Cross-sectional associations do not 'predict treatment benefit' — they support a hypothesis-generating rationale for testing. Architecture findings in stratified analyses describe phenotypes enriched in sub-cohorts, not phenotypes characteristic of populations.",
+      "action": "Flag-list of verbs/phrases that trigger re-examination: 'is refuted', 'is characterized by', 'independent of', 'predicts', 'drives', 'establishes'. They may be earned, but they often aren't. The fix is rarely deletion; usually a hedge, a cohort qualifier, or a verb downgrade. Add cohort qualifier ('in this cohort,' 'in the Asian sub-cohort') to preserve accuracy without losing impact. See write-abstract/SKILL.md Principle 3.",
+      "deprecated": false
+    },
+    {
+      "id": "L020-abstract-race-terminology",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: terminology",
+      "trigger_patterns": [
+        "abstract reports race or ethnicity",
+        "TCGA / SEER / NCDB / GENIE cohort by race",
+        "draft uses 'European American' / 'EUR' / 'EAS' / 'Caucasian' / 'Oriental'"
+      ],
+      "lesson": "Race terminology must match what was actually measured. Use the labels the source dataset used (TCGA -> Asian/White/Black; SEER/NCDB -> NHB/NHW/Hispanic/NHAPI). Do not promote self-reported race to genetic-ancestry vocabulary unless germline SNPs were measured.",
+      "action": "Add 'self-reported race per registry coding' once in Methods to preempt the reviewer question (Carrot-Zhang 2020 framework). Avoid 'Caucasian' (deprecated), 'Oriental' (offensive), and ancestry abbreviations without ancestry data. See write-abstract/SKILL.md Principle 4.",
+      "deprecated": false
+    },
+    {
+      "id": "L021-abstract-section-weight",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: narrative architecture",
+      "trigger_patterns": [
+        "abstract structural review",
+        "Methods section approaching size of Results",
+        "Conclusions summarizes results rather than interpreting them"
+      ],
+      "lesson": "Section weight signals priority. Results should be the largest section by character count — at least twice Methods and twice Conclusions. Methods compresses to the minimum that establishes rigor. Objective frames the question and prior hypothesis. Conclusions states what findings mean and what comes next, not a recap.",
+      "action": "If Methods or Conclusions approaches the size of Results, the abstract is mis-weighted. Trim Methods to its rigor essentials (pre-registration, FDR control, key analytic move). Re-write Conclusions as interpretation, not recap. See write-abstract/SKILL.md Principle 6.",
+      "deprecated": false
+    },
+    {
+      "id": "L022-abstract-therapeutic-implications-data-supported",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: active editing",
+      "trigger_patterns": [
+        "abstract concludes with therapeutic implication",
+        "draft says 'predicts preferential benefit from drug X'",
+        "cross-sectional transcriptomic data linked to therapy"
+      ],
+      "lesson": "Therapeutic implications must be claimed at the level the data supports. Cross-sectional transcriptomic correlations support trial-design rationale, not treatment-response prediction.",
+      "action": "Use 'supports the rationale for testing X' or 'provides a hypothesis-generating rationale for evaluating X' — never 'predicts preferential benefit from X' unless a treatment-response analysis was performed. Standard test: would I be embarrassed at the podium if a discussant asked which patients in my dataset received this therapy? See write-abstract/SKILL.md Principle 7.",
+      "deprecated": false
+    },
+    {
+      "id": "L023-abstract-honesty-over-impact",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: active editing (priority)",
+      "trigger_patterns": [
+        "softening edit costs perceived impact",
+        "editorial momentum pushing toward over-claiming",
+        "any abstract revision pass"
+      ],
+      "lesson": "Honesty over impact when they conflict. If a softening edit costs perceived impact, take the softening. Editorial momentum tends to push abstracts toward over-claiming; the discipline is pushing back.",
+      "action": "Flag-phrases for re-examination: 'is refuted', 'is characterized by', 'independent of', 'predicts', 'drives', 'establishes', 'demonstrates', 'proves'. The fix is rarely deletion; usually a hedge, a cohort qualifier, or a verb downgrade. See write-abstract/SKILL.md Principle 9.",
+      "deprecated": false
+    },
+    {
+      "id": "L024-abstract-four-criterion-rigor-gate",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: rigor",
+      "trigger_patterns": [
+        "claim being elevated from supplementary to abstract",
+        "borderline finding",
+        "directional but not significant"
+      ],
+      "lesson": "Iterate against the four-criterion gate before claims become abstract-grade: (a) BH-FDR q<0.05, (b) bootstrap BCa 95% CI excludes null, (c) permutation p<0.05, (d) jackknife sign-stable across leave-one-out resamples.",
+      "action": "Findings that are directional or pass only nominal FDR (q<0.10) belong in supplementary, not the abstract conclusion. The therapeutic-implication sentence should be anchored on findings that cleared the gate, not on borderline results. See write-abstract/SKILL.md Principle 11.",
+      "deprecated": false
+    },
+    {
+      "id": "L025-abstract-12-point-gate-final-pass",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza abstract editorial philosophy",
+      "category": "Abstract: process",
+      "trigger_patterns": [
+        "any abstract declared submission-ready",
+        "final pass before submitting",
+        "compliance check"
+      ],
+      "lesson": "Compliance is non-negotiable and checked last. Character count, four-section bolded headers, absolute numbers alongside percentages, no institutional or product names in body, no abbreviations outside accepted list without first-use spell-out, generic drug names — these are absolute. Confirm character count after every revision.",
+      "action": "Before declaring an abstract submission-ready, run the 12-point gate explicitly (write-abstract/SKILL.md). Output a structured table noting Pass/Fail and suggested fix for each principle. Do not declare submission-ready until each row is either pass or has an explicit accepted exception. Most-impactful priorities: 3, 7, 9 for active editing; 1, 2, 6 for narrative architecture; 10 for compliance; 11 for rigor.",
+      "deprecated": false
+    },
+    {
+      "id": "L026-mandatory-analysis-report",
+      "date_added": "2026-04-26",
+      "originating_session": "Bilal Mirza standing rule — every analysis must end with a structured report",
+      "category": "Process: deliverable discipline",
+      "trigger_patterns": [
+        "any analysis session",
+        "session ending with results but no report",
+        "manuscript Methods being drafted without an upstream report",
+        "future session re-deriving analyses already done"
+      ],
+      "lesson": "Every analysis must end with a date-stamped, structured markdown report. The report is the durable deliverable that future sessions, co-authors, and reviewers can audit. Without it the analysis is incomplete: there is no single source of truth for what was done, the manuscript Methods get re-derived from chat history, and reviewers cannot trace numbers to their generating script.",
+      "action": "Generate a markdown report at the end of every analysis session. Filename pattern: analysis_report_<short-question-slug>_YYYY-MM-DD.md. Save to the project's Analyses/ or Reports/ folder. Required sections (in order, no omissions): header, research question, estimand, data sources, cohort selection cascade, variables, statistical methods, pre-specified sensitivity analyses, results (cohort characteristics + primary + secondary + sensitivity + subgroup + multiple-testing master), diagnostic checks, findings summary in plain language, limitations, reproducibility checklist, files referenced cross-walk, verification trail, next steps. Every claim includes effect size + 95% CI + P value + BH-FDR Q where applicable. Every percentage paired with numerator/denominator. Re-generate when the analysis is re-run; archive prior versions rather than overwriting. Full template lives in analyze/SKILL.md Step 9.",
+      "deprecated": false
+    }
+  ]
+}

@@ -2,6 +2,54 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [2.4.0] - 2026-04-26
+
+### Added — Mandatory analysis-report rule
+
+Every analysis must end with a date-stamped, structured markdown report. The report is the durable deliverable that the manuscript Methods and Results sections are drafted from, that co-authors audit, and that future sessions read first before re-deriving anything. No analysis is considered complete without it.
+
+- **`skills/analyze/SKILL.md`** — added new `Step 9 — Generate the Analysis Report (MANDATORY)` section between `/visualize` reminder and `Reporting Standards`. Defines filename pattern (`analysis_report_<short-question-slug>_YYYY-MM-DD.md`), required-section template (16 sections in fixed order), per-claim requirements (effect size + 95% CI + P + BH-FDR Q + numerator/denominator), versioning rule (re-generate on re-run; archive prior), and a compliance checklist that must pass before the report is declared complete.
+- **`skills/data-analysis/SKILL.md`** — added `<mandatory_analysis_report>` block summarising the 16-section template and pointing to `analyze/SKILL.md` Step 9 for the full template and compliance rules.
+- **`skills/references/lessons-log.json`** — added entry `L026-mandatory-analysis-report` so the rule is machine-readable and trigger-pattern-routable for future sessions.
+
+The report is the single source of truth for what was done; future sessions read it first before re-deriving findings, and the manuscript-writing skills (`/write-methods-results`, `/write-discussion`, `/write-abstract`) draw their Methods/Results/Limitations content from the report rather than from chat history.
+
+## [2.3.0] - 2026-04-26
+
+### Added — `write-abstract` sub-skill (Bilal Mirza editorial rubric)
+
+A new sub-skill at `skills/write-abstract/SKILL.md` codifies a 12-principle editorial philosophy for writing and auditing abstracts, with a 12-point gate that runs explicitly before any draft is declared submission-ready.
+
+**The 12 principles:** (1) coherence as primary editing criterion, (2) hypothesis-falsification narratives in three places, (3) calibrated language tracking epistemic standing, (4) race terminology matching what was measured, (5) audience calibration leaning biologist for translational, (6) Results as largest section, (7) therapeutic implications at the level data supports, (8) confounders in manuscript not abstract, (9) honesty over impact, (10) compliance as final pass, (11) four-criterion rigor gate (BH-FDR + bootstrap BCa + permutation + jackknife) before any claim earns abstract space, (12) prose over bullets.
+
+**Priority order for use:** principles 3, 7, 9 for active editing; principles 1, 2, 6 for narrative architecture; principle 10 for compliance; principle 11 for rigor.
+
+**Includes** a venue cheat-sheet (AATS / ITSOS / Summit; JTCVS; JAMA Oncology; JCO; ASCO; AHA / ACC; NEJM; Lancet; Annals of Surgery), workflows for both drafting and auditing, and a worked example applying the gate to the ITSOS 2026 esophageal disparity abstract.
+
+**Wired into** `write-manuscript/SKILL.md` Phase 7 (Abstract) — the orchestrator now delegates abstract drafting to the new sub-skill.
+
+**Lessons log additions** (`skills/references/lessons-log.json`): 9 new entries (L017–L025) covering coherence, falsification arc, calibrated language, race terminology, section weight, therapeutic implications, honesty-over-impact, four-criterion rigor gate, and the 12-point final-pass gate.
+
+## [2.2.0] - 2026-04-25
+
+### Added — BioMedAgent-adapted methodology (the *ideas*, not the tool catalog)
+
+Inspired by Bu et al., *Empowering AI data scientists using a multi-agent LLM framework with self-evolving capabilities for autonomous, tool-aware biomedical data analyses*, Nat Biomed Eng 2026 (https://github.com/BOBQWERA/BioMedAgent.git).
+
+- **`skills/references/biomedagent-methodology.md`** — new cross-cutting reference for clinical research that distils the four transferable BioMedAgent ideas: (1) three-phase pipeline (Plan → Execute → Verify with self-correcting feedback loops), (2) task classification before method selection (six-way routing table for clinical research), (3) memory retrieval before re-deriving (read the lessons log first), and (4) anti-misclassification rules (Cox-PH violation, complete-case bias, immortal-time bias, causal language for observational data, NCDB DUA cell-N≥11, etc.).
+- **`skills/references/lessons-log.json`** — new machine-readable memory log seeded with 16 entries from real sessions: 10 from the V3 Esophageal Cancer Disparity analysis (Simpson's-paradox prevention, time-stratified Cox, multiple-imputation sensitivity, E-value reporting, master significance with BH-FDR, NCDB DUA compliance, stage decomposition, subgroup-power justification, provider-vs-patient-side gating), 3 from the V4 cross-cohort harmonization and JAMA-table rebuild (cohort harmonization before cross-cohort comparison, JAMA table-formatting discipline, JAMA P-value formatting), and 3 from the BioMedAgent methodology adaptation itself (three-phase pipeline, task classification, memory retrieval).
+- **`skills/analyze/SKILL.md`** — added `<biomedagent_adapted_methodology>` block at the top instructing every analysis to read `lessons-log.json` and `biomedagent-methodology.md` first, classify the task before method selection, and append a new lesson at session end.
+- **`skills/data-analysis/SKILL.md`** — same pointer block (shorter form).
+- **`skills/write-manuscript/SKILL.md`** — same pointer block, framing the existing 9-phase manuscript orchestrator as an instance of the BioMedAgent three-phase pipeline (Plan = Phase 0–1, Execute = Phases 2–7, Verify = Phase 8).
+
+### Maintenance philosophy
+The lessons log is append-only. Mark superseded entries `"deprecated": true` rather than deleting them; the audit trail matters. Each new clinical-research session that surfaces a new pattern (pitfall, default sensitivity, classification trap) should append an entry. This is the self-evolution mechanism BioMedAgent uses; here it is the explicit clinical-research analogue.
+
+### What this is NOT
+- Not a port of BioMedAgent's 65-tool catalog (those are bioinformatics tools, mostly duplicated by the existing `bio-research`, `scientific-skills`, and `pyhealth` plugins).
+- Not a new top-level skill — the four ideas are integrated into the three existing analytic/manuscript skills.
+- Not a replacement for the standalone `biomedagent` Cowork plugin if you have it installed; this just brings the *ideas* into clinical-research-assistant so the two plugins can coexist or you can choose to uninstall the standalone one.
+
 ## [2.1.0] - 2026-03-10
 
 ### Added
