@@ -639,4 +639,69 @@ This section accretes domain-specific lessons from real analyses. Append a new e
 
 ---
 
+### 2026-05-03 — HNSCC TAM Multi-Cohort Validation (Bilal Mirza, U Arizona)
+
+#### Pre-submission rigor remediation pipeline (apply when an analysis is being staged for manuscript drafting)
+
+The HNSCC-TAM session demonstrated a 6-phase remediation sequence that closes most audit issues without requiring a full pipeline re-run. Apply this whenever a multi-cohort secondary analysis is being readied for manuscript drafting and an audit has surfaced critical issues. Lessons L027–L037 in `skills/references/lessons-log.json` capture the trigger patterns and actions in machine-readable form.
+
+**Phase 0 — Five-agent self-audit (per L027).** Before any rigor remediation, run a structured 5-agent audit (numerical, statistical, biological-plausibility, code-reproducibility, completeness) producing `AUDIT_REPORT.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR). Each finding cites the source CSV row and the claimed value. The HNSCC-TAM audit caught 4 critical issues invisible from the report itself: a wrong AUROC value (0.806 vs source 0.751), pseudoreplication in cross-compartment correlations (n=8 treated as independent when true n=4 patients), an "8/8 testable findings validated" overclaim, and missing random seeds throughout the pipeline.
+
+**Phase 1 — Surgical text/numerical fixes (per L027, L036).** For every audit-flagged numerical claim, verify against the source CSV at 3-decimal precision and apply targeted Edit-tool fixes to the report. Add a §0 Phase 1 Corrections Log block at the top of the corrected document with an explicit table: ID | Section | v_old text | v_new text | Source verification. Never overwrite the original document — increment the version (e.g., insights_report_v6.md → v7.md).
+
+**Phase 2 — Statistical rigor pass (per L031, L032, L033).** A single Python script applies bootstrap BCa 95% CIs (paired resampling, 500 iterations, seed=42) to every AUROC, BH-FDR within each (cohort × signature panel), Bonferroni for the largest validation cohort (α = 0.05/n_tests), paired Wilcoxon for any pre/post comparison, and `random_state=42` to every stochastic scanpy call (sc.tl.pca / umap / leiden / neighbors / diffmap). Output: `phase2_remediation/results/phase2_auroc_with_bca_ci.csv` with columns AUROC, BCa_CI_low_95, BCa_CI_high_95, MW_p_two_sided, BH_q, BH_significant_q05, Bonferroni_significant. Flag CIs that span 0.5 as "not statistically distinguishable from chance."
+
+**Phase 3 — Patient-level cross-compartment re-derivation + drop-LOO sensitivity (per L029, L030).** For any small-n discovery cohort with paired pre/post sampling, the n=8 (patient × treatment) framing is pseudoreplicated. Re-derive every cross-compartment correlation under THREE framings — (a) pseudorep n=8 sanity check, (b) patient-level n=4 averaged pre+post, (c) pre-treatment baseline n=4 — using exact permutation testing (`scipy.stats.permutation_test` with `permutation_type='pairings'` and `n_resamples=np.inf` for n≤5; Monte Carlo 10,000 resamples for n=6–8). The asymptotic Spearman p-value formula breaks at |ρ|=1 (returns p=0 spuriously). At n=4 the minimum two-sided exact Spearman p is 2/24 = 0.083 — a structural floor. Reframe failing-to-reach-floor correlations as HYPOTHESIS-GENERATING in the manuscript. Separately, compute per-patient cell-pool contribution for every subtype; if any patient exceeds 50%, generate Drop-Patient-X leave-one-out sensitivity for every finding involving that subtype.
+
+**Phase 4 — Canonical meta-validation table v2 (per L034).** A consolidation script reads all upstream CSVs and produces three deliverables: `meta_validation_v2_long.csv` (one row per Finding × Cohort × Statistic with full provenance — typically 30–50 rows), `meta_validation_v2_summary.csv` (one row per Finding with audit-correct headline — typically 12–20 rows), and `meta_validation_v2.xlsx` (formatted workbook). Headline-selection priority order: EXTERNALLY VALIDATED > HYPOTHESIS-GENERATING (audit-corrected n) > PARTIAL > ROBUST > NOVEL > largest-N fallback. The summary CSV becomes Manuscript Table 1.
+
+**Phase 5 — Mandatory 16-section analysis report.** Per `working-rules.md`, the durable deliverable is `Reports/analysis_report_<question-slug>_<date>.md` with the 16-section template. This is the manuscript Methods source.
+
+**Phase 6 — Numerical re-audit (per L036).** A `phase6_numerical_reaudit.py` script registers named checks via `add_check(name, claimed, observed_in_source, tolerance, unit)` covering: (a) claimed text values vs source CSV cells, (b) summary-table values vs upstream long-table values, (c) document-internal stale-string scans, (d) sample-size sums. Output: `phase6_audit_log.csv` + `phase6_audit_summary.txt` + `AUDIT_REPORT_v2.md`. Target 100% PASS at 3-decimal precision before manuscript submission.
+
+**Cross-cutting: 4-tier evidence framework (per L035).** After all six phases, partition every finding into 4 tiers for manuscript placement: Tier 1 (ROBUST + Bonferroni-survivor) → abstract; Tier 2 (PARTIAL = BH-FDR-only) → body as supportive; Tier 3 (NOVEL single-cohort + EXTERNALLY VALIDATED cross-compartment) → main text + future-work; Tier 4 (HYPOTHESIS-GENERATING) → Discussion + Limitations only, NEVER abstract. Tier 4 framing in Limitations: "directionally consistent but not statistically distinguishable from chance after multiple-testing correction at this sample size."
+
+**Cross-cutting: Manuscript document hierarchy (per L037).** A multi-cohort manuscript project maintains four narrative artifacts in this order: (a) `Reports/insights_report_v*.md` (technical insights), (b) `Reports/analysis_report_<slug>_<date>.md` (16-section technical report), (c) `Reports/FINAL_manuscript_brief_<date>.md` (manuscript-ready narrative for PI review — written BEFORE the manuscript itself), (d) `Manuscripts/manuscript_complete_<date>.docx` (deliverable).
+
+#### Worked example artifacts (HNSCC-TAM session, 2026-05-03)
+
+The HNSCC-TAM project's Phase 1–6 deliverables provide a concrete reference template:
+
+```
+TAM_Analysis/
+├── AUDIT_REPORT.md                            (Phase 0 — original 5-agent audit)
+├── AUDIT_REPORT_v2.md                         (Phase 6 — closure: 40 PASS / 0 FAIL)
+├── phase2_remediation/
+│   ├── PHASE2_REPORT.md
+│   ├── scripts/phase2_rigor_pass.py
+│   ├── scripts/seed_all.py
+│   └── results/phase2_auroc_with_bca_ci.csv
+├── phase3_remediation/
+│   ├── PHASE3_REPORT.md
+│   ├── scripts/phase3_pseudorep_and_pt2_sensitivity.py
+│   └── results/phase3_cross_compartment_n4_vs_n8.csv
+├── phase4_remediation/
+│   ├── PHASE4_REPORT.md
+│   ├── scripts/phase4_build_meta_validation_v2.py
+│   └── results/meta_validation_v2_summary.csv
+├── phase6_audit/
+│   ├── phase6_numerical_reaudit.py
+│   ├── phase6_audit_log.csv
+│   └── phase6_audit_summary.txt
+├── Reports/
+│   ├── insights_report_v7.md                  (Phase 1 — corrected primary insights)
+│   ├── analysis_report_hnscc-tam-multicohort-validation_2026-05-02.md  (Phase 5 — 16-section technical report)
+│   └── FINAL_manuscript_brief_2026-05-03.md   (manuscript-ready narrative for PI review)
+└── Manuscripts/
+    ├── manuscript_draft_v1_2026-05-03.md
+    ├── manuscript_complete_2026-05-03.docx
+    ├── tables_standalone_2026-05-03.docx
+    ├── figures_standalone_2026-05-03.docx
+    └── abstract_standalone_2026-05-03.docx
+```
+
+Total wall-clock for the rigor remediation: ~90 minutes across 6 sessions. End state: every numerical claim has a source CSV, a 95% CI or paired p-value where applicable, and a documented multiple-testing-correction status.
+
+---
+
 > **Maintainer note:** Append new lessons here, dated, with the originating session and the action item. This skill should accrete capability over time. If a future session finds a lesson is wrong or superseded, mark it as deprecated rather than deleting — the audit trail matters.

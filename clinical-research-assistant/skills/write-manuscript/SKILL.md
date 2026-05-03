@@ -437,3 +437,43 @@ If the user chooses to skip a phase, respect the decision but document it and wa
 | Final Assembly | No internal audit performed |
 
 Mark skipped phases in the state file. Always support a minimum-viable manuscript path using verified available components only.
+
+
+---
+
+## Manuscript Brief — recommended pre-drafting artifact (per L037, HNSCC-TAM 2026-05-03)
+
+For multi-cohort manuscript projects exiting an audit-driven rigor remediation, generate a `Reports/FINAL_manuscript_brief_<date>.md` BEFORE drafting the manuscript itself. The brief is the document PIs read first to confirm direction; it consolidates the post-rigor evidence base into a single 12-section narrative:
+
+1. Executive summary (one paragraph with all key effect sizes anchored)
+2. Why this project exists (the gap in 1–2 paragraphs)
+3. What we did chronologically (discovery → external validation → audit → 6-phase remediation)
+4. Cohort-by-cohort contribution table (one row per cohort, what each uniquely added)
+5. Four-tier evidence base (per L035 — ROBUST/PARTIAL/NOVEL/HYPOTHESIS-GENERATING)
+6. The audit story (why the evidence base is now defensible; pre-empts reviewer pseudoreplication and "AUROC without CI" critiques)
+7. Manuscript story arc with 3 working title options (3-act structure: validation → biomarker → future-work)
+8. Suggested abstract (≤350 words, JITC structured format) — apply the writing-style.md §12 rule (open with finding+effect size; close with named therapy)
+9. What goes where in the manuscript (section-by-section content map with word targets and figure assignments)
+10. Path to submission (PI review → next-session deferred items → drafting sessions → polish → submit)
+11. Document index (where every supporting artifact lives, with audience tag)
+12. The story in one sentence (elevator-pitch version)
+
+Once the brief is approved by PIs, the manuscript drafts AGAINST the brief — the brief is the canonical narrative source, and the canonical Manuscript Table 1 is `meta_validation_v2_summary.csv` from Phase 4 of the rigor remediation pipeline.
+
+## Tier-based placement when drafting (per L035)
+
+| Tier | Definition | Manuscript placement |
+|:--|:--|:--|
+| Tier 1 | ROBUST findings + Bonferroni-survivor in largest validation cohort | Lead the abstract; primary results table; primary figure |
+| Tier 2 | PARTIAL findings (BH-FDR survivor only; or context-dependent across strata) | Body as supportive; explicit "supports Tier 1, not independently confirmatory" framing |
+| Tier 3 | NOVEL single-cohort findings + the one or two EXTERNALLY VALIDATED cross-compartment correlations | Main text Results subsection + Discussion future-work hook |
+| Tier 4 | HYPOTHESIS-GENERATING (audit-corrected n at exact-p floor; subject-dominated single-patient findings) | Discussion + Limitations ONLY. Never the abstract. Limitations framing: "directionally consistent but not statistically distinguishable from chance after multiple-testing correction at this sample size." |
+
+## CHANGELOG / Lessons Learned
+
+### 2026-05-03 — HNSCC TAM Multi-Cohort Validation (Bilal Mirza, U Arizona)
+
+- **Manuscript brief precedes manuscript drafting** (L037). For multi-cohort projects, the FINAL manuscript brief is the PI-review artifact; the manuscript drafts against it after PI sign-off.
+- **Tier-based claim placement** (L035) — partition every finding into Tier 1–4 BEFORE drafting; the Tier determines where it can appear (abstract / body / discussion-only).
+- **Canonical Table 1 = `meta_validation_v2_summary.csv`** (L034) — the 17-finding (or N-finding) summary table from Phase 4 of the rigor remediation pipeline becomes Manuscript Table 1 directly. Drop the `Source_phase` column for publication; keep all other columns.
+- **Internal audit must verify abstract numbers vs Results vs Tables** (L036). The Phase 8 internal consistency check should be programmatic — claimed numbers in the abstract grep against the source CSV. Target 100% match at 3-decimal precision.
