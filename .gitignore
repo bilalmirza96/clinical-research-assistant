@@ -31,3 +31,6 @@ Thumbs.db
 
 # Local dev navigation note (per-machine, not for upstream)
 /CLAUDE.md
+
+# Local push-instruction docs (per-batch, not for upstream)
+/PUSH_*_INSTRUCTIONS.md

@@ -556,6 +556,22 @@
       "deprecated": false
     },
     {
+      "id": "L038-headline-claim-audit-tagging-and-comparator-aligned-reporting",
+      "date_added": "2026-05-06",
+      "originating_session": "Esophageal-IO V4 — race × era interaction audit (Bilal Mirza, U Arizona)",
+      "category": "Audit discipline + reporting standard",
+      "trigger_patterns": [
+        "audit a multi-outcome manuscript",
+        "audit sub-question contains 'race × X' or any A:B interaction",
+        "interpretation prose substitutes one outcome's interaction P for another",
+        "deciding whether to report formal interaction tests in main text vs supplement",
+        "manuscript has comparator paper in same subfield"
+      ],
+      "lesson": "Two intertwined disciplines that the V4 audit had to learn the hard way. (1) AUDIT TAGGING: every audit step that involves an A × B interaction must be tagged with both `outcome` and `dataset` fields, and the audit-report prose must repeat that tagging. A P value computed on one outcome (e.g., surgery receipt) must NEVER be interpreted in the audit report as if it spoke to a different outcome (e.g., overall survival), even when the conceptual interaction question is the same. Cross-check the audit's Phase-1 gap list against the manuscript abstract's headline claims one-by-one before declaring the audit complete. (2) COMPARATOR-ALIGNED REPORTING: when choosing whether to report a formal interaction test in the manuscript main text, the most defensible default is to match the comparator paper's reporting practice in the same subfield and same journal tier. For disparity research published in JCO / Lancet Oncology / JAMA Oncology, the field-standard pattern (e.g., Miller 2024 Lancet Oncol on VHA ICI effectiveness by race) is descriptive within-subgroup analyses without formal interaction P values. Match that pattern; run the formal interaction test internally as an audit sensitivity so it is in the back pocket if reviewers demand it; report it only in supplementary or a reviewer-response packet.",
+      "action": "When auditing a multi-outcome manuscript, tag every interaction-test entry with `outcome` and `dataset` fields. Run the formal interaction test for every claim that depends on effect modification, even if you do not plan to report it in main text — the result is needed for reviewer-response readiness. Before deciding what to report in main text, identify the closest published comparator paper (same subfield, same journal tier) and check whether they reported formal interaction tests; align your reporting to their practice unless your abstract makes a stronger effect-modification claim than theirs. Document the decision and the comparator citation in the audit report so future sessions do not re-derive the analysis from scratch. For Esophageal-IO V4 specifically: comparator is Miller S et al, Lancet Oncol 2024 (PMID 39551068; DOI 10.1016/S1470-2045(24)00528-X) — descriptive within-race subgroup reporting only; V4 main-text matches that practice; formal HCA-4 / HCA-9 / HCA-10 interaction results retained internally in the audit report as supplementary sensitivity.",
+      "deprecated": false
+    },
+    {
       "id": "L039-within-recipient-propensity-matching-for-effectiveness-comparators",
       "date_added": "2026-05-06",
       "originating_session": "V4 Esophageal-IO — Miller-2024 comparator gap closure (V4_22 P1-P5)",
@@ -569,6 +585,21 @@
       ],
       "lesson": "When a multi-stage access-disparity manuscript reports a within-treatment-recipient hazard ratio (e.g., NHB vs NHW within ICI recipients), an unmatched within-recipient HR is not a sufficient anchor — measured access factors at the moment of treatment receipt (timing from diagnosis to treatment, prior multimodal therapy, comorbidity, facility type, insurance) differ between groups, and these differences confound the within-recipient effectiveness estimate. The within-recipient HR must therefore come from a 1:1 propensity-matched analysis on those access factors, with a complementary IPTW sensitivity (logistic vs flexible-ML PS), a propensity-weighted KM figure, a histology-stratified version, and an explicit time-to-treatment Cox sensitivity. The pentet of outputs collectively determines whether the residual within-recipient disparity supports an 'access barriers operate even within recipients' framing or an 'after balancing, outcomes equalize' framing — the manuscript-language decision flips on this analysis.",
       "action": "Whenever a draft reports a within-treatment-recipient HR (or unadjusted within-recipient comparison) for an effectiveness disparity claim: (1) build a 1:1 propensity-matched cohort on the full access-factor set including timing-to-treatment; (2) prespecify the matched-HR cutoff that flips manuscript framing (e.g., HR >= 1.20 with CI excluding null -> retain access-barriers framing; HR ~ 1.0 -> rewrite to equivalence-after-matching); (3) replicate using a flexible-ML PS (gradient-boosted-tree IPTW) as a misspecification sensitivity, with a 0.10-HR-unit delta threshold for declaring concordance; (4) generate IPTW-weighted KM curves; (5) repeat the matched analysis stratified by the dominant biological subtype (e.g., EAC vs ESCC) AND test the formal interaction on the OUTCOME of interest (per L038, tag both outcome and dataset); (6) refit the matched Cox with treatment-timing as an additional covariate and report the Δ-HR explicitly, since timing is a key candidate mediator. In V4 (NCDB Stage IV ICI 2018+, NHW vs NHB) this yielded matched HR 1.25 (95% CI 1.03-1.53; P=.03), Δ(GBT-IPTW vs logistic-IPTW)=0.02 HR units, and ΔHR after time-to-ICI adjustment = +0.03 (timing accounts for none of the residual gap). The unmatched HCA-10 HR of 1.27 was therefore replaced by the matched HR of 1.25 in the V4 Discussion, retaining the access-barriers framing. See Scripts/V4_22_within_ICI_PSM_and_GBT_sensitivity.py and Section 8.10 of analysis_report_methodological_audit_2026-05-06.md.",
+      "deprecated": false
+    },
+    {
+      "id": "L040-psm-caliper-binding-diagnostic",
+      "date_added": "2026-05-06",
+      "originating_session": "V4 PSM caliper-sensitivity review (external reviewer note)",
+      "category": "PSM diagnostic: caliper-binding verification",
+      "trigger_patterns": [
+        "PSM caliper sensitivity table",
+        "matched-pair count identical across calipers",
+        "any propensity-score matched analysis",
+        "reviewer asks whether caliper is binding"
+      ],
+      "lesson": "When a PSM caliper-sensitivity table shows nearly identical matched-pair counts across several caliper widths (e.g., 0.10 / 0.20 / 0.25 × SD), the cause may be either (a) the caliper is not binding because PS overlap is excellent (a substantive robustness finding) or (b) a bug in the matching loop that fails to apply the caliper. The two are indistinguishable from the count alone; an extended diagnostic sweep is required.",
+      "action": "For every PSM analysis, run an extended caliper sweep at 0.01, 0.05, 0.10, 0.20, 0.25, 0.50, 1.00 × pooled SD logit-PS, plus an unbounded sweep (no caliper). For each caliper, report (1) matched-pair count, (2) % of treated successfully matched, (3) median actual match distance, (4) maximum actual match distance, and (5) explicit Yes/No flag for whether the caliper is binding (max distance ≈ caliper). If the caliper is not binding for conventional widths (≥ 0.05 × SD), state this explicitly in the manuscript as a substantive robustness finding rather than as a placeholder caveat. Diagnostic script template: V4_18b_caliper_diagnostic.py.",
       "deprecated": false
     }
   ]

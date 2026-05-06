@@ -2,6 +2,24 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [2.5.1] - 2026-05-06
+
+### Added — V4-audit lessons (L038, L040; finalises L039)
+
+This release groups the three V4-audit lessons captured during the Esophageal-IO V4 methodological audit and the V4_22 within-ICI PSM follow-up. Two are added by this commit (L038, L040); L039 was added directly by the 30-min auto-sync (commit `6b76b7b`) before this commit was prepared, and is documented here so the three V4-audit lessons are described together.
+
+- **L038 — headline-claim audit tagging + comparator-aligned reporting.** Every audit step that involves an A × B interaction must be tagged with both `outcome` and `dataset` fields, and the audit-report prose must repeat that tagging; a P value computed on one outcome must never be interpreted as if it spoke to a different outcome. For comparator-aligned reporting, match the closest published comparator paper's reporting practice in the same subfield and journal tier; cites Miller S et al, *Lancet Oncol* 2024 (PMID 39551068; DOI 10.1016/S1470-2045(24)00528-X) as the field-standard precedent for descriptive within-race subgroup reporting in disparity research.
+- **L039 — within-recipient propensity matching for effectiveness comparators** *(added by auto-sync `6b76b7b` from the V4_22 P1–P5 working tree; entry id `L039-within-recipient-propensity-matching-for-effectiveness-comparators`).* When a multi-stage access-disparity manuscript reports a within-treatment-recipient hazard ratio (e.g., NHB vs NHW within ICI recipients), an unmatched within-recipient HR is not a sufficient anchor — measured access factors at the moment of treatment receipt (timing from diagnosis to treatment, prior multimodal therapy, comorbidity, facility type, insurance) confound the within-recipient effectiveness estimate. The within-recipient HR must come from a 1:1 propensity-matched analysis on those access factors, with a complementary IPTW sensitivity (logistic vs flexible-ML / gradient-boosted-tree PS), a propensity-weighted KM figure, a histology-stratified version (EAC vs ESCC), and an explicit time-to-treatment Cox sensitivity. Empirical anchor: V4 NCDB Stage IV ICI 2018+ matched HR 1.25 (95% CI 1.03–1.53; P=.03), Δ(GBT-IPTW vs logistic-IPTW) = 0.02 HR units, ΔHR after time-to-ICI adjustment = +0.03.
+- **L040 — PSM caliper-binding diagnostic.** For every PSM analysis, run an extended caliper sweep at 0.01 / 0.05 / 0.10 / 0.20 / 0.25 / 0.50 / 1.00 × pooled SD logit-PS plus an unbounded sweep, and for each caliper report matched-pair count, % treated matched, median match distance, maximum match distance, and an explicit Yes/No binding flag. (Originally drafted with id `L027-psm-caliper-binding-diagnostic`; rebadged to L040 to avoid collision with the v2.5.0 batch's `L027-five-agent-self-audit-before-manuscript`.)
+
+### Maintenance
+
+- **`.gitignore`** — added pattern `/PUSH_*_INSTRUCTIONS.md` under the existing "Local dev navigation note" section. Per-batch push-instruction docs (e.g., `PUSH_v2.5.0_INSTRUCTIONS.md`) are local meta-content for handing the working tree off between sessions; they are not part of the skill source and should not flow upstream.
+
+### Why this is v2.5.1 and not part of v2.5.0
+
+The three V4-audit lessons were drafted in a different work session from the v2.5.0 HNSCC-TAM rigor remediation batch (L027–L037). They are additive (not breaking), they originate from a different empirical session (Esophageal-IO V4 audit + V4_22 within-ICI PSM, both Bilal Mirza / U Arizona, May 2026), and they live cleanly on top of v2.5.0 without amending it. The v2.5.0 commit (`21fbfc5`) is preserved unchanged.
+
 ## [2.4.0] - 2026-04-26
 
 ### Added — Mandatory analysis-report rule
