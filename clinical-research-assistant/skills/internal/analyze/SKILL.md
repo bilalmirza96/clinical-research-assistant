@@ -608,6 +608,13 @@ Then always:
 
 This section accretes domain-specific lessons from real analyses. Append a new entry whenever a session surfaces a new pattern, gap, or correction worth carrying forward.
 
+### 2026-05-17 — Single Consolidated Analysis Registry standard (Esophageal-IO QC; L045)
+
+1. **One registry, not scattered V## files.** Esophageal-IO accumulated V36/V44/V45/V47/V48/V50/V53/V55/V58 output files across two dates; the manuscript prose drifted to a stale vintage and contradicted its own Table 2b (latest V55 reproduced Table 2b's within-NHB CSS HR 0.912 P=.25, not the prose's 0.934 P=.18). Fix: a single `MASTER_ANALYSIS_REGISTRY.json` per project; each result entry carries `current` + a `history[]` of superseded values *in the same entry*; new analyses `upsert` (auto-supersede, never spawn new scattered files); folded outputs MOVED to `Archives/Analysis_consolidated_<date>/` (scripts kept). Reusable: this skill's `scripts/analysis_registry.py` (init/upsert/flag/log/render).
+2. **Latest-file-per-quantity, not latest-file-wins.** "Use the latest analysis" ≠ "use one latest file as the whole truth." V50 was the latest *SEER-treatment* file but had no survival/NCDB/genomic/within-ICI; treating it as the sole source would have left the biggest CRITICAL unverified. Precedence is per quantity: newest file that actually computes that quantity wins; it supersedes only what it recomputes.
+3. **Honesty over impact — flag UNSOURCED, never back-fill.** Contested manuscript quantities computed by no current analysis file are flagged `UNSOURCED` with the specific re-derivation action and reported as manuscript blockers — not interpolated from the draft to make the reconciliation "complete." (Corollary, learned same session: do not declare a quantity unreproducible from one summary file — check the documented derivation method/source first; the Esophageal TMB ≥10 was fully reproducible via the documented V31 method despite a normalized-TMB summary file suggesting otherwise.)
+4. **Manuscript reconciliation sources only from the registry.** Numeric-vintage reconciliation of prose/abstract/tables/legends pulls locked values exclusively from `MASTER_ANALYSIS_REGISTRY.json`; this is what makes "which file has which number" a non-question.
+
 ### 2026-04-24 — V3 Esophageal Cancer Disparity Analysis (Bilal Mirza, U Arizona)
 
 #### Ten new mandatory checks added based on real-world findings
