@@ -580,6 +580,8 @@ If any check fails, the report is not complete. Do not exit the analysis session
 
 ## After Analysis
 
+**MANDATORY — Single Consolidated Analysis Registry (SCAR), NON-NEGOTIABLE.** Before informing the user, write **every** numeric result this analysis produced into the project's one living registry at `<project>/Reports/MASTER_ANALYSIS_REGISTRY.json` using `scripts/analysis_registry.py upsert …` (one call per quantity). This is in addition to — not instead of — the 16-section report. The registry is the only surface anyone reads to answer "what is the current value of X." Rules: (1) `upsert` auto-moves any prior value into that entry's `history[]` (carry history *with* the entry; never lose a prior value, never spawn a new scattered V## file); (2) latest-file-per-quantity precedence — only supersede quantities this analysis recomputed; (3) if a contested quantity is computed by no analysis, `flag` it `UNSOURCED` with the re-derivation action — never guess/interpolate; (4) on a consolidation, MOVE folded scattered outputs to `Archives/Analysis_consolidated_<date>/` (scripts never archived) and record `archived_sources[]` + an `update_log[]` entry; (5) any manuscript/abstract/table numeric reconciliation pulls locked values **only** from this registry, and reports `UNSOURCED` quantities as blockers. Then `analysis_registry.py render` to regenerate `MASTER_ANALYSIS_REGISTRY.md`. Full standard: `~/Claude/00_Context/working-rules.md` → "Single Consolidated Analysis Registry Standard"; lessons-log **L045**. Reusable tool: this skill's `scripts/analysis_registry.py`.
+
 Execute the STEP 9b completion checkpoint writes above, then inform the user:
 
 > "Analysis complete."
