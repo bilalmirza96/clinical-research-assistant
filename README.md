@@ -6,7 +6,7 @@ A personal end-to-end clinical research and manuscript system for Claude Code. G
 
 **Clinical Research Assistant** is the primary orchestrator and user-facing router. You can invoke CRA once, and it selects the best internal workflow skill, delegated engine, or pasted external skill.
 
-**BioMedAgent** is a delegated execution engine, called only when the task exceeds standard clinical biostatistics — omics, genomics, biomedical ML, or execution-heavy computational workflows.
+**BioMedAgent** is an external delegated execution engine, called only when the task exceeds standard clinical biostatistics — omics, genomics, biomedical ML, or execution-heavy computational workflows.
 
 All commands share a persistent state layer (`project_state.json`, `results_registry.json`, `citation_bank.json`, etc.) that enables cross-session continuity and cross-command data flow.
 
@@ -178,9 +178,9 @@ clinical-research-assistant/                         # Marketplace root
 │   │   │   ├── write-discussion/                    # /write-discussion
 │   │   │   ├── write-abstract/                      # /write-abstract
 │   │   │   ├── write-manuscript/                    # /write-manuscript — orchestrator
-│   │   │   ├── data-analysis/                       # Analytical policy (not a command)
-│   │   │   └── biomedagent/                         # Delegated execution engine
-│   │   ├── external/                                # User-pasted external skills
+│   │   │   └── data-analysis/                       # Analytical policy (not a command)
+│   │   ├── external/                                # External skills and user-pasted skills
+│   │   │   └── biomedagent/                         # External delegated execution engine
 │   │   └── references/                              # Writing style, lessons, generated registry
 │   └── templates/state/                             # State file templates
 ├── README.md

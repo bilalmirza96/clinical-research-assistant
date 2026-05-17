@@ -31,6 +31,7 @@ Run it from the plugin root (`clinical-research-assistant/`, the directory that 
 - `skills/external/` — pasted third-party or borrowed skills. Users can drop either:
   - a folder containing `SKILL.md`, or
   - a `.skill` package archive.
+  - a larger bundle that contains one or more nested `SKILL.md` files.
 - `skills/references/skill-registry.yaml` — generated routing registry.
 - `skills/references/external-skills.md` — generated external skill reference list.
 
@@ -45,7 +46,7 @@ Classify every request before acting:
 | New project, project scaffold, study setup | `skills/internal/project-init/SKILL.md` |
 | Resume existing project | `skills/internal/resume-project/SKILL.md` |
 | Clinical dataset analysis, regression, survival, registry analysis | `skills/internal/analyze/SKILL.md` plus `skills/internal/data-analysis/SKILL.md` policy |
-| Biomedical omics, scRNA-seq, genomics, VCF/BAM/FASTQ/h5ad, ML-heavy workflow | `skills/internal/biomedagent/SKILL.md` as delegated engine |
+| Biomedical omics, scRNA-seq, genomics, VCF/BAM/FASTQ/h5ad, ML-heavy workflow | `skills/external/biomedagent/SKILL.md` as delegated engine |
 | Literature review, evidence synthesis, citation search | `skills/internal/literature-review/SKILL.md` |
 | Citation audit, PMID/DOI verification, bibliography cleanup | Prefer an external citation skill if registered; otherwise use `skills/internal/literature-review/SKILL.md` |
 | Publication figure generation | `skills/internal/visualize/SKILL.md`; delegate compute to BioMedAgent if modality is complex |
@@ -54,16 +55,16 @@ Classify every request before acting:
 | Discussion drafting | `skills/internal/write-discussion/SKILL.md` |
 | Abstract drafting or audit | `skills/internal/write-abstract/SKILL.md` |
 | Full manuscript orchestration | `skills/internal/write-manuscript/SKILL.md` |
-| Manuscript quality-control audit | Prefer registered `manuscript-qc` external skill if present; otherwise use `write-manuscript` final audit |
+| Manuscript quality-control audit | `skills/internal/manuscript-qc/SKILL.md` |
 
 ### Step 2 — Select the Best Skill
 
 Use `skill-registry.yaml` as the source of truth. Prefer routes in this order:
 
-1. Exact user-named skill.
+1. Exact user-named internal skill or canonical delegated engine.
 2. Internal CRA workflow skill with matching triggers.
-3. Internal delegated engine (`biomedagent`) for complex biomedical execution.
-4. External pasted skill with matching triggers.
+3. External delegated engine (`biomedagent`) for complex biomedical execution.
+4. External pasted skill with matching triggers, especially when the user explicitly asks for an external/imported skill.
 5. Manual execution using the closest internal skill, then record a lesson if the routing gap should become durable.
 
 If more than one skill fits, select one primary skill and list support skills. Example:
@@ -102,12 +103,13 @@ External skills must not become disconnected side quests. Their outputs feed the
 
 ## External Skill Intake Rules
 
-When the user pastes a new skill into `skills/external/`:
+When the user pastes a new skill or skill bundle into `skills/external/`:
 
 1. Run `python3 tools/update_skill_registry.py`.
 2. Inspect the generated entry in `skills/references/skill-registry.yaml`.
-3. If the auto-generated triggers are weak, update the skill folder's frontmatter description or add a manual override in this router skill only if needed.
-4. Use the external skill as a support route unless it clearly should become a first-party CRA internal skill.
+3. If the external skill has the same `name` as an existing canonical skill, keep the canonical route unless the user explicitly asks for the alternate copy.
+4. If the auto-generated triggers are weak, update the skill folder's frontmatter description or add a manual override in this router skill only if needed.
+5. Use the external skill as a support route unless it clearly should become a first-party CRA internal skill.
 
 ## Learning Rule
 

@@ -7,7 +7,7 @@ This is a personal end-to-end clinical research and manuscript system, optimized
 ## Architecture
 
 - **Clinical Research Assistant** (this plugin) = primary orchestrator. Owns project setup, study framing, literature review, analysis planning, manuscript writing, assembly, audit, and delegation decisions.
-- **BioMedAgent** = delegated execution engine. Called only when the task exceeds standard clinical biostatistics (omics, genomics, transcriptomics, biomedical ML, non-tabular biomedical files, execution-heavy multistage workflows). Clinical Research Assistant calls into BioMedAgent, then pulls results back into shared project state.
+- **BioMedAgent** = external delegated execution engine. Called only when the task exceeds standard clinical biostatistics (omics, genomics, transcriptomics, biomedical ML, non-tabular biomedical files, execution-heavy multistage workflows). Clinical Research Assistant calls into BioMedAgent, then pulls results back into shared project state.
 
 ## Router-First Command Surface
 

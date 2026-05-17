@@ -98,7 +98,7 @@ Responsible for execution-heavy or modality-specific workflows such as:
 - complex multi-stage computational workflows
 - advanced exploratory or custom computation beyond standard clinical biostatistics
 
-BioMedAgent now lives inside the installable plugin at `skills/internal/biomedagent/`.
+BioMedAgent now lives inside the installable plugin at `skills/external/biomedagent/` to preserve its third-party/external provenance while still making it CRA's delegated execution engine.
 
 ### C. Shared State Layer
 Persistent files that define the study and all downstream outputs.

@@ -15,7 +15,6 @@ These are the original native workflows that CRA owns:
 - `write-discussion`
 - `write-abstract`
 - `write-manuscript`
-- `biomedagent`
 
 The user should normally invoke `skills/clinical-research-assistant/SKILL.md`, not these directly. The router reads `skills/references/skill-registry.yaml`, selects the best internal skill, and then follows that skill's workflow.
 

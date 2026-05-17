@@ -34,3 +34,7 @@ Thumbs.db
 
 # Local push-instruction docs (per-batch, not for upstream)
 /PUSH_*_INSTRUCTIONS.md
+
+# Local evaluation bundles copied into the external skill area.
+# Keep benchmark workspaces out of the installable plugin source.
+/clinical-research-assistant/skills/external/*-evaluation/

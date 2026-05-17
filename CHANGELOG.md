@@ -9,7 +9,7 @@ All notable changes to the clinical-research-assistant plugin will be documented
 This release makes Clinical Research Assistant the single user-facing front door. The user can invoke CRA once, and the router selects the best internal workflow, delegated engine, or pasted external skill.
 
 - **`clinical-research-assistant/skills/clinical-research-assistant/SKILL.md`** — new router skill. It reads the generated skill registry, classifies each request, selects the best primary route, and normalizes delegated/external outputs back into CRA state.
-- **`clinical-research-assistant/skills/internal/`** — new home for first-party CRA skills. The original native skills now live here: project-init, resume-project, analyze, data-analysis, literature-review, visualize, write-introduction, write-methods-results, write-discussion, write-abstract, write-manuscript, and biomedagent.
+- **`clinical-research-assistant/skills/internal/`** — new home for first-party CRA skills. The original native CRA skills now live here: project-init, resume-project, analyze, data-analysis, literature-review, visualize, write-introduction, write-methods-results, write-discussion, write-abstract, and write-manuscript.
 - **`clinical-research-assistant/skills/external/`** — new paste-in folder for borrowed or third-party skills. Supports both `<skill-name>/SKILL.md` folders and `.skill` package archives.
 - **`clinical-research-assistant/tools/update_skill_registry.py`** — deterministic registry updater. It scans internal and external skills, parses frontmatter, and regenerates `skills/references/skill-registry.yaml` and `skills/references/external-skills.md`. Rerunning without skill changes should produce no diff.
 - **`clinical-research-assistant/skills/references/skill-registry.yaml`** — generated routing map used by the CRA router.
@@ -17,7 +17,7 @@ This release makes Clinical Research Assistant the single user-facing front door
 
 ### Changed
 
-- BioMedAgent is now packaged under the installable plugin's internal skills path as `skills/internal/biomedagent/`, making it an internal delegated execution engine rather than a parallel outer skill.
+- BioMedAgent is now packaged under the installable plugin's external skills path as `skills/external/biomedagent/`, preserving its third-party provenance while making it CRA's canonical delegated execution engine rather than a parallel outer skill.
 - `CLAUDE.md`, `README.md`, and `OWNERSHIP_MAP.md` now describe the router-first layout and internal/external skill boundaries.
 - Plugin metadata version bumped to `3.0.0`.
 

@@ -8,6 +8,7 @@ Scans first-party internal skills plus user-pasted external skills and writes:
 External skills may be either:
 - skills/external/<skill-name>/SKILL.md
 - skills/external/<skill-name>.skill  (zip package containing SKILL.md)
+- skills/external/<bundle-name>/.../<skill-name>/SKILL.md
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ EXTERNAL_DIR = SKILLS_DIR / "external"
 REFERENCES_DIR = SKILLS_DIR / "references"
 REGISTRY_PATH = REFERENCES_DIR / "skill-registry.yaml"
 EXTERNAL_INDEX_PATH = REFERENCES_DIR / "external-skills.md"
+EXTERNAL_SKIP_SUFFIXES = ("-evaluation", "-workspace")
 
 
 INTERNAL_OVERRIDES = {
@@ -76,6 +78,9 @@ INTERNAL_OVERRIDES = {
         "role": "primary-workflow",
         "triggers": ["methods", "results", "statistical methods", "results section", "Table 1"],
     },
+}
+
+EXTERNAL_OVERRIDES = {
     "biomedagent": {
         "role": "delegated-engine",
         "triggers": ["omics", "scRNA-seq", "RNA-seq", "genomics", "transcriptomics", "VCF", "BAM", "FASTQ", "h5ad", "machine learning", "differential expression", "pathway enrichment"],
@@ -177,6 +182,29 @@ def infer_external_triggers(name: str, description: str) -> list[str]:
     return sorted(triggers, key=str.lower)
 
 
+def slugify(value: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9]+", "-", value).strip("-").lower()
+    return slug or "skill"
+
+
+def unique_external_id(name: str, rel_path: str, used_ids: set[str]) -> str:
+    if name not in used_ids:
+        used_ids.add(name)
+        return name
+    parent_parts = list(Path(rel_path).parent.parts)
+    if parent_parts[:2] == ["skills", "external"]:
+        parent_parts = parent_parts[2:]
+    parent = "/".join(parent_parts) or name
+    candidate = f"external-{slugify(parent)}"
+    original = candidate
+    i = 2
+    while candidate in used_ids:
+        candidate = f"{original}-{i}"
+        i += 1
+    used_ids.add(candidate)
+    return candidate
+
+
 def load_skill_entry(skill_path: Path, source: str, package_path: Path | None = None) -> dict[str, object] | None:
     if package_path is not None:
         text = skill_text_from_package(package_path)
@@ -198,8 +226,9 @@ def load_skill_entry(skill_path: Path, source: str, package_path: Path | None = 
         role = str(override.get("role", "primary-workflow"))
         triggers = list(override.get("triggers", infer_external_triggers(name, description)))
     else:
-        role = "external-support"
-        triggers = infer_external_triggers(name, description)
+        override = EXTERNAL_OVERRIDES.get(name, {})
+        role = str(override.get("role", "external-support"))
+        triggers = list(override.get("triggers", infer_external_triggers(name, description)))
 
     return {
         "id": name,
@@ -222,21 +251,38 @@ def discover_internal() -> list[dict[str, object]]:
     return entries
 
 
-def discover_external() -> list[dict[str, object]]:
+def discover_external(used_ids: set[str]) -> list[dict[str, object]]:
     entries_by_id: dict[str, dict[str, object]] = {}
 
-    for skill_md in sorted(EXTERNAL_DIR.glob("*/SKILL.md")):
+    for skill_md in sorted(EXTERNAL_DIR.rglob("SKILL.md")):
+        relative_parts = skill_md.relative_to(EXTERNAL_DIR).parts
+        if any(part.startswith(".") or part == "__MACOSX" for part in relative_parts):
+            continue
+        if any(part.endswith(EXTERNAL_SKIP_SUFFIXES) for part in relative_parts):
+            continue
         entry = load_skill_entry(skill_md, "external")
         if entry:
+            entry["id"] = unique_external_id(str(entry["id"]), str(entry["path"]), used_ids)
+            if entry["name"] == "biomedagent" and entry["id"] != "biomedagent":
+                entry["role"] = "external-support"
             entries_by_id[str(entry["id"])] = entry
 
-    for package in sorted(EXTERNAL_DIR.glob("*.skill")):
-        # Prefer an extracted folder with the same stem when both exist.
-        if (EXTERNAL_DIR / package.stem / "SKILL.md").exists():
+    for package in sorted(EXTERNAL_DIR.rglob("*.skill")):
+        relative_parts = package.relative_to(EXTERNAL_DIR).parts
+        if any(part.startswith(".") or part == "__MACOSX" for part in relative_parts):
             continue
-        placeholder = EXTERNAL_DIR / package.stem / "SKILL.md"
+        if any(part.endswith(EXTERNAL_SKIP_SUFFIXES) for part in relative_parts):
+            continue
+        # Prefer an extracted folder with the same stem when both exist.
+        extracted_skill = package.with_suffix("") / "SKILL.md"
+        if extracted_skill.exists():
+            continue
+        placeholder = package.with_suffix("") / "SKILL.md"
         entry = load_skill_entry(placeholder, "external", package_path=package)
         if entry:
+            entry["id"] = unique_external_id(str(entry["id"]), str(entry["path"]), used_ids)
+            if entry["name"] == "biomedagent" and entry["id"] != "biomedagent":
+                entry["role"] = "external-support"
             entries_by_id[str(entry["id"])] = entry
 
     return [entries_by_id[k] for k in sorted(entries_by_id, key=str.lower)]
@@ -298,7 +344,9 @@ def main() -> int:
             print(f"Missing required directory: {path}", file=sys.stderr)
         return 1
 
-    entries = discover_internal() + discover_external()
+    internal_entries = discover_internal()
+    used_ids = {str(entry["id"]) for entry in internal_entries}
+    entries = internal_entries + discover_external(used_ids)
     entries = sorted(entries, key=lambda e: (str(e["source"]) != "internal", str(e["id"]).lower()))
     write_registry(entries)
     write_external_index(entries)
