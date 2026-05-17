@@ -9,7 +9,15 @@ This is a personal end-to-end clinical research and manuscript system, optimized
 - **Clinical Research Assistant** (this plugin) = primary orchestrator. Owns project setup, study framing, literature review, analysis planning, manuscript writing, assembly, audit, and delegation decisions.
 - **BioMedAgent** = delegated execution engine. Called only when the task exceeds standard clinical biostatistics (omics, genomics, transcriptomics, biomedical ML, non-tabular biomedical files, execution-heavy multistage workflows). Clinical Research Assistant calls into BioMedAgent, then pulls results back into shared project state.
 
-## Command Surface
+## Router-First Command Surface
+
+The primary user-facing skill is now `skills/clinical-research-assistant/SKILL.md`.
+When the user says "use CRA" or asks any clinical-research task without naming a subskill, route through that skill first. The router reads `skills/references/skill-registry.yaml`, chooses the best internal or external skill, and then follows the selected workflow.
+
+Native first-party workflows live under `skills/internal/`.
+Borrowed or pasted skills live under `skills/external/` and are indexed by `tools/update_skill_registry.py`.
+
+## Internal Workflow Surface
 
 Each command is owned by exactly one canonical skill file. See `OWNERSHIP_MAP.md` for the full table.
 
@@ -58,7 +66,7 @@ For exact formatting specifications, follow the relevant skill file rather than 
 
 ## Plotting Policy
 
-Default figure backend: **R** with **tidyplots** (preferred) and **ggplot2** (fallback). See `skills/visualize/SKILL.md` for the full backend mapping.
+Default figure backend: **R** with **tidyplots** (preferred) and **ggplot2** (fallback). See `skills/internal/visualize/SKILL.md` for the full backend mapping.
 
 - Standard manuscript figures → R + tidyplots + ggplot2
 - Specialized figures not served by tidyplots → plain ggplot2 + specialized R packages
@@ -89,7 +97,7 @@ Show concise disagreement summaries, not full debate transcripts. The panel impr
 
 ## Analytical Policy
 
-Methodological guardrails, diagnostics expectations, registry cautions, reporting rules, and observational language rules are defined in `skills/data-analysis/SKILL.md` (policy file). All command skills reference these shared standards.
+Methodological guardrails, diagnostics expectations, registry cautions, reporting rules, and observational language rules are defined in `skills/internal/data-analysis/SKILL.md` (policy file). All command skills reference these shared standards.
 
 ## Shared State
 

@@ -521,6 +521,68 @@ Flag if any of these are present:
 - Introducing new results — all data should be in the Results section
 - Not closing the loop — the Conclusion must address the gap from the Introduction
 
+---
+
+## RPTH + Miller VA Discussion Framework (REQUIRED, added 2026-05-17)
+
+Every Discussion section produced by this skill MUST follow the combined Research and Practice in Thrombosis and Haemostasis (RPTH) Discussion-writing guide AND the rhetorical principles demonstrated by Miller et al. 2024 (VA equal-access ICI study, Lancet Oncol). The combined 8-paragraph framework supersedes the looser "4 middle paragraphs" approach.
+
+### Mandatory 8-paragraph structure
+
+1. **First paragraph — Main findings + importance + hedged "first" claim.** Open verbatim with "The main findings of this study are…" (or close variant). State the cohort design (n, design type) in the first clause. Enumerate the main findings as a tight list (no more than 4 items). Close with a hedged claim of being first: "To our knowledge, this is the…", or "We are not aware of prior work that…". Do NOT restate hypotheses or objectives, which belong in the Introduction. Minimal numerical reporting; effect-size descriptors and percentages only.
+
+2. **Most important finding — compare/contrast with literature.** Lead with the single most important result. Compare to 2–4 prior studies by name (Author et al. [N]). Explicitly state how the present study extends prior work in concrete, numbered ways ("First, by…", "Second, by…"). Effect sizes matter more than statistical significance; describe magnitudes qualitatively (e.g., "approximately 30-percentage-point deficit"). Address frameworks the finding connects to (e.g., diminishing-returns, cumulative-disadvantage).
+
+3. **Secondary or NEGATIVE finding — informative null.** Treat unexpected or null findings as important. Explicitly state when the finding **reframes** prior literature ("prior literature has typically addressed each modality separately and may have inferred a broader pattern…than is supported by our within-cohort, side-by-side analysis"). Negative findings that constrain the mechanism are often more powerful than positive findings.
+
+4. **Mechanism comparison — equal-access vs non-equal-access contrast where applicable.** For disparities research, explicitly contrast with equal-access cohorts (e.g., Veterans Health Administration data). When access is equalized in one setting and outcomes converge, while the same outcomes diverge in non-equal-access settings, this is mechanistically informative and must be named as such. Cite parallel disease findings where they exist (e.g., NSCLC).
+
+5. **Two-mechanism framing — biology vs structural-racism, with explicit "consider structural first" move.** State both mechanism families symmetrically. Rule out the biology-based mechanism using the present data. Show how the structural-racism explanation is consistent with every line of evidence. Then deploy the Miller rhetorical move VERBATIM (paraphrase as needed for fit): **"We emphasize that structural-racism mechanisms…should be considered as the primary candidate explanation before any residual biological mechanism is accepted as a contributing cause."** Acknowledge that registry data cannot adjudicate clinician-level vs system-level vs social-determinant operation of the disparity.
+
+6. **Implications — methodological + clinical + future work in one paragraph.** Distinguish methodological contributions (study design, harmonization, novel stratification) from clinical implications (what to do differently) from future work (what's next). Each gets 2–4 sentences. Operational targets must be specific, not abstract ("structured multidisciplinary review of operability decisions for [population]" not "more research").
+
+7. **Strengths + Limitations — BIAS, CONFOUNDING, CHANCE explicitly named.** Open with strengths (1–3 sentences). Then list limitations organized under three explicit labels: **Confounding** (unmeasured variables; for each, state the direction of bias toward null or away from null), **Bias** (ascertainment, selection, registrar-coding), **Chance** (underpowered analyses, multiple-comparisons correction). Close with generalizability (registry-coded race, single-system data, geographic limits). Each limitation immediately becomes a recommendation for future work.
+
+8. **Conclusion paragraph — strong takeaways, no new content.** Restate findings in 3–4 tight sentences. Name the single largest modifiable lever. State the implementation directions specifically. No methods, no statistics, no new findings.
+
+### Required rhetorical moves (from Miller et al. 2024)
+
+- **Hedged, replication-aware language throughout**: "could relate to", "might have resulted in", "remains to be proven", "merits prospective investigation". Never state interpretations as proven facts.
+- **Two-mechanism framing**: state biological AND structural mechanisms symmetrically before privileging one.
+- **Explicit "consider structural before biological"**: never let the reader default to biology when structural-racism mechanisms are consistent with the evidence.
+- **Acknowledge what the data CANNOT determine**: explicitly state that registry data cannot adjudicate certain mechanism questions and that prospective qualitative work is needed.
+- **Each paragraph one job**: do not mix mechanisms with limitations, or limitations with implications.
+
+### Required RPTH structural moves
+
+- **Effect sizes > statistical significance** in all narrative.
+- **Don't cite only confirmatory studies**: explicitly discuss any literature that conflicts with present findings; explain the difference.
+- **BIAS, CONFOUNDING, CHANCE** as explicit labels in limitations paragraph.
+- **Direction-of-bias commentary**: every unmeasured-confounder discussion must state whether the bias would push toward or away from the null.
+- **Strong Conclusion** that doesn't introduce new content and doesn't repeat methods.
+
+### What MUST NOT appear in the Discussion
+
+- Hazard ratios, odds ratios, confidence intervals, P values, chi-square statistics, matched-pair counts; all belong in the Results section and Tables. Percentages and effect-size descriptors (e.g., "approximately 30-percentage-point deficit", "more than two-fold higher") are allowed.
+- Em dashes used as prose punctuation. Use commas or restructure.
+- Self-promoting language ("striking", "novel", "compelling"). Use neutral academic prose.
+- Methods restatement.
+- New findings not in the Results section.
+
+### Quality-check audit at the end of every Discussion draft
+
+Run these checks before delivering the Discussion:
+
+1. **Stat-pattern scan**: grep for `HR,`, `OR,`, `95% CI`, `(HR `, `(OR `, `P = .`, `P < .`, `P = 0`, `chi-square P`, `adjusted HR`, `adjusted OR`, `matched HR`. All should return zero hits in the Discussion region.
+2. **Em-dash scan**: count `—` characters in the Discussion. Should be zero.
+3. **First-paragraph template check**: does the first sentence start with or closely approximate "The main findings of this study are…"?
+4. **Two-mechanism framing check**: does at least one paragraph explicitly state both biology and structural mechanism families and explicitly prefer one?
+5. **BIAS/CONFOUNDING/CHANCE check**: does the limitations paragraph contain those three explicit labels?
+6. **Hedged-language check**: does the Discussion contain "could", "might", "merits", "consistent with", "is not aware of", "remains to be"?
+7. **Negative-finding check**: does at least one paragraph explicitly discuss what was NOT found?
+
+Worked example: Esophageal-IO V67 (manuscript_2026-05-16_MBM.docx after V67_rewrite_discussion_RPTH_style.py). Machine-readable lesson: **L043**.
+
 ### Save to Word Document
 Generate a Word document (.docx) using python-docx:
 - **`discussion_conclusion_[date].docx`** — Complete Discussion and Conclusion text with reference callouts

@@ -86,6 +86,8 @@ Responsible for:
 - consistency auditing
 - deciding whether to delegate sub-work to BioMedAgent
 
+The concrete user-facing entry point is `skills/clinical-research-assistant/SKILL.md`. It reads `skills/references/skill-registry.yaml` and routes to first-party skills under `skills/internal/` or pasted support skills under `skills/external/`.
+
 ### B. Delegated Engine: BioMedAgent
 Responsible for execution-heavy or modality-specific workflows such as:
 
@@ -95,6 +97,8 @@ Responsible for execution-heavy or modality-specific workflows such as:
 - non-tabular file workflows
 - complex multi-stage computational workflows
 - advanced exploratory or custom computation beyond standard clinical biostatistics
+
+BioMedAgent now lives inside the installable plugin at `skills/internal/biomedagent/`.
 
 ### C. Shared State Layer
 Persistent files that define the study and all downstream outputs.

@@ -6,7 +6,7 @@ argument-hint: "[study aim or dataset description]"
 
 # /analyze — Full Statistical Analysis
 
-> **Canonical owner of the `/analyze` command.** Methodological guardrails and diagnostics expectations are defined in `skills/data-analysis/SKILL.md` (policy file). This skill defines the workflow.
+> **Canonical owner of the `/analyze` workflow.** Methodological guardrails and diagnostics expectations are defined in `skills/internal/data-analysis/SKILL.md` (policy file). This skill defines the workflow.
 
 <role>
 Act as a senior clinical biostatistician operating at publication-grade standards for major surgical, oncology, transplant, and high-impact medical journals.
@@ -16,8 +16,8 @@ Act as a senior clinical biostatistician operating at publication-grade standard
 
 **Before starting any analysis, read these two files in this exact order:**
 
-1. `../references/lessons-log.json` — machine-readable memory of analytic patterns surfaced from prior sessions. Scan `trigger_patterns` for matches to the current task. If a match is found, apply the entry's `action` directly without re-deriving.
-2. `../references/biomedagent-methodology.md` — the four cross-cutting ideas adapted from BioMedAgent (*Nature Biomedical Engineering*, 2026): three-phase pipeline (Plan → Execute → Verify), task classification before method selection, memory retrieval, and anti-misclassification rules.
+1. `../../references/lessons-log.json` — machine-readable memory of analytic patterns surfaced from prior sessions. Scan `trigger_patterns` for matches to the current task. If a match is found, apply the entry's `action` directly without re-deriving.
+2. `../../references/biomedagent-methodology.md` — the four cross-cutting ideas adapted from BioMedAgent (*Nature Biomedical Engineering*, 2026): three-phase pipeline (Plan → Execute → Verify), task classification before method selection, memory retrieval, and anti-misclassification rules.
 
 **Apply the three-phase pipeline to every analysis** (this is the discipline behind the existing 8-step interactive workflow):
 - **Phase 1 (Plan).** Steps 1–3. Restate the question, fix the estimand, list inclusion/exclusion, choose method + assumptions, pre-specify all sensitivity analyses.
@@ -28,7 +28,7 @@ Act as a senior clinical biostatistician operating at publication-grade standard
 
 **Apply the anti-misclassification rules** in `biomedagent-methodology.md` Section 4 before reporting any effect estimate.
 
-**Append a new lesson at session end** to `../references/lessons-log.json` if the session surfaced a new pattern (pitfall, default sensitivity, classification trap). Format: `id`, `date_added`, `originating_session`, `category`, `trigger_patterns`, `lesson`, `action`.
+**Append a new lesson at session end** to `../../references/lessons-log.json` if the session surfaced a new pattern (pitfall, default sensitivity, classification trap). Format: `id`, `date_added`, `originating_session`, `category`, `trigger_patterns`, `lesson`, `action`.
 </biomedagent_adapted_methodology>
 
 

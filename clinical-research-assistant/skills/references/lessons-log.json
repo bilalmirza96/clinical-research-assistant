@@ -601,6 +601,76 @@
       "lesson": "When a PSM caliper-sensitivity table shows nearly identical matched-pair counts across several caliper widths (e.g., 0.10 / 0.20 / 0.25 × SD), the cause may be either (a) the caliper is not binding because PS overlap is excellent (a substantive robustness finding) or (b) a bug in the matching loop that fails to apply the caliper. The two are indistinguishable from the count alone; an extended diagnostic sweep is required.",
       "action": "For every PSM analysis, run an extended caliper sweep at 0.01, 0.05, 0.10, 0.20, 0.25, 0.50, 1.00 × pooled SD logit-PS, plus an unbounded sweep (no caliper). For each caliper, report (1) matched-pair count, (2) % of treated successfully matched, (3) median actual match distance, (4) maximum actual match distance, and (5) explicit Yes/No flag for whether the caliper is binding (max distance ≈ caliper). If the caliper is not binding for conventional widths (≥ 0.05 × SD), state this explicitly in the manuscript as a substantive robustness finding rather than as a placeholder caveat. Diagnostic script template: V4_18b_caliper_diagnostic.py.",
       "deprecated": false
+    },
+    {
+      "id": "L041-citation-integrity-audit-and-hallucination-prevention",
+      "date_added": "2026-05-06",
+      "originating_session": "V4+V5 Esophageal-IO final manuscript citation audit (overnight 2026-05-06)",
+      "category": "Citation verification: PubMed-grounded audit + add-time hallucination prevention",
+      "trigger_patterns": [
+        "any new reference is added to a manuscript or bibliography",
+        "any bibliography entry is created or modified",
+        "before submission of any manuscript",
+        "user says 'add a citation', 'add a reference', 'cite this paper', or any equivalent",
+        "before any manuscript Phase 8 audit completion",
+        "any PMID, DOI, or citation appears in a manuscript draft",
+        "any time a sentence is added that ends with [N] or (Author Year)"
+      ],
+      "lesson": "Models can and do fabricate references. During the V4+V5 Esophageal-IO citation audit (2026-05-06), two references were confirmed fabricated and three more had wrong PMID/DOI: (1) Lautenbach DM 'Cancer Med 2023 esophageal disparities' — the DOI 10.1002/cam4.6206 resolved to a Chinese SCLC brain-mets MRI paper (PMID 37288842), the claimed paper does not exist in PubMed; (2) Chua IS 'JAMA Netw Open 2024' — PMID 39173090 and DOI were correct but every other field (authors, title, journal, volume, pages) was fabricated to match an imagined paper, real paper is Chua AV et al JCO Oncol Pract 2024;21(3):408-417; (3) NCCN Ajani Esophageal 2023 DOI was 10.6004/jnccn.2023.0020 (the NSCLC NCCN paper) instead of 10.6004/jnccn.2023.0019; (4) Boscoe FP PMID was 27006255 (a PPI paper) instead of 26991033; (5) the Methods text cited [41] and [42] but the manuscript reference list ended at [34]. The risk is highest when models add 'comparator literature' sentences in Discussion paragraphs, generate methodology citations on the fly, or fill in 'pending verification' PMIDs without verification.",
+      "action": "Two non-negotiable rules: (A) Add-time verification — every new citation added to a manuscript or bibliography file must be PMID-verified against PubMed via the bio-research plugin's get_article_metadata or lookup_article_by_citation tools BEFORE the citation is written into any file. If a PMID is unknown, use lookup_article_by_citation with (journal, year, volume, first_page, author) to find the real PMID; never write 'PMID: pending verification' and move on. If the lookup returns NOT_FOUND or AMBIGUOUS, flag the citation as [VERIFY] inline and do not include claim-supporting text that depends on it. (B) Pre-submission audit — every manuscript Phase 8 audit must include a Citation Integrity Audit step that (1) extracts every PMID/DOI in the manuscript reference list AND bibliography file, (2) batch-verifies each via PubMed (DOI → paper, PMID → paper), (3) checks that returned title/authors/journal/year/volume match the citation claim, (4) checks that every inline [N] citation has a corresponding ref list entry, (5) checks for duplicate PMIDs across different ref numbers, and (6) writes a date-stamped citation_audit_YYYY-MM-DD.md report listing every check. Worked example: Active_2026-05-06/Reports/citation_audit_2026-05-06.md (Esophageal-IO V6). Specific anti-hallucination heuristics: papers cited as 'an earlier NCDB cohort comparator', 'a prior systematic review', or 'an equal-access comparator paper' have the highest fabrication risk and must be PubMed-verified before being written into any file; papers with PMIDs ending in repeating digits (37015337 vs 37015332) or shared with another already-cited paper are high-suspicion for off-by-one or stolen-PMID errors and must be re-verified.",
+      "deprecated": false
+    },
+    {
+      "id": "L043-discussion-writing-RPTH-Miller-framework",
+      "date_added": "2026-05-17",
+      "originating_session": "Esophageal-IO V67 Discussion rewrite (Bilal Mirza)",
+      "category": "Manuscript writing: Discussion section framework",
+      "trigger_patterns": [
+        "user requests Discussion rewrite, Discussion edit, or new Discussion section",
+        "/write-discussion skill invocation",
+        "manuscript Phase 6 (Discussion writing) of /write-manuscript",
+        "user pastes Discussion text asking for review or revision",
+        "user says 'rewrite the discussion', 'strengthen the discussion', 'shorten the discussion', or asks for a Discussion that interprets results",
+        "any manuscript Phase 8 audit step that reviews Discussion structure"
+      ],
+      "lesson": "The skill's prior structure (Aga & Nissar 2022 reverse-funnel) is correct but insufficient: it does not codify the rhetorical moves that make a Discussion publication-ready. The combined RPTH (Research and Practice in Thrombosis and Haemostasis, 2024) Discussion-writing guide + Miller et al. 2024 (VA equal-access ICI study, Lancet Oncol) rhetorical principles produce a tighter, more reviewer-resistant Discussion in 8 paragraphs: (1) 'The main findings of this study are…' opening with n + design + hedged 'to our knowledge' first claim; (2) most important finding compared to 2–4 prior studies by name with concrete numbered extensions; (3) NEGATIVE/null finding treated as informative and used to reframe prior literature; (4) equal-access vs non-equal-access mechanism contrast where applicable; (5) two-mechanism framing (biology vs structural-racism) with explicit 'consider structural before biological' rhetorical move borrowed verbatim from Miller; (6) implications split into methodological + clinical + future work; (7) strengths + limitations with literal 'BIAS, CONFOUNDING, CHANCE' labels and direction-of-bias commentary; (8) strong Conclusion with main takeaways and largest modifiable lever named. Forbidden in Discussion: HR/OR/CI/P values (belong in Results+Tables; percentages and effect-size descriptors permitted), em dashes as prose punctuation, self-promoting language ('striking', 'novel'), methods restatement, new findings. Required register: hedged replication-aware language throughout; explicit acknowledgement of what registry data cannot determine. Worked example: Esophageal-IO/Active_2026-05-06/Manuscripts_Final_2026-05-16/manuscript_2026-05-16_MBM.docx after Scripts/V67_rewrite_discussion_RPTH_style.py.",
+      "action": "When writing any Discussion: (A) apply the 8-paragraph mandatory structure above; (B) run quality-check audit before delivery: stat-pattern grep (HR, OR, 95% CI, P =, P <, chi-square P, adjusted HR, adjusted OR, matched HR) must return zero hits in Discussion region, em-dash count must be 0, first sentence must approximate 'The main findings of this study are…', at least one paragraph must deploy two-mechanism framing with explicit 'consider structural first', limitations paragraph must contain the literal labels Confounding/Bias/Chance, Discussion must contain hedged language ('could', 'might', 'merits', 'consistent with'), at least one paragraph must explicitly discuss what was NOT found; (C) where the prior literature is mixed or null, name the discordant studies and explain the difference rather than only citing confirmatory work; (D) for any unmeasured-confounder discussion, state the direction of bias (toward or away from the null) and translate the limitation into a specific future-work recommendation. The rule is codified in three places: (1) ~/Claude/dev/clinical-research-assistant/clinical-research-assistant/skills/write-discussion/SKILL.md section 'RPTH + Miller VA Discussion Framework'; (2) ~/Claude/00_Context/working-rules.md section 'Refinement 2026-05-17 (L043) — Discussion-writing framework'; (3) this lessons-log entry. Source papers: Aga & Nissar 2022 PMC9458406 (reverse-funnel); RPTH Discussion guide PMC10772867 (8-paragraph structure); Miller et al. 2024 PMC12169339 (VA ICI equal-access; structural-before-biological rhetorical move).",
+      "deprecated": false
+    },
+    {
+      "id": "L042-georgia-manuscript-formatting-standard",
+      "date_added": "2026-05-11",
+      "originating_session": "Esophageal-IO V6 review-ready document build (2026-05-11)",
+      "category": "Manuscript formatting: Georgia 12pt 1.5-spacing black",
+      "trigger_patterns": [
+        "any manuscript .docx generation",
+        "any abstract .docx generation",
+        "any pandoc .md → .docx conversion for review",
+        "any review-ready document export",
+        "Phase 8 manuscript assembly step",
+        "user reviews a manuscript and asks about font/spacing/colour",
+        "manuscript_complete_<date>.docx, Draft_FINAL_<date>.docx, abstract_standalone_<date>.docx generation"
+      ],
+      "lesson": "Every manuscript, abstract, and review-ready Word document must use Georgia 12pt, 1.5 line spacing, black (RGB 0,0,0) text, no coloured shading. This applies globally to every clinical-research project, not just any one manuscript. Pandoc-rendered docx files retain per-run font overrides from the markdown's inline formatting that override the document's Normal style; setting only the Normal style does NOT propagate to existing paragraphs and runs. To force the standard, every paragraph and every run in every table cell must be walked and reformatted explicitly. Worked example: Esophageal-IO/Active_2026-05-06/Scripts/V8_apply_georgia_formatting_2026-05-11.py.",
+      "action": "When generating any manuscript or abstract .docx, run a post-processing formatter that: (1) sets Normal style font=Georgia, size=12pt, color=black, line_spacing=1.5; (2) sets w:rFonts on the Normal style for ascii, hAnsi, cs, and eastAsia all = 'Georgia'; (3) iterates every paragraph style (type == 1) and applies same font + color + line spacing; (4) walks every paragraph and every run, forcing run.font.name = 'Georgia', run.font.color.rgb = RGBColor(0,0,0), and setting w:rFonts on the run's rPr; (5) recursively does the same for every table cell paragraph. Tables may use 11pt font for fit but otherwise identical formatting. The rule is also codified in ~/Claude/00_Context/working-rules.md under 'Manuscript & Abstract Formatting Standard (GLOBAL)'.",
+      "deprecated": false
+    },
+    {
+      "id": "L044-cra-router-first-skill-architecture",
+      "date_added": "2026-05-17",
+      "originating_session": "Clinical Research Assistant v3.0.0 router/internal/external restructuring",
+      "category": "Plugin architecture: router-first skill orchestration",
+      "trigger_patterns": [
+        "user says use CRA",
+        "user asks which clinical research skill to invoke",
+        "new external skill is pasted into CRA",
+        "clinical-research-assistant skill routing",
+        "biomedagent or scientific skills should be under CRA umbrella",
+        "assistant needs to choose between analyze, literature-review, visualize, writing, biomedagent, or external skill"
+      ],
+      "lesson": "Clinical Research Assistant should be the single user-facing front door rather than a set of separately invoked skills. Native first-party workflows belong under skills/internal/, pasted or borrowed skills belong under skills/external/, and the router at skills/clinical-research-assistant/SKILL.md reads a generated registry before selecting the best subskill. This prevents skill-choice burden from falling on the user while preserving modular ownership and provenance.",
+      "action": "When CRA is invoked, first read skills/references/skill-registry.yaml and route to the best primary skill. If the user has pasted a new skill into skills/external/ as either <skill-name>/SKILL.md or <skill-name>.skill, run python3 tools/update_skill_registry.py from the plugin root before routing. Keep external skills as support routes unless repeated use justifies promotion into skills/internal/. When an external or delegated skill produces outputs, normalize them back into CRA shared state rather than leaving disconnected prose.",
+      "deprecated": false
     }
   ]
 }

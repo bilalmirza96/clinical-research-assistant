@@ -1,11 +1,11 @@
 ---
 name: clinical-analysis-policy
-description: Supporting policy skill containing methodological guardrails, diagnostics expectations, registry cautions, and reporting rules for clinical research analysis. NOT a command owner — the canonical /analyze command lives in skills/analyze/SKILL.md.
+description: Supporting policy skill containing methodological guardrails, diagnostics expectations, registry cautions, and reporting rules for clinical research analysis. NOT a command owner — the canonical /analyze workflow lives in skills/internal/analyze/SKILL.md.
 ---
 
 # Clinical Analysis Policy
 
-> **This is a policy file, not a command skill.** It does not own `/analyze`, `/visualize`, `/write-manuscript`, or any other command. Command ownership is defined in the canonical skill files under `skills/`.
+> **This is a policy file, not a command skill.** It does not own `/analyze`, `/visualize`, `/write-manuscript`, or any other command. Command ownership is defined in the canonical skill files under `skills/internal/`.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Provides shared analytical standards that all command skills reference. Any skil
 <biomedagent_adapted_methodology>
 ## BioMedAgent-adapted methodology — read first
 
-Before any analysis, read in this order: (1) `../references/lessons-log.json` to scan for matching prior patterns; (2) `../references/biomedagent-methodology.md` for the three-phase pipeline (Plan → Execute → Verify), task classification routing table, and anti-misclassification rules. Apply the six-way classification (descriptive / inferential test / multivariable / survival / sensitivity / subgroup) before choosing a method. Append a new entry to `lessons-log.json` if the session surfaces a new pattern.
+Before any analysis, read in this order: (1) `../../references/lessons-log.json` to scan for matching prior patterns; (2) `../../references/biomedagent-methodology.md` for the three-phase pipeline (Plan → Execute → Verify), task classification routing table, and anti-misclassification rules. Apply the six-way classification (descriptive / inferential test / multivariable / survival / sensitivity / subgroup) before choosing a method. Append a new entry to `lessons-log.json` if the session surfaces a new pattern.
 </biomedagent_adapted_methodology>
 
 <mandatory_analysis_report>

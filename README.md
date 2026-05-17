@@ -4,13 +4,21 @@ A personal end-to-end clinical research and manuscript system for Claude Code. G
 
 ## Architecture
 
-**Clinical Research Assistant** is the primary orchestrator. It owns project setup, study framing, literature review, analysis planning, manuscript writing, assembly, and audit.
+**Clinical Research Assistant** is the primary orchestrator and user-facing router. You can invoke CRA once, and it selects the best internal workflow skill, delegated engine, or pasted external skill.
 
 **BioMedAgent** is a delegated execution engine, called only when the task exceeds standard clinical biostatistics — omics, genomics, biomedical ML, or execution-heavy computational workflows.
 
 All commands share a persistent state layer (`project_state.json`, `results_registry.json`, `citation_bank.json`, etc.) that enables cross-session continuity and cross-command data flow.
 
 ## Commands
+
+The preferred user-facing entry point is:
+
+| Entry point | Purpose |
+|---|---|
+| `clinical-research-assistant` / "use CRA" | Router that classifies the task and selects the best internal or external skill |
+
+Internal workflow skills remain available as the execution layer:
 
 | Command | Purpose |
 |---|---|
@@ -44,7 +52,7 @@ This creates the shared state files and project directory. You can also skip thi
 ### 3. Recommended workflow
 
 ```
-/project-init → /literature-review → /analyze → /visualize → /write-introduction → /write-methods-results → /write-discussion → /write-manuscript
+use CRA → project-init → literature-review → analyze → visualize → write-introduction → write-methods-results → write-discussion → write-abstract → write-manuscript
 ```
 
 Each command reads from the prior command's state output. You can run them in any order, but this sequence produces the most coherent manuscript.
@@ -155,24 +163,47 @@ clinical-research-assistant/                         # Marketplace root
 ├── clinical-research-assistant/                     # Plugin directory
 │   ├── .claude-plugin/plugin.json                   # Plugin metadata
 │   ├── CLAUDE.md                                    # Orchestrator config
+│   ├── tools/
+│   │   └── update_skill_registry.py                 # Regenerates internal/external skill registry
 │   ├── skills/
-│   │   ├── project-init/                            # /project-init
-│   │   ├── resume-project/                          # /resume-project
-│   │   ├── analyze/                                 # /analyze — canonical owner
-│   │   ├── literature-review/                       # /literature-review
-│   │   ├── visualize/                               # /visualize — R/tidyplots/ggplot2
-│   │   ├── write-introduction/                      # /write-introduction
-│   │   ├── write-methods-results/                   # /write-methods-results
-│   │   ├── write-discussion/                        # /write-discussion
-│   │   ├── write-manuscript/                        # /write-manuscript — orchestrator
-│   │   ├── data-analysis/                           # Analytical policy (not a command)
-│   │   └── references/                              # Writing style guide
+│   │   ├── clinical-research-assistant/             # User-facing CRA router
+│   │   ├── internal/                                # First-party CRA workflows
+│   │   │   ├── project-init/                        # /project-init
+│   │   │   ├── resume-project/                      # /resume-project
+│   │   │   ├── analyze/                             # /analyze — canonical owner
+│   │   │   ├── literature-review/                   # /literature-review
+│   │   │   ├── visualize/                           # /visualize — R/tidyplots/ggplot2
+│   │   │   ├── write-introduction/                  # /write-introduction
+│   │   │   ├── write-methods-results/               # /write-methods-results
+│   │   │   ├── write-discussion/                    # /write-discussion
+│   │   │   ├── write-abstract/                      # /write-abstract
+│   │   │   ├── write-manuscript/                    # /write-manuscript — orchestrator
+│   │   │   ├── data-analysis/                       # Analytical policy (not a command)
+│   │   │   └── biomedagent/                         # Delegated execution engine
+│   │   ├── external/                                # User-pasted external skills
+│   │   └── references/                              # Writing style, lessons, generated registry
 │   └── templates/state/                             # State file templates
-├── skills/biomedagent/                              # BioMedAgent skill
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE
 ```
+
+### External Skill Intake
+
+Paste skills into:
+
+```text
+clinical-research-assistant/skills/external/<skill-name>/SKILL.md
+clinical-research-assistant/skills/external/<skill-name>.skill
+```
+
+Then run from the plugin directory:
+
+```bash
+python3 tools/update_skill_registry.py
+```
+
+This regenerates `skills/references/skill-registry.yaml` and `skills/references/external-skills.md`, which the CRA router reads before choosing a route.
 
 ## Installation
 

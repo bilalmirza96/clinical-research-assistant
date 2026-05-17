@@ -2,6 +2,8 @@
 
 Status: **COMPLETE** (2026-04-01)
 
+2026-05-17 note: this document records the pre-v3 cleanup history. In v3.0.0, first-party skills moved from `skills/<skill-name>/` to `skills/internal/<skill-name>/`, the user-facing router moved to `skills/clinical-research-assistant/SKILL.md`, and pasted external skills are indexed from `skills/external/`.
+
 ## What Was Wrong
 
 ### 1. Duplicate Command Ownership

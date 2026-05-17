@@ -2,6 +2,29 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.0.0] - 2026-05-17
+
+### Added — Router-first CRA architecture
+
+This release makes Clinical Research Assistant the single user-facing front door. The user can invoke CRA once, and the router selects the best internal workflow, delegated engine, or pasted external skill.
+
+- **`clinical-research-assistant/skills/clinical-research-assistant/SKILL.md`** — new router skill. It reads the generated skill registry, classifies each request, selects the best primary route, and normalizes delegated/external outputs back into CRA state.
+- **`clinical-research-assistant/skills/internal/`** — new home for first-party CRA skills. The original native skills now live here: project-init, resume-project, analyze, data-analysis, literature-review, visualize, write-introduction, write-methods-results, write-discussion, write-abstract, write-manuscript, and biomedagent.
+- **`clinical-research-assistant/skills/external/`** — new paste-in folder for borrowed or third-party skills. Supports both `<skill-name>/SKILL.md` folders and `.skill` package archives.
+- **`clinical-research-assistant/tools/update_skill_registry.py`** — deterministic registry updater. It scans internal and external skills, parses frontmatter, and regenerates `skills/references/skill-registry.yaml` and `skills/references/external-skills.md`. Rerunning without skill changes should produce no diff.
+- **`clinical-research-assistant/skills/references/skill-registry.yaml`** — generated routing map used by the CRA router.
+- **`clinical-research-assistant/skills/references/external-skills.md`** — generated human-readable index of pasted external skills.
+
+### Changed
+
+- BioMedAgent is now packaged under the installable plugin's internal skills path as `skills/internal/biomedagent/`, making it an internal delegated execution engine rather than a parallel outer skill.
+- `CLAUDE.md`, `README.md`, and `OWNERSHIP_MAP.md` now describe the router-first layout and internal/external skill boundaries.
+- Plugin metadata version bumped to `3.0.0`.
+
+### Migration note
+
+Legacy top-level skill folders under `clinical-research-assistant/skills/<skill-name>/` have moved to `clinical-research-assistant/skills/internal/<skill-name>/`. Use `skills/clinical-research-assistant/SKILL.md` as the preferred entry point.
+
 ## [2.5.1] - 2026-05-06
 
 ### Added — V4-audit lessons (L038, L040; finalises L039)

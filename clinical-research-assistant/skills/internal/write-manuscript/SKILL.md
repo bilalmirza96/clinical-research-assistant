@@ -18,7 +18,7 @@ The 9-phase manuscript orchestrator (Setup → Literature → Analysis → Figur
 - **Execute** = Phases 2–7 — analyse, draft, verify each section against verified outputs from prior phases.
 - **Verify** = Phase 8 (Final Assembly & Audit) — Part B internal consistency audit, Part C reporting-guideline compliance.
 
-Before starting, read `../references/lessons-log.json` (memory of prior manuscript-process patterns — JAMA P-value formatting, table-construction discipline, harmonized-cohort tracking, etc.) and `../references/biomedagent-methodology.md` (philosophy + anti-misclassification rules). At session end, append any new manuscript-process pattern to `lessons-log.json`.
+Before starting, read `../../references/lessons-log.json` (memory of prior manuscript-process patterns — JAMA P-value formatting, table-construction discipline, harmonized-cohort tracking, etc.) and `../../references/biomedagent-methodology.md` (philosophy + anti-misclassification rules). At session end, append any new manuscript-process pattern to `lessons-log.json`.
 </biomedagent_adapted_methodology>
 
 <writing_style>
@@ -311,7 +311,7 @@ Begin Phase 7 when the manuscript body is sufficiently complete.
 
 ### Delegate to the dedicated abstract-writing skill
 
-Phase 7 is now executed by the `write-abstract` sub-skill (`skills/write-abstract/SKILL.md`). That skill applies the **12-principle Bilal Mirza editorial rubric** to every abstract draft and runs an explicit 12-point gate before declaring submission-ready. Read it at the start of Phase 7 and follow its workflow exactly.
+Phase 7 is now executed by the `write-abstract` sub-skill (`skills/internal/write-abstract/SKILL.md`). That skill applies the **12-principle Bilal Mirza editorial rubric** to every abstract draft and runs an explicit 12-point gate before declaring submission-ready. Read it at the start of Phase 7 and follow its workflow exactly.
 
 ### Abstract Rules (carried forward from earlier versions; superseded by the 12 principles)
 - Draft the abstract last
@@ -350,13 +350,36 @@ Present the complete manuscript layout with word counts and status for each sect
 | Abbreviations defined on first use | ✓/✗ | List undefined abbreviations |
 | Total word count 3000–4000 (excl. Abstract) | ✓/✗ | Report word count per section and total |
 | Total references ≥ 30 | ✓/✗ | Report count; if <30, identify sections needing more citations |
+| **Citation Integrity Audit (L041)** | ✓/✗ | Every PMID/DOI PubMed-verified; every claimed (author, journal, year, volume, page) matches; no fabrications; no duplicate PMIDs across ref numbers; every inline [N] resolves to ref-list entry. See Part B.5 below. |
+
+### Part B.5 — Citation Integrity Audit (NEW, mandatory per L041 + working-rules.md "Citation Integrity Rule")
+
+Run this BEFORE Part C reporting-guideline check. Two mandates apply:
+
+**Add-time verification.** Every citation added during this Phase 8 session must be PMID-verified against PubMed via the `clinical-research-assistant:literature-review` skill OR `mcp__plugin_bio-research_pubmed__get_article_metadata` / `lookup_article_by_citation` tools. If lookup returns NOT_FOUND or AMBIGUOUS, mark `[VERIFY]` inline AND remove the dependent claim. Never write `PMID: pending verification` as a placeholder.
+
+**Pre-submission audit (six checks):**
+1. Extract every PMID and DOI from the manuscript reference list AND the project `References/bibliography.md`
+2. Batch-verify each via PubMed (DOI → paper title/authors/journal; PMID → paper title/authors/journal)
+3. Compare returned title, first author, journal, year, volume, and first page against the cited claim
+4. Verify every inline `[N]` citation has a corresponding ref-list entry (programmatic: regex over the manuscript)
+5. Flag duplicate PMIDs that appear under multiple ref numbers (tracking artifact OR fabrication)
+6. Write `citation_audit_YYYY-MM-DD.md` in the project's `Reports/` folder listing every check with PASS / FAIL / AMBIGUOUS
+
+**Highest-suspicion patterns (must be PubMed-verified before writing):**
+- Comparator citations: "an earlier NCDB cohort comparator", "a prior systematic review", "an equal-access comparator paper" — fabrication risk highest here
+- PMIDs differing by one digit from another already-cited PMID
+- PMIDs shared with another ref number in the same file
+- DOIs that look plausible but don't match the cited author surname
+
+**Worked example:** `Esophageal-IO/Active_2026-05-06/Reports/citation_audit_2026-05-06.md`. Two fabricated citations and three with wrong PMIDs were caught in a 36-reference manuscript that had passed every prior consistency check.
 
 ### Part C — Reporting Guideline Audit
 Select the appropriate framework (STROBE, CONSORT, STARD, TRIPOD, STROCSS, PRISMA) and summarize key checklist compliance. Flag missing reporting elements.
 
 ### Part D — Generate Final Documents
 
-Generate the following Word documents (.docx) using python-docx. All documents use Times New Roman 12pt, double-spaced, 1-inch margins:
+Generate the following Word documents (.docx) using python-docx. **All documents use Georgia 12pt, 1.5 line spacing, black text (RGB 0,0,0), no coloured shading, 1-inch margins** — per the global Manuscript Formatting Standard in `~/Claude/00_Context/working-rules.md` (lesson **L042**). Pandoc-rendered docx files retain per-run font overrides; the Normal style alone is NOT sufficient. Walk every paragraph + every table cell and force run.font.name = "Georgia", run.font.color.rgb = RGBColor(0,0,0), w:rFonts → Georgia for ascii/hAnsi/cs/eastAsia. Worked formatter: `Esophageal-IO/Active_2026-05-06/Scripts/V8_apply_georgia_formatting_2026-05-11.py`. Tables may use 11pt for fit. Required documents:
 
 1. **`manuscript_complete_[date].docx`** — Full manuscript with all sections in order:
    - Title page (title, author placeholders, corresponding author, word count)

@@ -5,32 +5,38 @@ Defines the single canonical owner for each command in the Clinical Research Ass
 ## Rules
 
 1. Each command has exactly ONE canonical skill file that owns its workflow.
-2. `skills/data-analysis/SKILL.md` is a **policy file** — it owns no commands.
-3. `CLAUDE.md` is the **orchestrator** — it routes commands to skill files but does not override their workflows.
-4. BioMedAgent (`skills/biomedagent/SKILL.md`) is a **delegated execution engine** — it is invoked by the orchestrator when data complexity requires autonomous multi-agent processing, but does not own user-facing commands.
+2. `skills/clinical-research-assistant/SKILL.md` is the **user-facing router** — invoke this first when the user says "use CRA" or does not name a subskill.
+3. `skills/internal/data-analysis/SKILL.md` is a **policy file** — it owns no commands.
+4. `CLAUDE.md` is the **orchestrator brief** — it defines global behavior but does not override skill workflows.
+5. BioMedAgent (`skills/internal/biomedagent/SKILL.md`) is a **delegated execution engine** — it is invoked by the router/orchestrator when data complexity requires autonomous multi-agent processing, but does not own user-facing commands.
+6. External pasted skills live under `skills/external/` and are indexed in `skills/references/skill-registry.yaml`.
 
 ## Command Ownership Table
 
 | Command | Canonical Owner | Type |
 |---|---|---|
-| `/project-init` | `skills/project-init/SKILL.md` | Workflow skill |
-| `/resume-project` | `skills/resume-project/SKILL.md` | Workflow skill |
-| `/analyze` | `skills/analyze/SKILL.md` | Workflow skill |
-| `/visualize` | `skills/visualize/SKILL.md` | Workflow skill |
-| `/literature-review` | `skills/literature-review/SKILL.md` | Workflow skill |
-| `/write-manuscript` | `skills/write-manuscript/SKILL.md` | Workflow skill |
-| `/write-introduction` | `skills/write-introduction/SKILL.md` | Workflow skill |
-| `/write-methods-results` | `skills/write-methods-results/SKILL.md` | Workflow skill |
-| `/write-discussion` | `skills/write-discussion/SKILL.md` | Workflow skill |
+| `clinical-research-assistant` / "use CRA" | `skills/clinical-research-assistant/SKILL.md` | Router skill |
+| `/project-init` | `skills/internal/project-init/SKILL.md` | Internal workflow skill |
+| `/resume-project` | `skills/internal/resume-project/SKILL.md` | Internal workflow skill |
+| `/analyze` | `skills/internal/analyze/SKILL.md` | Internal workflow skill |
+| `/visualize` | `skills/internal/visualize/SKILL.md` | Internal workflow skill |
+| `/literature-review` | `skills/internal/literature-review/SKILL.md` | Internal workflow skill |
+| `/write-manuscript` | `skills/internal/write-manuscript/SKILL.md` | Internal workflow skill |
+| `/write-introduction` | `skills/internal/write-introduction/SKILL.md` | Internal workflow skill |
+| `/write-methods-results` | `skills/internal/write-methods-results/SKILL.md` | Internal workflow skill |
+| `/write-discussion` | `skills/internal/write-discussion/SKILL.md` | Internal workflow skill |
+| `/write-abstract` | `skills/internal/write-abstract/SKILL.md` | Internal workflow skill |
 
 ## Support Files (Not Command Owners)
 
 | File | Role |
 |---|---|
-| `skills/data-analysis/SKILL.md` | Analytical policy: guardrails, diagnostics, registry cautions, reporting rules |
+| `skills/internal/data-analysis/SKILL.md` | Analytical policy: guardrails, diagnostics, registry cautions, reporting rules |
 | `skills/references/writing-style.md` | Writing style reference for manuscript skills |
-| `skills/data-analysis/references/*` | Method selection, registry cautions, diagnostics checklist |
-| `CLAUDE.md` | Orchestrator: routes commands, defines core rules and role |
+| `skills/references/skill-registry.yaml` | Generated registry mapping triggers to internal and external skills |
+| `skills/references/external-skills.md` | Generated human-readable index of pasted external skills |
+| `skills/external/*` | External support skills, used only when routed by CRA |
+| `CLAUDE.md` | Orchestrator brief: defines core rules and role |
 
 ## BioMedAgent Delegation
 

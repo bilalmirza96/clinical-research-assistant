@@ -10,6 +10,13 @@ The external command surface should remain familiar, but each command must opera
 
 These rules apply to every major command.
 
+### 0. Router-first entry
+
+The preferred user-facing entry is `skills/clinical-research-assistant/SKILL.md`.
+When the user invokes CRA, the router must classify the request, read `skills/references/skill-registry.yaml`, select the best internal or external skill, and then apply the selected command contract below.
+
+Legacy slash-command contracts remain valid as internal workflow contracts.
+
 ### 1. Every command reads project state first
 At minimum:
 - `project_state.json`
