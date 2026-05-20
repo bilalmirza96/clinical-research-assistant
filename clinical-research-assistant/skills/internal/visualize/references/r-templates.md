@@ -49,11 +49,19 @@ Dimensions: 3.5 in (single column), 7 in (double column).
 
 ---
 
-## tidyplots — group comparison (bar + beeswarm + P-value)
+## tidyplots — full pattern reference
+
+The official tidyplots package: https://github.com/jbengler/tidyplots — high-level grammar built on ggplot2. Preferred R high-level API for CRA figure work. Install via:
 
 ```r
+# CRAN (when available) or remotes:
+remotes::install_github("jbengler/tidyplots")
 library(tidyplots)
+```
 
+### tidyplots — group comparison (bar + beeswarm + P-value)
+
+```r
 tidyplot(data, x = group, y = il6_pod1, color = group) |>
   add_mean_bar(alpha = 0.7) |>
   add_sem_errorbar() |>
@@ -65,6 +73,134 @@ tidyplot(data, x = group, y = il6_pod1, color = group) |>
   theme_tidyplot() |>
   save_plot("Figure_3_il6_comparison.pdf", width = 3.5, height = 4)
 ```
+
+### tidyplots — violin + box + jitter (distribution comparison)
+
+```r
+tidyplot(data, x = group, y = biomarker, color = group) |>
+  add_violin(alpha = 0.4) |>
+  add_boxplot(alpha = 0.7, width = 0.3) |>
+  add_data_points_jitter(alpha = 0.5, size = 1.5) |>
+  add_test_pvalue() |>
+  adjust_colors(new_colors = c("#2C3E50", "#C0392B")) |>
+  adjust_y_axis_label("Biomarker (units)") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_violin.pdf", width = 4.5, height = 4)
+```
+
+### tidyplots — heatmap
+
+```r
+tidyplot(data, x = sample, y = gene, color = expression) |>
+  add_heatmap() |>
+  adjust_colors(colors_continuous_RdBu) |>
+  adjust_x_axis(rotate_labels = TRUE) |>   # overlap prevention!
+  theme_tidyplot() |>
+  save_plot("Figure_X_heatmap.pdf", width = 7, height = 5)
+```
+
+### tidyplots — grouped bar chart (stacked / proportional)
+
+```r
+# Absolute counts
+tidyplot(data, x = condition, y = count, color = subtype) |>
+  add_barstack_absolute() |>
+  adjust_colors(new_colors = c("#2C3E50", "#C0392B", "#2980B9", "#27AE60")) |>
+  adjust_x_axis(rotate_labels = TRUE) |>
+  adjust_y_axis_label("Number of patients") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_stacked.pdf", width = 5, height = 4)
+
+# Proportions (sums to 1 per column)
+tidyplot(data, x = condition, y = count, color = subtype) |>
+  add_barstack_relative() |>
+  adjust_y_axis_label("Proportion of patients") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_proportional.pdf", width = 5, height = 4)
+```
+
+### tidyplots — line + ribbon (trend with CI)
+
+```r
+tidyplot(data, x = timepoint, y = response, color = group) |>
+  add_mean_line(linewidth = 0.8) |>
+  add_sem_ribbon(alpha = 0.25) |>
+  add_data_points(alpha = 0.5) |>
+  adjust_colors(new_colors = c("#2C3E50", "#C0392B")) |>
+  adjust_x_axis_label("Time (months)") |>
+  adjust_y_axis_label("Response (units)") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_trend.pdf", width = 5, height = 4)
+```
+
+### tidyplots — histogram + density
+
+```r
+tidyplot(data, x = biomarker, color = group) |>
+  add_histogram(alpha = 0.5, bins = 30) |>
+  add_density() |>
+  adjust_colors(new_colors = c("#2C3E50", "#C0392B")) |>
+  adjust_x_axis_label("Biomarker concentration (pg/mL)") |>
+  adjust_y_axis_label("Count") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_hist.pdf", width = 4.5, height = 3.5)
+```
+
+### tidyplots — scatter + fit line
+
+```r
+tidyplot(data, x = predictor, y = outcome) |>
+  add_data_points(alpha = 0.6, size = 1.5) |>
+  add_fit_line(method = "lm") |>
+  adjust_colors(new_colors = "#2C3E50") |>
+  adjust_x_axis_label("Predictor (units)") |>
+  adjust_y_axis_label("Outcome (units)") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_scatter.pdf", width = 4.5, height = 4)
+```
+
+### tidyplots — paired (slope chart for pre/post)
+
+```r
+tidyplot(data, x = timepoint, y = value, color = patient_id) |>
+  add_data_points(size = 2) |>
+  add_line(linewidth = 0.5, alpha = 0.6) |>
+  add_test_pvalue(paired = TRUE) |>
+  remove_legend() |>   # one line per patient — legend not useful
+  adjust_x_axis_label("") |>
+  adjust_y_axis_label("Outcome (units)") |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_paired.pdf", width = 3.5, height = 4)
+```
+
+### tidyplots — dot plot with CI (Cleveland-style)
+
+```r
+tidyplot(results, x = effect_size, y = variable, color = significant) |>
+  add_data_points(size = 3, shape = 15) |>
+  add_ci95_errorbar(width = 0) |>
+  adjust_colors(new_colors = c("#7F8C8D", "#2C3E50")) |>
+  adjust_x_axis_label("Adjusted OR (95% CI)") |>
+  remove_y_axis_label() |>
+  theme_tidyplot() |>
+  save_plot("Figure_X_dotplot.pdf", width = 5, height = 4)
+```
+
+### tidyplots conventions to memorize
+
+| Function | Effect | Overlap-prevention angle |
+|---|---|---|
+| `adjust_x_axis(rotate_labels = TRUE)` | rotate x labels 45° | use whenever >5 categorical positions or label length >8 chars |
+| `theme_tidyplot()` | clean defaults (no chartjunk) | always include |
+| `save_plot()` | tight bbox by default | replaces `ggsave` for tidyplots output |
+| `remove_legend()` | drop legend when redundant | reduces overlap risk |
+| `split_plot()` | facet within one plot | when multi-panel composition is needed without `patchwork` |
+
+### Tidyplots official reference
+
+- Repo: https://github.com/jbengler/tidyplots
+- Docs: https://jbengler.github.io/tidyplots/
+- Reference card: see the package vignettes (`vignette("tidyplots")` in R)
 
 ---
 

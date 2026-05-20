@@ -138,8 +138,9 @@ Quality gates (each failure → fix and continue; document in decision_log.md):
 - ✓ Color palette colorblind-safe
 - ✓ Dimensions match journal column rules
 - ✓ Resolution ≥ 300 DPI for raster, vector for PDF
+- ✓ **No text overlap — HARD GATE.** Visually inspect the rendered PNG (open and look at it) before declaring the figure complete. All axis labels, tick labels, bar value labels, legend, panel labels (A/B/C), and significance brackets must be non-overlapping and non-clipped. If any text overlaps another text element or covers data, re-layout per `references/aesthetic-standards.md` "Layout and overlap prevention" section (rotate labels 30° with `ha='right'` when >5 categorical positions or any label >8 chars; use horizontal bars; reposition legend; etc.) and re-render. Never declare a figure complete without this visual inspection.
 
-R override: if the user explicitly requested R for a figure, use the templates in `references/r-templates.md` instead of K-Dense Python delegation. The aesthetic standards apply identically.
+R override: if the user explicitly requested R for a figure, use the templates and tidyplots patterns in `references/r-templates.md` instead of K-Dense Python delegation. The aesthetic standards (including the no-overlap hard gate) apply identically.
 
 ---
 
