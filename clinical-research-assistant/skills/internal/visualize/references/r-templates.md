@@ -379,26 +379,34 @@ ggsave("Figure_5_multipanel.pdf", width = 7, height = 8, units = "in")
 
 ---
 
-## Universal theme override
+## Universal theme override (Anthropic brand fonts)
 
-If using ggplot2 directly without tidyplots, apply this theme to enforce CRA aesthetic standards:
+If using ggplot2 directly without tidyplots, apply this theme to enforce CRA aesthetic standards including the Anthropic brand fonts (Poppins for headings, Lora for body):
 
 ```r
 cra_theme <- function() {
-  theme_classic(base_family = "Arial", base_size = 11) +
+  theme_classic(base_size = 11) +
     theme(
+      # Body text → Lora (Anthropic Serif), with Georgia fallback
+      text             = element_text(family = "Lora"),
+      axis.title       = element_text(family = "Lora", size = 11),
+      axis.text        = element_text(family = "Lora", size = 10),
+      legend.text      = element_text(family = "Lora", size = 10),
+      legend.title     = element_blank(),
+      # Headings → Poppins (Anthropic Sans), with Arial fallback
+      plot.title       = element_text(family = "Poppins", face = "bold", size = 12),
+      plot.subtitle    = element_text(family = "Poppins", size = 11),
+      strip.text       = element_text(family = "Poppins", face = "bold", size = 11),
+      # Clean defaults
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      axis.line = element_line(linewidth = 0.4),
-      axis.ticks = element_line(linewidth = 0.4),
-      axis.title = element_text(size = 11),
-      axis.text = element_text(size = 10),
-      legend.title = element_blank(),
-      legend.text = element_text(size = 10),
-      plot.title = element_text(size = 12, face = "bold")
+      axis.line        = element_line(linewidth = 0.4),
+      axis.ticks       = element_line(linewidth = 0.4)
     )
 }
 
 # Use:
 ggplot(...) + ... + cra_theme()
 ```
+
+If Poppins / Lora aren't installed system-wide, the R session will warn at render time and substitute the system default. Install via Homebrew Cask Fonts (`brew install --cask font-poppins font-lora`) or download from Google Fonts.

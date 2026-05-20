@@ -8,20 +8,109 @@ Read at PREREQUISITE by `/visualize`. These standards layer on top of whatever K
 
 - Clean, minimalist design — no chartjunk, no unnecessary gridlines, no 3D effects
 - White background only
-- Font: Arial or Helvetica throughout (standard for medical journals)
 - High resolution: 300 DPI minimum, 600 DPI preferred
 - Consistent color palette across all figures in the manuscript
+- Anthropic brand typography (see Typography section below)
 
-## Typography
+## Typography — Anthropic brand fonts
 
-- Consistent font hierarchy:
-  - Title: 12pt bold
-  - Axis labels: 10–12pt
-  - Tick labels: 9–10pt
-  - Annotations: 9pt
+Two-font system, matching Anthropic's official brand-guidelines:
+
+| Use | Font | Fallback chain |
+|---|---|---|
+| **Headings** (figure title, panel labels A/B/C) | **Poppins** (Anthropic Sans) | Arial → Helvetica → DejaVu Sans |
+| **Body text** (axis labels, tick labels, legend, annotations, bar value labels, significance brackets) | **Lora** (Anthropic Serif) | Georgia → Times New Roman → DejaVu Serif |
+
+If Poppins / Lora aren't installed on the host, matplotlib falls back silently through the chain. To install on macOS:
+
+```bash
+# Easiest — via Homebrew Cask Fonts
+brew tap homebrew/cask-fonts
+brew install --cask font-poppins font-lora
+
+# Or download from Google Fonts → install via Font Book
+# https://fonts.google.com/specimen/Poppins
+# https://fonts.google.com/specimen/Lora
+```
+
+### Font hierarchy
+
+| Element | Font | Size | Weight |
+|---|---|---|---|
+| Figure title (rare — caption usually serves this) | Poppins | 12pt | bold |
+| Panel labels (A, B, C in multi-panel figures) | Poppins | 12pt | bold |
+| Axis titles ("Adjusted OR (95% CI)") | Lora | 11pt | regular |
+| Tick labels (numeric + categorical) | Lora | 10pt | regular |
+| Legend text | Lora | 10pt | regular |
+| Annotations (text callouts) | Lora | 9pt | regular |
+| Bar value labels | Lora | 9pt | regular |
+| Significance brackets (P = 0.003) | Lora | 9pt | regular (italic for "P") |
+
+### Typography rules
+
 - Direct labeling preferred over legends when possible
-- Avoid rotated text — use horizontal orientation or abbreviate
-- Annotation text in the same font family as the rest of the figure
+- Avoid rotated text — use horizontal orientation or abbreviate (exception: x-axis tick labels when categories collide; rotate per Overlap Prevention section)
+- Annotation text in the body font (Lora), not the heading font
+- Never mix fonts within a single text element
+
+### Matplotlib font setup (Python — default backend)
+
+Apply at the top of every figure-generating script:
+
+```python
+import matplotlib as mpl
+
+# Heading fallback chain
+mpl.rcParams['font.sans-serif'] = ['Poppins', 'Arial', 'Helvetica', 'DejaVu Sans']
+
+# Body fallback chain
+mpl.rcParams['font.serif']      = ['Lora', 'Georgia', 'Times New Roman', 'DejaVu Serif']
+
+# Default family for body elements
+mpl.rcParams['font.family']     = 'serif'
+
+# Size defaults (overridden per element as needed)
+mpl.rcParams['font.size']            = 10   # body default
+mpl.rcParams['axes.titlesize']       = 12   # title (heading) — override family per-element
+mpl.rcParams['axes.labelsize']       = 11   # axis labels (body)
+mpl.rcParams['xtick.labelsize']      = 10
+mpl.rcParams['ytick.labelsize']      = 10
+mpl.rcParams['legend.fontsize']      = 10
+```
+
+Apply Poppins **per-element** for headings (since default family is serif/Lora):
+
+```python
+# Figure title (if used)
+ax.set_title('Title text', fontfamily='sans-serif', fontweight='bold', fontsize=12)
+
+# Panel label (A, B, C)
+ax.text(-0.1, 1.05, 'A', transform=ax.transAxes,
+        fontfamily='sans-serif', fontweight='bold', fontsize=12)
+```
+
+### R (override backend) font setup
+
+```r
+# Add to top of every R figure script (override theme)
+cra_theme_brand <- function() {
+  theme_classic(base_size = 11) +
+    theme(
+      text             = element_text(family = "Lora"),     # body default
+      plot.title       = element_text(family = "Poppins", face = "bold", size = 12),
+      axis.title       = element_text(family = "Lora", size = 11),
+      axis.text        = element_text(family = "Lora", size = 10),
+      legend.text      = element_text(family = "Lora", size = 10),
+      legend.title     = element_text(family = "Lora", size = 10),
+      strip.text       = element_text(family = "Poppins", face = "bold", size = 11),
+      panel.grid       = element_blank(),
+      axis.line        = element_line(linewidth = 0.4),
+      axis.ticks       = element_line(linewidth = 0.4)
+    )
+}
+
+# tidyplots equivalent — set via theme override after generation
+```
 
 ## Color palette
 
