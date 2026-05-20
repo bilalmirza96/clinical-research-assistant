@@ -38,3 +38,6 @@ Thumbs.db
 # Local evaluation bundles copied into the external skill area.
 # Keep benchmark workspaces out of the installable plugin source.
 /clinical-research-assistant/skills/external/*-evaluation/
+
+# Claude Code local settings & worktrees (per-machine)
+.claude/
