@@ -35,20 +35,26 @@ Create the following structure at the user's working location:
 [project_name]/
 ├── project_state.json
 ├── study_spec.json
-├── dataset_profile.json
-├── analysis_plan.json
-├── evidence_bank.json
-├── citation_bank.json
 ├── results_registry.json
 ├── figure_registry.json
 ├── manuscript_state.json
+├── evidence_bank.json
+├── citation_bank.json
 ├── decision_log.md
 ├── data/
-├── outputs/
-└── figures/
+│   └── working/                ← filtered cohort + filter logs land here (raw stays at canonical source)
+├── specs/                      ← locked intake artifacts (populated by /analyze Phase 1)
+├── plans/                      ← analysis plan + revisions + critique audit (populated by /analyze Phase 2-3)
+├── Reports/                    ← deliverables (populated by /analyze Phase 6-7)
+│   └── Archives/               ← prior report versions on re-runs
+├── analysis/                   ← scripts (replay_analysis.sh + intermediate code)
+├── outputs/                    ← legacy generic outputs
+└── figures/                    ← legacy generic figure outputs
 ```
 
-Initialize each JSON file from the corresponding template in `templates/state/`. Copy `decision_log.template.md` as `decision_log.md`.
+Initialize each JSON file from the corresponding template in `templates/state/`. Copy `decision_log.template.md` as `decision_log.md`. Empty folders (`data/working`, `specs/`, `plans/`, `Reports/Archives`, `analysis/`) are created at this step so downstream skills have a place to write their artifacts.
+
+**Data layer discipline (per data-analysis policy):** Raw source files are NOT copied into the project — they remain at their canonical location (registry export, institutional download). The `data/working/` directory is where filtered cohorts land. The `source_manifest.json` recording WHERE raw lives + sha256 at read time is created by `/analyze` Phase 1, not at project-init. See `../data-analysis/SKILL.md` "Data Provenance" section for the full discipline.
 
 ### STEP 3: Populate State Files
 

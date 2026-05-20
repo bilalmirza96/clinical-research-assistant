@@ -185,9 +185,45 @@ If a fatal flaw is detected, HALT and explain before proceeding.
 
 ---
 
+## Data Provenance — MANDATORY  *(per L046 candidate)*
+
+Every project must maintain rigorous data provenance. The discipline:
+
+### Read-only raw data
+
+Raw source files are **never modified** by any analysis skill. They are read in-place from their canonical location (registry export, institutional download, prior project export). The project's `data/working/` directory holds derived artifacts; raw source files stay in their original home.
+
+### Filtered cohort artifacts
+
+Every project that runs an analysis produces these artifacts in `data/working/`:
+
+| Artifact | Purpose |
+|---|---|
+| `cohort.csv` | The filtered, analysis-ready cohort. Produced by applying inclusion/exclusion filters to raw source in memory. |
+| `filter_operations.json` | Machine-readable replayable filter sequence. Each operation: `{step, op, expr, n_in, n_out}`. Source sha256 recorded at top. |
+| `filter_log.md` | Human-readable filter history as a CONSORT-style table (rows in → rows out → rationale per step). |
+| `source_manifest.json` | Where raw came from (path + sha256 + read date + license). |
+
+### Replay requirement
+
+The `data/working/` artifacts are reproducible: given the raw source at the recorded sha256, re-running `filter_operations.json` produces a `cohort.csv` byte-identical to the recorded sha256. The Code-reproducibility auditor (`/analyze` Phase 6, Agent 4) verifies this.
+
+### What to halt on
+
+- **Raw source hash mismatch** — if the canonical raw file's sha256 differs from `source_manifest.json`, halt and surface the discrepancy. Do not silently re-filter against a changed source.
+- **`data/working/` does not exist** — halt and direct user to run `/project-init` (which creates the folder scaffold).
+- **`filter_operations.json` missing for an existing `cohort.csv`** — halt; the cohort is unreproducible without its filter sequence.
+
+### Cross-cohort harmonization
+
+When multiple cohorts are compared (SEER vs NCDB, internal vs external, etc.), each cohort has its own `data/working/` + filter logs. Cross-cohort comparison additionally requires a `cohort_harmonization_log.md` per L011 (see `references/registry-cautions.md` Cross-Cohort Comparison Harmonization section).
+
+---
+
 ## Reference Files
 
 For detailed lookup during analysis, consult:
 - `references/method-selection-guide.md` — Model selection by outcome type and study design
 - `references/registry-cautions.md` — Registry-specific coding issues and limitations
 - `references/diagnostics-checklist.md` — Full diagnostic protocol per model type
+- `references/variable-collapse-defaults.md` — Default category-collapse rules when user does not specify (used by `/analyze` Phase 1 INTAKE)
