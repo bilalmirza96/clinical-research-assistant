@@ -13,6 +13,7 @@
 10. Ethical & Reporting Standards
 11. Journal-Specific Formatting
 12. Logical Flow and Argument Strength
+13. Audit-Step Tagging and Traceability  *(per L038)*
 
 ---
 
@@ -248,3 +249,51 @@ Read the manuscript end-to-end as a peer reviewer:
 - Is the narrative arc coherent: gap → question → method → answer → so what?
 - Would a reviewer reading only the abstract, figures, and tables understand the main finding?
 - Does the manuscript tell a single, clear story, or does it try to do too many things?
+
+---
+
+## Check 13 — Audit-Step Tagging and Traceability  *(per L038)*
+
+Every audit step taken during pre-submission QC must be tagged with a discoverable identifier so reviewers (and future you) can trace any change back to its origin. This is the discipline that separates a real audit from a paper trail of vague edits.
+
+### Audit-tag format
+
+`[QC-<n>][<category>] <one-line description>` — e.g., `[QC-07][Numbers] Updated Table 1 N from 7,082 → 6,139 to exclude biochemical-leak-only cases (matches Methods inclusion criteria)`.
+
+Categories: `Numbers` / `Abstract-Concordance` / `Methods-Results-Alignment` / `Tables` / `Figures` / `Statistics` / `References` / `Language` / `Limitations` / `Reporting-Standards` / `Formatting` / `Argument-Flow`.
+
+### Tagging requirements
+
+- **Every change** made during QC gets a tag — no silent edits.
+- **Every tag** has: sequence number, category, one-line description, source line/cell location, before/after values, reason.
+- **Maintain a QC log table** at the head of the corrected manuscript with all tags. Even if the journal does not require it, the log makes reviewer-response letters trivial to write.
+- **Audit log lives alongside the manuscript** (`Reports/qc_audit_log_<date>.md`), not buried in inline comments.
+
+### Audit log template
+
+```markdown
+# Pre-Submission QC Audit Log
+**Manuscript:** [title]
+**Date:** YYYY-MM-DD
+**Auditor:** [name or "manuscript-qc skill"]
+
+| Tag | Category | Location | Before | After | Reason |
+|---|---|---|---|---|---|
+| QC-01 | Numbers | Abstract L4 | N = 7,082 | N = 6,139 | Exclusion of biochemical-leak-only per Methods inclusion criteria |
+| QC-02 | Methods-Results-Alignment | Methods §2.3 | "log-rank test" | "log-rank test + Cox PH" | Results §3.2 reports Cox HR; method was omitted from Methods |
+| QC-03 | Statistics | Table 3 | P = 0.000 | P < 0.001 | JAMA P-value formatting (L013) |
+| ... | ... | ... | ... | ... | ... |
+```
+
+### Why tags matter
+
+When a reviewer asks *"Why did Table 1 N change between v2 and v3?"*, the tagged audit log answers in one row — no archaeology needed. When you need to write a response letter, the tagged log IS the structure of the response letter. And when future-you returns to a manuscript 6 months later, the tagged log explains every non-obvious edit.
+
+### Comparator-aligned reporting  *(also per L038)*
+
+When the manuscript reports ORs / HRs / RRs for a multi-level exposure (race, insurance, stage, etc.), state which group is the **reference category** every time the estimate is presented. The text, the table footnote, and the figure caption must all agree.
+
+- **Anti-pattern:** "Black patients had OR 1.42 (95% CI 1.21–1.67) for non-surgical management" — implicitly assumes the reader knows the comparator. Reviewers will flag this.
+- **Correct:** "Compared to non-Hispanic White patients (reference), non-Hispanic Black patients had higher adjusted odds of non-surgical management (aOR 1.42, 95% CI 1.21–1.67)."
+
+When subgroup-stratified results are reported, make the comparator within each stratum explicit. Verify that the comparator stated in the text matches the one used in the model code (often the lowest factor level, alphabetically or numerically). Mismatched comparators between text and code is the most common silent error in disparity manuscripts.

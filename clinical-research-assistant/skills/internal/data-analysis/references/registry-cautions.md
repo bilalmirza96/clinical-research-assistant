@@ -60,3 +60,20 @@ Key coding issues and outcome limitations for commonly used surgical and clinica
 - **Missing data patterns**: Missingness is rarely MCAR in registries — investigate and address
 - **Immortal time bias**: Common in registry studies with time-dependent exposures — use landmark analysis or time-varying covariates
 - **Selection bias**: Understand who is captured and who is excluded from the registry
+
+## Cross-Cohort Comparison Harmonization  *(per L011)*
+
+Comparing two national cancer registries (e.g., SEER vs. NCDB) — or any two cohorts drawn from different source systems — without **harmonizing inclusion criteria, variable definitions, and time windows** conflates real differences with artefactual ones. Before reporting any side-by-side comparison:
+
+| Element | Required harmonization step |
+|---|---|
+| **Inclusion criteria** | Apply identical age, stage, histology, surgery codes, and exclusion filters to both cohorts. State the SQL/Python filter used. |
+| **Variable definitions** | Confirm matching ICD-O-3 morphology, AJCC edition, race/ethnicity coding, treatment categories. Document any mappings (e.g., NCDB Race vs. SEER Race) with a crosswalk table. |
+| **Time windows** | Restrict both cohorts to overlapping diagnosis years. Practice patterns and staging editions shift cross-decade. |
+| **Outcome definitions** | NCDB has only overall survival; SEER has cause-specific. Cross-registry survival comparisons must use overall survival in both. |
+| **Censoring** | Verify follow-up cutoffs and censoring rules are identical (e.g., last contact rules differ between registries). |
+| **Population frame** | NCDB ≈ 70% of US incident cancer cases (CoC-accredited facilities); SEER ≈ 35% population-based. These are different denominators — state which "population" each estimates. |
+
+**Action:** Generate a `cohort_harmonization_log.md` artifact during analysis listing each filter and crosswalk applied to make the cohorts comparable. Cite it in the Methods. Without this, a 5% difference between cohorts may be entirely a definitional artefact.
+
+**Anti-pattern:** Reporting "NCDB rates were higher than SEER rates" without showing that the cohorts were drawn under identical criteria. Reviewers will flag this and may reject on this basis alone.

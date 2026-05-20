@@ -46,3 +46,32 @@ Decision table for selecting the appropriate statistical model based on outcome 
 | Bonferroni | Conservative; use for independent comparisons with strong control needed |
 | Benjamini-Hochberg (FDR) | Preferred for biomarker panels and exploratory analyses |
 | No correction | Pre-specified primary analysis (single primary outcome) |
+
+## Within-Recipient Propensity Matching  *(per L039)*
+
+When a multi-stage access-disparity study reports a **within-treatment-recipient** comparison — e.g., NHB vs. NHW *among patients who actually received the treatment* — the comparison is no longer an access question; it is an **effectiveness/quality** question. The estimand has shifted, and the matching strategy must shift with it.
+
+### When this applies
+
+Any sentence of the form: *"Among patients who received [treatment X], [exposure group A] had [outcome] compared to [exposure group B]…"*
+
+Common manifestations:
+- NHB vs NHW patients **who received surgery** (operative outcomes / oncologic effectiveness)
+- Hispanic vs NHW patients **who received chemotherapy** (regimen response, treatment-related mortality)
+- Medicaid vs private-insurance patients **who reached transplant** (graft survival, rejection)
+
+### Required matching approach
+
+| Element | Standard (across-recipient) PSM | Within-recipient PSM  *(this pattern)* |
+|---|---|---|
+| **Estimand** | Effect of receiving the treatment | Effect of exposure *conditional on having received the treatment* |
+| **Cohort** | Full eligible cohort | Restricted to patients who received the treatment |
+| **PS model covariates** | Pre-treatment patient + access variables (insurance, distance, facility type, comorbidities, stage) | Pre-treatment patient + access + **treatment-quality variables** (facility volume, surgeon experience, time-to-treatment, neoadjuvant receipt, regimen completeness) |
+| **Caliper** | 0.20 × SD logit PS standard | Same, but verify caliper-binding diagnostic (see diagnostics-checklist L040) |
+| **Interpretation** | "Disparity in access" | "Disparity in outcomes among those treated — likely reflecting treatment-quality or unmeasured tumor biology" |
+
+### Reporting requirement
+
+State the estimand explicitly in the abstract and Methods: *"We estimated the [Race/Insurance/Other] disparity in [outcome] among patients who received [treatment], using propensity score matching on pre-treatment access and treatment-quality covariates."* Never present a within-recipient HR/OR as if it were an access estimate.
+
+**Anti-pattern:** Reporting a within-recipient adjusted HR and claiming it represents the "overall disparity." This understates the access component (Stage IV / pre-treatment death) and overstates the effectiveness component. The two estimands must be reported separately when both are scientifically relevant.

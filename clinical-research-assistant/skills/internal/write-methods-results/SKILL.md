@@ -140,6 +140,39 @@ Before presenting any Results subsection for approval, scan the drafted text for
 
 If any causal language is found, fix it before presenting the subsection. Print: `"Association language check passed."` or `"Fixed [N] causal language violations."`
 
+### Comparator-Aligned Reporting — HARD RULE  *(per L038)*
+
+Every OR / HR / RR / aOR / aHR reported in the Results section must explicitly identify the **reference category** at first mention and remain consistent thereafter. The text, the table footnote, and the figure caption must all agree on which group is the reference.
+
+**Required phrasing pattern (first mention in a paragraph):**
+
+> Compared to [reference group] (reference), [comparison group] had [direction] adjusted odds of [outcome] (aOR X.XX, 95% CI X.XX–X.XX; P = X.XXX).
+
+**For each multi-level exposure, before drafting:**
+
+1. Read the comparator from the analysis code or `analysis_plan.json` (often the alphabetically/numerically lowest factor level, e.g., `Race == 'Non-Hispanic White'` as reference).
+2. Verify the comparator matches what the user expects clinically — flag if not.
+3. State the comparator in: (a) Methods §"Statistical Analysis", (b) every Results paragraph reporting estimates, (c) every Table footnote, (d) every Figure caption.
+
+**Anti-patterns to flag and fix:**
+
+| Anti-pattern | Fix |
+|---|---|
+| "Black patients had aOR 1.42 for non-surgical management" | "Compared to non-Hispanic White patients (reference), non-Hispanic Black patients had higher adjusted odds of non-surgical management (aOR 1.42, 95% CI 1.21–1.67)" |
+| Table 3 row shows OR for Race but footnote omits reference | Footnote: "Reference category: Non-Hispanic White. Estimates from multivariable logistic regression adjusted for [covariates]." |
+| Subgroup-stratified results omit within-stratum reference | Within each stratum: "Within Stage I–III, NHB patients (vs NHW [reference]) had aOR..." |
+
+### Within-Recipient Comparison Reporting — HARD RULE  *(per L039)*
+
+When the analysis reports a **within-treatment-recipient** estimate — e.g., a hazard ratio among patients who actually received surgery, chemotherapy, or transplantation — the Methods and Results sections must:
+
+1. **Declare the estimand explicitly:** *"Among patients who received [treatment], we estimated the [exposure] association with [outcome] using propensity score matching on pre-treatment access and treatment-quality covariates."*
+2. **State that this is an effectiveness/quality estimand, not an access estimand.** Within-recipient HRs do **not** capture pre-treatment death or non-receipt — those are upstream access components.
+3. **If both estimands are scientifically relevant, report them separately** with distinct labels: "access HR" (full cohort) vs "effectiveness HR" (within-recipient).
+4. **Cross-reference the matching diagnostics** from `data-analysis/references/diagnostics-checklist.md` — especially the caliper-binding sensitivity table (L040).
+
+**Anti-pattern:** Presenting a within-recipient adjusted HR as if it represented the overall disparity. This understates the access component (Stage IV / pre-treatment death) and overstates the effectiveness component. Reviewers will flag this in any disparity manuscript.
+
 ---
 
 ### Checkpoint Writes
