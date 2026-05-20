@@ -393,9 +393,10 @@ cra_theme <- function() {
       axis.text        = element_text(family = "Lora", size = 10),
       legend.text      = element_text(family = "Lora", size = 10),
       legend.title     = element_blank(),
-      # Headings → Poppins (Anthropic Sans), with Arial fallback
-      plot.title       = element_text(family = "Poppins", face = "bold", size = 12),
-      plot.subtitle    = element_text(family = "Poppins", size = 11),
+      # No figure titles — captions live in manuscript, not on figure
+      plot.title       = element_blank(),
+      plot.subtitle    = element_blank(),
+      # Facet strip text (multi-panel) → Poppins ALWAYS BOLD
       strip.text       = element_text(family = "Poppins", face = "bold", size = 11),
       # Clean defaults
       panel.grid.major = element_blank(),

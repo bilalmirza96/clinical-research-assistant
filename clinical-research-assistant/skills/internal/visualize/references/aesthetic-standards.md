@@ -16,10 +16,10 @@ Read at PREREQUISITE by `/visualize`. These standards layer on top of whatever K
 
 Two-font system, matching Anthropic's official brand-guidelines:
 
-| Use | Font | Fallback chain |
-|---|---|---|
-| **Headings** (figure title, panel labels A/B/C) | **Poppins** (Anthropic Sans) | Arial → Helvetica → DejaVu Sans |
-| **Body text** (axis labels, tick labels, legend, annotations, bar value labels, significance brackets) | **Lora** (Anthropic Serif) | Georgia → Times New Roman → DejaVu Serif |
+| Use | Font | Weight | Fallback chain |
+|---|---|---|---|
+| **Headings** (panel labels A/B/C only — figures do not get titles) | **Poppins** (Anthropic Sans) | **always bold** | Arial → Helvetica → DejaVu Sans |
+| **Body text** (axis labels, tick labels, legend, annotations, bar value labels, significance brackets, caption) | **Lora** (Anthropic Serif) | regular | Georgia → Times New Roman → DejaVu Serif |
 
 If Poppins / Lora aren't installed on the host, matplotlib falls back silently through the chain. To install on macOS:
 
@@ -33,25 +33,35 @@ brew install --cask font-poppins font-lora
 # https://fonts.google.com/specimen/Lora
 ```
 
+### No figure titles — HARD RULE
+
+**Figures do not carry titles.** The descriptive title belongs in the caption beneath the figure in the manuscript. This matches every major medical journal's style (Annals of Surgery, JAMA Surgery, Lancet, NEJM, JCO). Never set `ax.set_title(...)` or equivalent.
+
+When generating figures, the title information lives in:
+- `figure_specs.json::title` — used to populate the caption draft, NOT rendered on the figure
+- `figure_specs.json::caption_draft` — what gets pasted into the manuscript
+
 ### Font hierarchy
 
 | Element | Font | Size | Weight |
 |---|---|---|---|
-| Figure title (rare — caption usually serves this) | Poppins | 12pt | bold |
-| Panel labels (A, B, C in multi-panel figures) | Poppins | 12pt | bold |
+| Panel labels (A, B, C — multi-panel figures only) | Poppins | 12pt | **bold** |
 | Axis titles ("Adjusted OR (95% CI)") | Lora | 11pt | regular |
 | Tick labels (numeric + categorical) | Lora | 10pt | regular |
 | Legend text | Lora | 10pt | regular |
 | Annotations (text callouts) | Lora | 9pt | regular |
 | Bar value labels | Lora | 9pt | regular |
 | Significance brackets (P = 0.003) | Lora | 9pt | regular (italic for "P") |
+| Caption footnote (if embedded) | Lora | 8pt | italic |
 
 ### Typography rules
 
+- **Poppins is always bold** when used (panel labels only)
 - Direct labeling preferred over legends when possible
 - Avoid rotated text — use horizontal orientation or abbreviate (exception: x-axis tick labels when categories collide; rotate per Overlap Prevention section)
 - Annotation text in the body font (Lora), not the heading font
 - Never mix fonts within a single text element
+- Never add figure titles (see HARD RULE above)
 
 ### Matplotlib font setup (Python — default backend)
 
@@ -78,15 +88,14 @@ mpl.rcParams['ytick.labelsize']      = 10
 mpl.rcParams['legend.fontsize']      = 10
 ```
 
-Apply Poppins **per-element** for headings (since default family is serif/Lora):
+Apply Poppins **per-element, always bold** for panel labels (single-panel figures get no panel label):
 
 ```python
-# Figure title (if used)
-ax.set_title('Title text', fontfamily='sans-serif', fontweight='bold', fontsize=12)
-
-# Panel label (A, B, C)
+# Panel label A (multi-panel figures only) — Poppins always bold
 ax.text(-0.1, 1.05, 'A', transform=ax.transAxes,
         fontfamily='sans-serif', fontweight='bold', fontsize=12)
+
+# NEVER add ax.set_title() — figure titles belong in the caption, not on the figure
 ```
 
 ### R (override backend) font setup
