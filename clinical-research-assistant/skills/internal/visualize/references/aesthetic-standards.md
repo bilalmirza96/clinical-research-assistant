@@ -116,6 +116,57 @@ Every grouped or stratified figure must declare its reference category in the ca
 - Panel labels: A, B, C (bold, upper-left corner of each panel)
 - Equal spacing between panels
 
+## Layout and overlap prevention — HARD RULE
+
+**No text element in any figure may overlap with another text element or with data.** This is enforced as a quality gate in `/visualize` Phase 3 GENERATE — failed gate triggers automatic re-layout.
+
+### Concrete overlap-prevention tactics
+
+| Risk | Trigger | Required fix |
+|---|---|---|
+| X-axis tick label overlap | >5 categorical positions OR any label >8 characters | Rotate 30°–45° with `ha='right'` anchor (matplotlib); or use horizontal bar chart |
+| Y-axis tick label overlap | very long numeric formatting (e.g., 1,234,567) | Use `mticker.FuncFormatter` to abbreviate (e.g., "1.2M"); use sufficient y-figure-size |
+| Bar value labels overlapping each other | bars too close together | Increase figure width OR reduce bar group count OR drop value labels |
+| Bar value labels overlapping data | label placement collides with bar top | Use `va='bottom'` + small y-offset (≥ 1% of axis range) |
+| Legend overlapping data | inside-plot legend covers bars | Move legend `loc='upper right'` only if upper-right quadrant is empty; otherwise legend `loc='upper left'` or below plot via `bbox_to_anchor` |
+| Multi-panel labels (A, B, C) overlapping data | label placed in busy quadrant | Place panel labels in dedicated upper-left margin; never on top of data |
+| Significance brackets overlapping each other | dense pairwise comparisons | Stack vertically at increasing y; or drop non-essential comparisons |
+| Caption overlapping figure | long caption + small figure | Use compact caption + render with `bbox_inches='tight'`; long captions go in figure_captions doc, not embedded |
+
+### Verification step (mandatory before declaring a figure complete)
+
+After saving PDF + PNG, the generating agent **must visually inspect the rendered output** (open the PNG, look at it) and confirm:
+
+- All x-axis tick labels are fully visible and non-overlapping
+- All y-axis tick labels are fully visible
+- All bar value labels (if shown) are non-overlapping
+- Legend does not cover any data point or bar
+- Panel labels (A, B, C) sit cleanly in empty space
+- No text is clipped at figure edges
+
+If any check fails → re-layout with overlap-prevention tactics above → re-render → re-inspect. Do not declare the figure complete until all checks pass.
+
+### Python defaults to apply when not certain
+
+```python
+# Always apply tight layout
+plt.tight_layout()
+
+# Always save with tight bounding box
+plt.savefig('figure.pdf', bbox_inches='tight', dpi=600)
+
+# For x-axis labels with risk of overlap:
+ax.set_xticklabels(labels, rotation=30, ha='right')
+
+# For long numeric tick labels:
+from matplotlib.ticker import FuncFormatter
+ax.yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x/1000:.1f}K' if x >= 1000 else f'{x:.0f}'))
+```
+
+### Anti-pattern that triggered this rule
+
+Demo bar chart (v1) had 7 outcome categories with labels like "Delayed gastric emptying" and "Return to OR" rendered horizontally without rotation. Adjacent labels collided ("gastReturn"). Fix: rotated 30° with `ha='right'`. Always apply rotation when >5 categories or any label >8 characters.
+
 ## Dimensions (journal-specific)
 
 | Journal type | Single column | Double column | Reference |
