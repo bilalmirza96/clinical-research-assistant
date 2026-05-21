@@ -1,12 +1,17 @@
 # Delegation Rules
 
-This document defines when and how `clinical-research-assistant` should delegate work to `biomedagent`.
+This document defines when and how `clinical-research-assistant` delegates work to its two execution engine layers:
 
-The core rule is simple:
+1. **BioMedAgent** — for execution-heavy modality-specific workflows (omics, ML, non-tabular)
+2. **K-Dense scientific-skills** — for citation integrity, peer-review-style audits, quality scoring, Zotero sync, and systematic-search execution (v3.3+)
+
+The core rule is the same for both:
 
 - **Clinical Research Assistant is always the primary orchestrator**
-- **BioMedAgent is a delegated execution engine**
-- **Delegation is broad, but it is never invisible**
+- **The delegated engine is a runtime executor, not the manuscript authority**
+- **Delegation is broad, but it is never invisible — the contract for each delegation is logged**
+
+K-Dense delegations are defined as a single source of truth in `skills/references/kdense-delegations.md`. This file documents the BioMedAgent rules and points at `kdense-delegations.md` for the K-Dense layer.
 
 ---
 
@@ -14,18 +19,25 @@ The core rule is simple:
 
 Clinical Research Assistant owns:
 - project framing
-- evidence verification
+- evidence verification (with `scientific-skills:citation-management` as the hard-gate enforcer)
 - analysis planning
 - manuscript logic
 - final synthesis
-- final audit
+- final audit (with `scientific-skills:peer-review` + `scientific-skills:scholar-evaluation` as delegated review steps in `/manuscript-qc`)
 
 BioMedAgent may own:
 - execution-heavy sub-work
 - modality-specific pipelines
 - complex computational workflows outside standard clinical biostatistics
 
-BioMedAgent does **not** become the final manuscript authority.
+K-Dense scientific-skills may own:
+- citation lookup + DOI/PMID verification (`citation-management`)
+- reviewer-perspective structured audits (`peer-review`)
+- quantitative quality scoring (`scholar-evaluation`)
+- Zotero library sync (`pyzotero`)
+- multi-database systematic search execution (K-Dense `literature-review`)
+
+Neither BioMedAgent nor any K-Dense skill becomes the final manuscript authority. CRA stays in charge of the verdict.
 
 ---
 
@@ -118,6 +130,26 @@ Examples:
 - simple predictive models for tabular data
 
 The orchestrator should delegate only when the execution burden, data modality, or workflow complexity is high enough to justify it.
+
+---
+
+## D. K-Dense scientific-skills (v3.3)
+
+A narrow set of K-Dense skills act as runtime expert references — CRA loads their `SKILL.md` at runtime and uses their documented tools to execute a specific contract.
+
+**Full delegation contract:** see `skills/references/kdense-delegations.md` (single source of truth — 319 lines covering invocation order, file-write contract, and combined runtime patterns).
+
+| K-Dense skill | Used by | Mandatory? |
+|---|---|---|
+| `scientific-skills:citation-management` | `/literature-review` + all `/write-*` + `/manuscript-qc` | **Yes — hard gate per L041** |
+| `scientific-skills:peer-review` | `/manuscript-qc` Check 13 | Yes |
+| `scientific-skills:scholar-evaluation` | `/literature-review` STEP 5 + `/manuscript-qc` Check 14 | Yes (NOT READY if total < 14/20) |
+| `scientific-skills:pyzotero` | `/literature-review` closure + `/write-manuscript` Phase 1 | Auto-on if `ZOTERO_API_KEY` env detected |
+| `scientific-skills:literature-review` | CRA `/literature-review` STEP 2 + STEP 5 | Preferred execution backbone |
+
+The K-Dense delegation layer is **always invisible-but-logged**, just like BioMedAgent delegation: every PASS/AMBIGUOUS/FAIL routing decision lands in `decision_log.md`, every Zotero sync result is logged, every audit report is written under `Reports/`.
+
+Many additional K-Dense skills are vendored at `skills/external/scientific-agent-skills/scientific-skills/` (151 total skills as of v3.3). The router promotes them through `skill-registry.yaml` when their triggers match the user's request.
 
 ---
 

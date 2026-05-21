@@ -1,15 +1,18 @@
-# Clinical Research Assistant v3 Architecture
+# Clinical Research Assistant v3.3 Architecture
+
+> **Update history.** v3.0 introduced the router + shared-state architecture. v3.1–3.2 refactored `/analyze` and `/visualize` from monolithic executors to orchestrator-contract skills. v3.3 wired the K-Dense delegation layer (citation-management hard gate, peer-review, scholar-evaluation, pyzotero, K-Dense literature-review) — see `skills/references/kdense-delegations.md`.
 
 ## Purpose
 
-This document defines the next architecture for `clinical-research-assistant`.
+This document defines the architecture for `clinical-research-assistant`.
 
 The goal is to keep the plugin optimized for Bilal's personal workflow while making the internal system substantially more reliable, stateful, and capable of producing end-to-end manuscripts from heterogeneous biomedical data.
 
 The core product decision is:
 
 - **Clinical Research Assistant remains the primary orchestrator**
-- **BioMedAgent becomes a delegated execution engine when needed**
+- **BioMedAgent is a delegated execution engine for omics / ML / non-tabular workflows**
+- **K-Dense scientific-skills are delegated execution engines for citation / peer-review / quality-scoring / Zotero / systematic-search workflows** (v3.3)
 - **The user-facing command surface remains familiar, with targeted additions where they clearly improve the workflow**
 
 ---
@@ -20,17 +23,21 @@ The core product decision is:
 The primary role of this repo is not generic biomedical automation. It is a high-rigor clinical research and manuscript system for one operator with a consistent workflow.
 
 ### 2. Preserve habits, upgrade internals
-Existing top-level commands should continue to work:
+Existing top-level commands continue to work; v3.x has added narrowly-scoped commands where they reduce ambiguity:
 
+- `/project-init`
+- `/resume-project`
 - `/literature-review`
 - `/analyze`
 - `/visualize`
 - `/write-introduction`
 - `/write-methods-results`
 - `/write-discussion`
+- `/write-abstract` *(v3.x — 12-principle editorial rubric, venue-specific structure)*
 - `/write-manuscript`
+- `/manuscript-qc` *(v3.x — 12 native checks + 3 K-Dense delegations: peer-review, ScholarEval, citation re-verification)*
 
-New commands may be added only when they reduce ambiguity or improve control.
+New commands are added only when they reduce ambiguity or improve control.
 
 ### 3. Shared project state is mandatory
 All major phases must read from and write to the same persistent project state.
@@ -57,6 +64,17 @@ Default weighting:
 
 ### 8. Delegation to BioMedAgent should be broad but explicit
 BioMedAgent should be used for tasks outside standard clinical biostatistics, including advanced computation, non-tabular data, omics, biomedical machine learning, and execution-heavy workflows.
+
+### 8a. K-Dense scientific-skills are delegated execution engines for citation / review / library workflows (v3.3)
+Specific K-Dense skills act as runtime expert references for citation-integrity, peer-review-style audits, quantitative quality scoring, Zotero sync, and systematic-search execution. The CRA skill is the orchestrator; the K-Dense skill is the executor (the same orchestrator-contract pattern `/analyze` uses with `scientific-visualization`). All five delegations are documented as a single source of truth in `skills/references/kdense-delegations.md`:
+
+| Delegation | K-Dense skill | Used by | Enforcement |
+|---|---|---|---|
+| Citation integrity (L041) | `scientific-skills:citation-management` | `/literature-review` + all `/write-*` + `/manuscript-qc` | **HARD GATE** — PASS/AMBIGUOUS/FAIL routing, no silent fallback, no "PMID: pending verification" placeholders |
+| Peer-review simulation | `scientific-skills:peer-review` | `/manuscript-qc` Check 13 | Reports/peer_review_simulation_<date>.md |
+| Quality scoring | `scientific-skills:scholar-evaluation` | `/literature-review` STEP 5 + `/manuscript-qc` Check 14 | Verdict = NOT READY if total < 14/20 |
+| Zotero sync | `scientific-skills:pyzotero` | end of `/literature-review` + start of `/write-manuscript` | Auto-on if `ZOTERO_API_KEY` env detected, silent skip otherwise |
+| Systematic search execution | `scientific-skills:literature-review` | CRA `/literature-review` STEP 2 + STEP 5 | CRA stays orchestrator (scope, schema, gap); K-Dense executes search/dedup/PRISMA |
 
 ### 9. Portability matters
 The architecture should work across:
@@ -99,6 +117,9 @@ Responsible for execution-heavy or modality-specific workflows such as:
 - advanced exploratory or custom computation beyond standard clinical biostatistics
 
 BioMedAgent now lives inside the installable plugin at `skills/external/biomedagent/` to preserve its third-party/external provenance while still making it CRA's delegated execution engine.
+
+### B'. Delegated K-Dense scientific-skills (v3.3)
+Distinct from BioMedAgent: K-Dense scientific-skills are narrow, task-specific delegated executors loaded as **runtime expert references**. Five are formally wired today (see Design Principle 8a). Many more are vendored under `skills/external/scientific-agent-skills/scientific-skills/` and are discoverable through the router via `skill-registry.yaml`. The router promotes them when their triggers match the user's request.
 
 ### C. Shared State Layer
 Persistent files that define the study and all downstream outputs.
@@ -155,7 +176,7 @@ Core artifacts:
 - `manuscript_state.json`
 - `decision_log.md`
 
-These are defined in `STATE_SCHEMA.md`.
+These are defined in `clinical-research-assistant/skills/references/state-schema.md` (moved from root in v3.3; root `STATE_SCHEMA.md` is now a pointer stub).
 
 ---
 
@@ -270,11 +291,21 @@ Figures should be built from `results_registry.json`, not from free-text recolle
 The writing system must consume structured state, not only chat context.
 
 ### Section dependencies
-- Introduction requires verified citations
+- Introduction requires verified citations (every reference passes `scientific-skills:citation-management` hard gate)
 - Methods requires `study_spec.json` + `analysis_plan.json`
 - Results requires `results_registry.json` + `figure_registry.json`
-- Discussion requires `results_registry.json` + verified citation bank
-- Abstract requires the body to be complete enough for consistency checking
+- Discussion requires `results_registry.json` + verified citation bank (comparator citations are highest fabrication risk — hard gate enforced)
+- Abstract requires the body to be complete enough for consistency checking; `/write-abstract` runs the 12-principle editorial rubric and adapts to the target venue
+
+### Owning skills
+| Section | Skill |
+|---|---|
+| Introduction | `/write-introduction` |
+| Methods + Results | `/write-methods-results` |
+| Discussion | `/write-discussion` |
+| Abstract | `/write-abstract` |
+| Full assembly + Phase 8 audit | `/write-manuscript` |
+| Pre-submission audit | `/manuscript-qc` |
 
 ---
 
@@ -324,16 +355,26 @@ Show a concise disagreement summary, not the full transcript.
 
 ## 9. Audit Layer
 
-Runs during final assembly and optionally at earlier checkpoints.
+Owned by `/manuscript-qc`. Runs as a final pre-submission audit, and is invoked at `/write-manuscript` Phase 8 for the assembly audit.
 
-### Audit categories
-- numeric consistency
+### Native CRA checks (12)
+- numeric consistency (text ↔ tables ↔ results_registry)
 - table/figure reference integrity
 - abbreviation integrity
 - observational language check
 - claim-to-citation alignment
-- reporting guideline compliance
+- reporting guideline compliance (STROBE/CONSORT/PRISMA/TRIPOD/STARD/SPIRIT/SQUIRE)
 - word-count and deliverable completeness
+- statistical-method correctness
+- methods-results alignment
+- figure-quality checks (resolution, units, comparator declaration, p-value formatting per L013, no text overlap)
+- reference-list integrity (every inline [N] resolves; no duplicate PMIDs)
+- abstract ↔ main-text consistency
+
+### K-Dense delegated checks (v3.3)
+- **Check 13 — Peer-review simulation** (`scientific-skills:peer-review`): reviewer-perspective structured pass; output `Reports/peer_review_simulation_<date>.md`; surfaces MAJOR comments
+- **Check 14 — ScholarEval scoring** (`scientific-skills:scholar-evaluation`): 4-dimension rubric (problem/methodology/analysis/writing); halts at NOT READY if total < 14/20
+- **Check 15 — Citation batch re-verification** (`scientific-skills:citation-management`): re-runs the L041 hard gate over every reference in the assembled manuscript; ANY FAIL = CRITICAL
 
 ---
 
@@ -447,7 +488,8 @@ The architecture succeeds if it produces:
 
 This architecture is operationalized by:
 
-- `STATE_SCHEMA.md`
-- `COMMAND_CONTRACTS.md`
-- `DELEGATION_RULES.md`
+- `clinical-research-assistant/skills/references/state-schema.md` (root `STATE_SCHEMA.md` is a pointer stub)
+- `clinical-research-assistant/skills/references/command-contracts.md` (root `COMMAND_CONTRACTS.md` is a pointer stub)
+- `clinical-research-assistant/skills/references/kdense-delegations.md` (K-Dense delegation contracts — v3.3)
+- `DELEGATION_RULES.md` (BioMedAgent + K-Dense delegation policy at the root)
 - `ROADMAP.md`

@@ -8,7 +8,7 @@ skills:
     source_type: "internal"
     role: "primary-workflow"
     path: "skills/internal/analyze/SKILL.md"
-    description: "Full interactive statistical analysis for clinical research. Activate when the user wants to analyze a dataset, run statistical models, or perform data-driven clinical research."
+    description: "Manuscript-rigor orchestrator for clinical research analysis. Locks data, variables, table layouts, and figure intent upfront; generates and critiques the analysis plan via a 4-agent panel; runs autonomously between three approval halts; delegates execution to K-Dense scientific skills and BioMedAgent at runtime; delivers one master analysis_report with full reproducibility manifest. Use for any clinical-research statistical analysis where rigor, audit-traceability, and publication-grade outputs are required."
     triggers: ["analysis", "analyze", "regression", "survival", "Cox", "logistic", "NCDB", "SEER", "NSQIP", "cohort", "hazard ratio", "odds ratio"]
   - id: "clinical-analysis-policy"
     name: "clinical-analysis-policy"
@@ -56,7 +56,7 @@ skills:
     source_type: "internal"
     role: "primary-workflow"
     path: "skills/internal/visualize/SKILL.md"
-    description: "Generate publication-quality figures for clinical research manuscripts targeting high-impact surgical and medical journals"
+    description: "Manuscript-rigor orchestrator for publication-quality figures. Reads figure intent and analysis results from /analyze, writes a figure plan, generates the full deck via delegation to K-Dense scientific-visualization and scientific-schematics, delivers a registered figure package. Use after /analyze has produced results_registry.json and figure_intent.md. Two approval halts — plan then deck."
     triggers: ["figure", "visualize", "plot", "forest plot", "Kaplan-Meier", "ROC", "publication figure"]
   - id: "write-abstract"
     name: "write-abstract"
@@ -954,6 +954,14 @@ skills:
     path: "skills/external/scientific-agent-skills/scientific-skills/scanpy/SKILL.md"
     description: "Standard single-cell RNA-seq analysis pipeline. Use for QC, normalization, dimensionality reduction (PCA/UMAP/t-SNE), clustering, differential expression, and visualization. Best for exploratory scRNA-seq analysis with established workflows. For deep learning models use scvi-tools; for data format questions use anndata."
     triggers: ["analysis", "anndata", "differential expression", "RNA-seq", "scanpy", "scRNA-seq", "single-cell", "visualization"]
+  - id: "scholar-evaluation"
+    name: "scholar-evaluation"
+    source: "external"
+    source_type: "external"
+    role: "external-support"
+    path: "skills/external/scientific-agent-skills/scientific-skills/scholar-evaluation/SKILL.md"
+    description: "Systematically evaluate scholarly work using the ScholarEval framework, providing structured assessment across research quality dimensions including problem formulation, methodology, analysis, and writing with quantitative scoring and actionable feedback."
+    triggers: ["analysis", "scholar-evaluation"]
   - id: "scientific-brainstorming"
     name: "scientific-brainstorming"
     source: "external"

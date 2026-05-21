@@ -26,6 +26,10 @@ EXTERNAL_DIR = SKILLS_DIR / "external"
 REFERENCES_DIR = SKILLS_DIR / "references"
 REGISTRY_PATH = REFERENCES_DIR / "skill-registry.yaml"
 EXTERNAL_INDEX_PATH = REFERENCES_DIR / "external-skills.md"
+# Skip TOP-LEVEL external bundles whose directory name ends with these
+# suffixes (per .gitignore: /clinical-research-assistant/skills/external/*-evaluation/).
+# This only matches the first directory under skills/external/ — nested skills
+# like scientific-skills/scholar-evaluation are NOT skipped.
 EXTERNAL_SKIP_SUFFIXES = ("-evaluation", "-workspace")
 
 
@@ -258,7 +262,9 @@ def discover_external(used_ids: set[str]) -> list[dict[str, object]]:
         relative_parts = skill_md.relative_to(EXTERNAL_DIR).parts
         if any(part.startswith(".") or part == "__MACOSX" for part in relative_parts):
             continue
-        if any(part.endswith(EXTERNAL_SKIP_SUFFIXES) for part in relative_parts):
+        # Only skip when the TOP-LEVEL bundle name matches a skip suffix
+        # (intent: filter *-evaluation / *-workspace bundles pasted at depth 1).
+        if relative_parts and relative_parts[0].endswith(EXTERNAL_SKIP_SUFFIXES):
             continue
         entry = load_skill_entry(skill_md, "external")
         if entry:
@@ -271,7 +277,7 @@ def discover_external(used_ids: set[str]) -> list[dict[str, object]]:
         relative_parts = package.relative_to(EXTERNAL_DIR).parts
         if any(part.startswith(".") or part == "__MACOSX" for part in relative_parts):
             continue
-        if any(part.endswith(EXTERNAL_SKIP_SUFFIXES) for part in relative_parts):
+        if relative_parts and relative_parts[0].endswith(EXTERNAL_SKIP_SUFFIXES):
             continue
         # Prefer an extracted folder with the same stem when both exist.
         extracted_skill = package.with_suffix("") / "SKILL.md"

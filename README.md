@@ -26,11 +26,13 @@ Internal workflow skills remain available as the execution layer:
 | `/resume-project` | Resume an existing project from saved state |
 | `/literature-review` | Deep literature search, evidence synthesis, gap analysis, citation verification |
 | `/analyze` | Full statistical analysis: data intake → cleaning → modeling → diagnostics → Excel output |
-| `/visualize` | Publication-quality figures using R + tidyplots/ggplot2 |
+| `/visualize` | Publication-quality figures via K-Dense Python (default) or R + tidyplots/ggplot2 (override) |
 | `/write-introduction` | Introduction section — funnel-down structure (Aga & Nissar 2022) |
 | `/write-methods-results` | Methods & Results — AMA style, numeric cross-verification against analysis |
 | `/write-discussion` | Discussion — reverse-funnel pyramid with Introduction loop closure |
+| `/write-abstract` | Abstract — 12-principle editorial rubric, venue-specific structure |
 | `/write-manuscript` | Full manuscript orchestrator — coordinates all phases through final audit |
+| `/manuscript-qc` | Pre-submission audit — 12 native checks + K-Dense peer-review + ScholarEval + citation re-verify |
 
 ## Quick Start
 
@@ -52,7 +54,7 @@ This creates the shared state files and project directory. You can also skip thi
 ### 3. Recommended workflow
 
 ```
-use CRA → project-init → literature-review → analyze → visualize → write-introduction → write-methods-results → write-discussion → write-abstract → write-manuscript
+use CRA → project-init → literature-review → analyze → visualize → write-introduction → write-methods-results → write-discussion → write-abstract → write-manuscript → manuscript-qc
 ```
 
 Each command reads from the prior command's state output. You can run them in any order, but this sequence produces the most coherent manuscript.
@@ -73,15 +75,19 @@ Loads all state files, shows project progress, and recommends the next action.
 
 **`/analyze`** — Walks through data intake, cleaning, missing data assessment, study design inference, analysis plan, Table 1, unadjusted and adjusted analyses, diagnostics, causal inference (if applicable), sensitivity analyses, and reproducible code. Writes results to `results_registry.json` with exact effect estimates, CIs, p-values, and cohort flow numbers. Supports stateful resume from any checkpoint.
 
-**`/visualize`** — Generates publication-quality figures using **R + tidyplots** (preferred) or **ggplot2** (fallback). Assigns each figure type the appropriate backend. Outputs PDF (vector) + PNG (600 DPI). Tracks figures in `figure_registry.json` with backend, script path, and approval status.
+**`/visualize`** — Generates publication-quality figures via **K-Dense Python** (default: `scientific-skills:scientific-visualization` for charts, `scientific-skills:scientific-schematics` for diagrams). R + tidyplots/ggplot2 is supported as an override when the user requests it (see `skills/internal/visualize/references/r-templates.md`). Outputs PDF (vector) + PNG (600 DPI), Anthropic-brand typography (Poppins headings, Lora body), colorblind-safe palettes. Tracks figures in `figure_registry.json` with backend, script path, and approval status.
 
-**`/write-introduction`** — Drafts the Introduction paragraph by paragraph using a funnel-down structure. Draws citations from the verified citation bank. Persists the gap statement and aim statement for Discussion loop closure.
+**`/write-introduction`** — Drafts the Introduction paragraph by paragraph using a funnel-down structure. Draws citations from the verified citation bank. Persists the gap statement and aim statement for Discussion loop closure. Every reference passes the `scientific-skills:citation-management` hard gate (L041) before insertion.
 
 **`/write-methods-results`** — Writes Methods and Results from structured state. Every number in the Results text is cross-verified against `results_registry.json` before the user sees it — mismatches halt presentation. Association language is enforced automatically for observational studies.
 
-**`/write-discussion`** — Drafts the Discussion using a reverse-funnel pyramid with the 3Cs framework (Content-Context-Conclusion). Draws concordant/discordant literature from the citation bank. The Conclusion must close the loop with the Introduction gap statement.
+**`/write-discussion`** — Drafts the Discussion using a reverse-funnel pyramid with the 3Cs framework (Content-Context-Conclusion). Draws concordant/discordant literature from the citation bank. The Conclusion must close the loop with the Introduction gap statement. Concordant/discordant comparison citations carry the highest fabrication risk — all pass the citation-management hard gate before insertion.
 
-**`/write-manuscript`** — Orchestrates all phases, tracks section completion, runs the final consistency audit (abstract vs results, table/figure references, association language, reporting guideline compliance), and generates assembled Word documents.
+**`/write-abstract`** — Drafts or audits a structured abstract against a 12-principle editorial rubric (coherence, falsification arc, calibrated language, race terminology, therapeutic implications, etc.). Adapts to venue (AATS / ITSOS / JAMA Surgery / JTCVS / JCO / Annals / NEJM / Lancet).
+
+**`/write-manuscript`** — Orchestrates all phases, tracks section completion, runs the final consistency audit (abstract vs results, table/figure references, association language, reporting guideline compliance, citation integrity per L041), and generates assembled Word documents.
+
+**`/manuscript-qc`** — Pre-submission audit. Runs 12 native CRA checks (number consistency, methods-results alignment, statistical correctness, table/figure quality, reference integrity, reporting-standard compliance, etc.) plus three K-Dense delegations: Check 13 reviewer-perspective simulation (`scientific-skills:peer-review`), Check 14 quantitative ScholarEval scoring (`scientific-skills:scholar-evaluation`; halts if total < 14/20), Check 15 batch citation re-verification (`scientific-skills:citation-management`; any FAIL = CRITICAL).
 
 ## Shared State
 
@@ -104,22 +110,24 @@ All commands work standalone without state files (backward compatible), but stat
 
 ## Plotting
 
-Default figure backend: **R** with **tidyplots** (preferred) and **ggplot2** (fallback).
+Default figure backend: **K-Dense Python** — `scientific-skills:scientific-visualization` for charts, `scientific-skills:scientific-schematics` for diagrams. See `skills/internal/visualize/references/delegation-by-figure-type.md` for the full mapping.
 
 | Figure Type | Backend |
 |---|---|
-| Group comparisons (bar + beeswarm) | tidyplots |
-| Violin + box + jitter | tidyplots |
-| Heatmaps, dot plots, line + ribbon | tidyplots |
-| Histogram, density, scatter + fit | tidyplots |
-| Forest plot | ggplot2 (forestploter) |
-| ROC curve | ggplot2 (pROC) |
-| Kaplan-Meier curve | ggplot2 (survminer) |
-| Cumulative incidence | ggplot2 (tidycmprsk) |
-| CONSORT flow diagram | ggplot2 / DiagrammeR |
-| Spline, Love plot, volcano | ggplot2 |
+| Bar + beeswarm / violin + box + jitter | `scientific-visualization` (matplotlib + seaborn) |
+| Heatmaps, dot plots, line + ribbon | `scientific-visualization` |
+| Histogram, density, scatter + fit | `scientific-visualization` |
+| Forest plot | `scientific-visualization` (matplotlib custom) |
+| ROC curve | `scientific-visualization` (sklearn.metrics + matplotlib) |
+| Kaplan-Meier curve | `scikit-survival` (data) + `scientific-visualization` (style) |
+| Cumulative incidence (competing risks) | `scikit-survival` (Fine-Gray) + `scientific-visualization` |
+| CONSORT flow diagram | `scientific-schematics` |
+| Mechanism / workflow diagram | `scientific-schematics` |
+| Spline, Love plot, volcano | `scientific-visualization` |
 
-Python/matplotlib is not the default for manuscript figures.
+Anthropic-brand typography enforced (Poppins headings always bold, Lora body). Colorblind-safe palettes (Okabe-Ito / viridis) by default. Visual no-overlap inspection gate before any figure is declared complete.
+
+**R override:** when the user explicitly requests R, `skills/internal/visualize/references/r-templates.md` provides equivalent patterns using `tidyplots`, `ggplot2`, `forestploter`, `survminer`, `tidycmprsk`. The aesthetic standards apply identically.
 
 ## Key Features
 
@@ -127,7 +135,8 @@ Python/matplotlib is not the default for manuscript figures.
 - **Verified citations** — evidence bank (broad) + citation bank (DOI/PMID verified only), no citing from memory
 - **Numeric cross-verification** — every number in Methods/Results is checked against `results_registry.json` before presentation
 - **Association language enforcement** — causal language automatically detected and corrected for observational studies
-- **R-first figures** — tidyplots + ggplot2, PDF vector + PNG 600 DPI, colorblind-safe palettes
+- **K-Dense delegation layer** — `skills/references/kdense-delegations.md` defines a single source of truth for citation-management (hard gate, L041), peer-review, scholar-evaluation, pyzotero (auto-on if `ZOTERO_API_KEY` env detected), and K-Dense literature-review (systematic-review execution backbone)
+- **K-Dense Python figures by default** — `scientific-visualization` + `scientific-schematics`, PDF vector + PNG 600 DPI, Anthropic-brand typography, colorblind-safe palettes, no-overlap visual inspection gate; R + tidyplots/ggplot2 override available
 - **Publication-ready output** — Excel tables (Times New Roman 12pt, formatted), Word manuscripts (double-spaced, 1-inch margins)
 - **Methodologically rigorous** — flags EPV violations, immortal time bias, overadjustment, collider bias, poor PS overlap
 - **Introduction-Discussion bridge** — gap statement persisted and verified for Conclusion loop closure
@@ -153,35 +162,46 @@ Built-in knowledge across general surgery and subspecialties:
 
 ```
 clinical-research-assistant/                         # Marketplace root
-├── ARCHITECTURE.md                                  # System architecture
+├── ARCHITECTURE.md                                  # System architecture (v3.3)
 ├── OWNERSHIP_MAP.md                                 # Command ownership map
-├── PHASE0_CLEANUP_AUDIT.md                          # Cleanup audit log
-├── STATE_SCHEMA.md                                  # State file schemas
-├── COMMAND_CONTRACTS.md                             # Command contracts
-├── DELEGATION_RULES.md                              # BioMedAgent delegation rules
+├── DELEGATION_RULES.md                              # BioMedAgent + K-Dense delegation policy
 ├── ROADMAP.md                                       # Development roadmap
+├── STATE_SCHEMA.md                                  # Pointer → skills/references/state-schema.md
+├── COMMAND_CONTRACTS.md                             # Pointer → skills/references/command-contracts.md
+├── docs/archive/                                    # Obsolete docs (e.g., PHASE0_CLEANUP_AUDIT.md)
 ├── clinical-research-assistant/                     # Plugin directory
 │   ├── .claude-plugin/plugin.json                   # Plugin metadata
 │   ├── CLAUDE.md                                    # Orchestrator config
 │   ├── tools/
-│   │   └── update_skill_registry.py                 # Regenerates internal/external skill registry
+│   │   ├── update_skill_registry.py                 # Regenerates internal/external skill registry
+│   │   └── archive/                                 # One-shot scripts (e.g., append_hnscc_lessons.py)
 │   ├── skills/
 │   │   ├── clinical-research-assistant/             # User-facing CRA router
-│   │   ├── internal/                                # First-party CRA workflows
+│   │   ├── internal/                                # First-party CRA workflows (12 skills)
 │   │   │   ├── project-init/                        # /project-init
 │   │   │   ├── resume-project/                      # /resume-project
-│   │   │   ├── analyze/                             # /analyze — canonical owner
+│   │   │   ├── analyze/                             # /analyze — orchestrator-contract (v3.1)
 │   │   │   ├── literature-review/                   # /literature-review
-│   │   │   ├── visualize/                           # /visualize — R/tidyplots/ggplot2
+│   │   │   ├── visualize/                           # /visualize — K-Dense Python default (v3.2)
 │   │   │   ├── write-introduction/                  # /write-introduction
 │   │   │   ├── write-methods-results/               # /write-methods-results
 │   │   │   ├── write-discussion/                    # /write-discussion
 │   │   │   ├── write-abstract/                      # /write-abstract
 │   │   │   ├── write-manuscript/                    # /write-manuscript — orchestrator
+│   │   │   ├── manuscript-qc/                       # /manuscript-qc — final audit (v3.x)
 │   │   │   └── data-analysis/                       # Analytical policy (not a command)
-│   │   ├── external/                                # External skills and user-pasted skills
-│   │   │   └── biomedagent/                         # External delegated execution engine
-│   │   └── references/                              # Writing style, lessons, generated registry
+│   │   ├── external/                                # Vendored K-Dense + biomedagent (151 total)
+│   │   │   ├── biomedagent/                         # External delegated execution engine
+│   │   │   └── scientific-agent-skills/             # K-Dense scientific-skills (139 vendored)
+│   │   └── references/                              # Shared CRA-internal references
+│   │       ├── writing-style.md                     # Bilal's house style
+│   │       ├── lessons-log.json                     # 45 lessons + promoted_to audit trail
+│   │       ├── kdense-delegations.md                # K-Dense delegation contracts (v3.3)
+│   │       ├── state-schema.md                      # State file schemas (moved from root v3.3)
+│   │       ├── command-contracts.md                 # Command contracts (moved from root v3.3)
+│   │       ├── biomedagent-methodology.md           # BioMedAgent Plan→Execute→Verify
+│   │       ├── external-skills.md                   # Generated index of external skills
+│   │       └── skill-registry.yaml                  # Generated machine-readable registry
 │   └── templates/state/                             # State file templates
 ├── README.md
 ├── CHANGELOG.md

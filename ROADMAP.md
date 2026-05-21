@@ -4,19 +4,36 @@ This roadmap translates the v3 architecture into an implementation sequence.
 
 The goal of the first pass is not to rebuild the entire repo at once. It is to create a clean migration path from the current command-rich prompt system to a stateful, evidence-gated, debate-enhanced research operating system.
 
+## Status snapshot (2026-05-20)
+
+| Phase | Status |
+|---|---|
+| Phase 0 — Repo triage and cleanup | ✅ Complete (2026-04-01) |
+| Phase 1 — Shared state foundation | ✅ Complete (2026-04-01) |
+| Phase 2 — Evidence and citation layer | ✅ Complete |
+| Phase 3 — Analysis planning layer | ✅ Complete (refactored to orchestrator-contract in v3.1) |
+| Phase 4 — Debate layer | ✅ Complete (multi-agent critique panels in `/analyze` references) |
+| Phase 5 — BioMedAgent delegation wiring | ✅ Complete |
+| Phase 6 — Structured result and figure registries | ✅ Complete (figure registry + visualize refactor v3.2) |
+| **Phase 7 — Writing layer refactor** | ⏳ Pending (planned below) |
+| **Phase 8 — Audit tooling + validators** | ⏳ Pending (planned below) |
+| **Phase 9 — Real-world stress test** | ⏳ Pending |
+
+In addition to the original 7 phases, v3.3 added the K-Dense delegation layer (citation-management hard gate, peer-review, scholar-evaluation, pyzotero auto-sync, K-Dense systematic-search backbone) — see `skills/references/kdense-delegations.md`.
+
 ---
 
 ## Guiding Priorities
 
 Implementation order should follow these priorities:
 
-1. fix structural confusion and duplicate responsibilities
-2. establish shared project state
-3. gate writing on verified evidence
-4. insert an analysis planning layer before execution
-5. wire explicit delegation to BioMedAgent
-6. make figures and prose consume structured outputs
-7. add final audit and export hardening
+1. fix structural confusion and duplicate responsibilities ✅
+2. establish shared project state ✅
+3. gate writing on verified evidence ✅
+4. insert an analysis planning layer before execution ✅
+5. wire explicit delegation to BioMedAgent ✅
+6. make figures and prose consume structured outputs ✅
+7. add final audit and export hardening — *in progress (Phase 7 + 8)*
 
 ---
 
@@ -207,74 +224,82 @@ Methods/Results text and figures can be generated from structured state rather t
 
 ---
 
-## Phase 7 — Writing Layer Refactor
+## Phase 7 — Writing Layer Refactor (UPDATED 2026-05-20)
 
 ### Goals
-- make writing commands state-driven
-- keep Bilal's house style while reducing overfit and duplication
+- apply the orchestrator-contract pattern (already proven in `/analyze` v3.1 and `/visualize` v3.2) to the four write-* skills
+- eliminate ~600 lines of duplicated state-management blocks across `/write-introduction`, `/write-discussion`, `/write-methods-results`, `/write-manuscript`
+- preserve Bilal's house style + the K-Dense citation hard gate
+- shrink each write-* SKILL.md by ~40% without behavior loss
+
+### State of play (pre-refactor)
+| Skill | Current size | Target size after refactor |
+|---|---|---|
+| `/write-introduction` | 437 lines | ≤ 280 |
+| `/write-discussion` | 631 lines | ≤ 380 |
+| `/write-methods-results` | 552 lines | ≤ 330 |
+| `/write-manuscript` | 516 lines | ≤ 320 |
+| `/write-abstract` | 247 lines | leave as-is (recent, focused) |
 
 ### Tasks
-- update `/write-introduction` to use citation bank only
-- update `/write-methods-results` to use:
-  - `study_spec.json`
-  - `analysis_plan.json`
-  - `results_registry.json`
-  - `figure_registry.json`
-- update `/write-discussion` to use:
-  - `results_registry.json`
-  - `citation_bank.json`
-- separate style concerns into cleaner layers if needed:
-  - house style
-  - section rules
-  - journal-conversion rules for future phases
+1. **Create `skills/references/manuscript-state-schema.md`** — single source of truth for the Mode A / Mode B / state read-write blocks duplicated across four write-* skills. Documents:
+   - Stateful-vs-standalone mode detection
+   - All read-from / write-to contracts per state file
+   - Citation-bank entry schema
+   - manuscript_state.json section status enums
+2. **Refactor each write-* SKILL.md** to read this file at PREREQUISITE instead of inlining state schemas. Keep only:
+   - The skill's drafting rubric (paragraph structure, voice, transitions)
+   - The skill-specific writing-style rules
+   - The skill-specific citation-bank tag filter
+   - Pointers to the shared schema for everything else
+3. **Verify behavior unchanged** — manual pass against a real project's state files.
 
 ### Deliverables
-- state-driven writing commands
-- reduced duplication of writing instructions
+- `skills/references/manuscript-state-schema.md` (~250 lines, shared)
+- four refactored write-* SKILL.md files (~600 lines cut total)
+- per-skill diff review before commit
 
 ### Success condition
-Narrative prose is grounded in structured evidence and results.
+- All write-* skills reduced to target sizes
+- Citation hard gate still enforced
+- No behavior change in a real-project dry-run
 
 ---
 
-## Phase 8 — Final Assembly and Audit Hardening
+## Phase 8 — Audit Tooling + Validators (NEW)
 
 ### Goals
-- make final manuscript export dependable
-- catch inconsistencies before output
+- automate the validation checks I currently run by hand at every commit
+- catch drift between `lessons-log.json`, `kdense-delegations.md`, `skill-registry.yaml`, and the actual skill files
 
 ### Tasks
-- implement independent `/audit-manuscript`
-- add final audit checks for:
-  - numeric consistency
-  - table/figure reference integrity
-  - abbreviation integrity
-  - claim-to-citation alignment
-  - observational language compliance
-  - reporting guideline checks
-- make `/write-manuscript` consume all state files and assemble final deliverables
-- export defaults:
-  - manuscript `.docx`
-  - tables `.docx`
-  - figures `.docx`
-  - abstract `.docx`
-  - analysis `.xlsx`
-  - machine-readable project artifacts
+1. **`tools/validate_lessons_log.py`** — JSON validity + every `promoted_to` path exists + every `id` is unique + dates well-formed
+2. **`tools/audit_kdense_delegations.py`** — every K-Dense skill referenced in `kdense-delegations.md` exists under `skills/external/`; every internal skill that mentions a K-Dense skill in its PREREQUISITE actually has that skill indexed
+3. **`tools/audit_state_schema.py`** — every state file referenced in the write-* PREREQUISITEs matches `skills/references/state-schema.md` (after Phase B5 move)
+4. **`tools/audit_all.sh`** — single entry point that runs all validators + the indexer in dry-run mode; exits non-zero on any failure
+5. **(optional)** add a `.git/hooks/pre-commit` hook that runs `tools/audit_all.sh`
 
 ### Deliverables
-- reliable final assembly
-- explicit audit summary
+- 3 validator scripts in `tools/`
+- one composite runner
+- regression catch on next commit
 
 ### Success condition
-The plugin can produce a full manuscript package plus project-state artifacts with fewer silent inconsistencies.
+Running `bash tools/audit_all.sh` on the current tree exits 0; introducing a stale `promoted_to` path or a missing K-Dense reference exits non-zero with a clear error.
 
 ---
 
-## Phase 9 — Benchmarking and Validation
+## Phase 9 — Real-world stress test + Benchmarking
 
 ### Goals
-- test the architecture against Bilal's actual use cases
-- prevent regression after future edits
+- run the assembled v3.3 system against a real project (e.g., NSQIP CR-POPF or a fresh question) end-to-end
+- catch what doesn't actually work in practice — vs what looks fine on paper
+- only then do further refactor work
+
+### Tasks
+- pick one real project; run `/project-init` → `/literature-review` → `/analyze` → `/visualize` → `/write-*` → `/manuscript-qc`
+- log every halt that surprised the user; log every hard-gate fail; log every behavior that contradicted SKILL.md
+- decide whether to address findings now (small edits) or batch them into the next refactor pass
 
 ### Suggested benchmark project types
 - retrospective surgical cohort with binary outcome
