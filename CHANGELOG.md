@@ -2,6 +2,52 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.4.0] - 2026-05-20
+
+### Added — K-Dense delegation layer + Phase A/B doc refresh
+
+This release wires five K-Dense scientific-skills as runtime delegated executors and refreshes every top-level doc to reflect the current architecture. The K-Dense delegations are a real new feature surface — citation integrity, peer-review-style audits, quantitative quality scoring, Zotero sync, and systematic-search execution — so this is a minor bump rather than a patch.
+
+#### K-Dense delegation layer
+
+- **`skills/references/kdense-delegations.md`** — new single source of truth (319 lines) defining how CRA delegates to K-Dense skills at runtime. Five delegations are formally wired:
+  - `scientific-skills:citation-management` — **hard gate** for L041 across `/literature-review` + all `/write-*` + `/manuscript-qc`. PASS / AMBIGUOUS / FAIL routing; no silent fallback; no "PMID: pending verification" placeholders.
+  - `scientific-skills:peer-review` — `/manuscript-qc` Check 13 (reviewer-perspective structured pass).
+  - `scientific-skills:scholar-evaluation` — `/manuscript-qc` Check 14 (ScholarEval scoring; verdict = NOT READY if total < 14/20) + `/literature-review` STEP 5 per-evidence scoring.
+  - `scientific-skills:pyzotero` — auto-on if `ZOTERO_API_KEY` env detected; sync at end of `/literature-review` and `/write-manuscript` Phase 8.
+  - `scientific-skills:literature-review` (K-Dense) — primary execution backbone for CRA `/literature-review` STEP 2 + STEP 5 multi-database searches.
+- **`/manuscript-qc`** — added Checks 13–15 as delegated K-Dense passes; VERDICT now considers ScholarEval total and citation audit FAIL count.
+- **L041 promotion expanded** — `lessons-log.json` `promoted_to` now references 7 files (was 2); covers literature-review, all write-* skills, manuscript-qc, and kdense-delegations.md.
+
+#### Indexer fix
+
+- **`tools/update_skill_registry.py`** — `EXTERNAL_SKIP_SUFFIXES` was matching `-evaluation` recursively, silently filtering `scholar-evaluation/SKILL.md` from the registry even though it's a legitimate nested skill. Fixed to only skip top-level external bundles whose directory name matches. Indexed skill count went from 145 → 151.
+
+#### Top-level doc refresh (Phase A + B)
+
+- **`README.md`** — K-Dense Python is now the default visualize backend (was R + tidyplots/ggplot2); `/write-abstract` and `/manuscript-qc` added to commands table; K-Dense delegation layer noted in Key Features; recommended workflow ends with `/manuscript-qc`.
+- **`ARCHITECTURE.md`** — new Design Principle 8a (K-Dense delegations); new System Overview Section B' (K-Dense as runtime expert references); Manuscript Layer table includes `/write-abstract` and `/manuscript-qc`; Audit Layer expanded to native 12 checks + Checks 13–15 K-Dense delegations.
+- **`COMMAND_CONTRACTS.md`** — moved to `skills/references/command-contracts.md`. Added `/write-abstract` contract; replaced the planned `/audit-manuscript` with the actual `/manuscript-qc` contract (Checks 13–15 + workflow + verdict rules).
+- **`DELEGATION_RULES.md`** — new Section D documenting all 5 K-Dense delegations with mandatory/auto-on flags; cross-links to `kdense-delegations.md`.
+- **`ROADMAP.md`** — Phase 0–6 marked complete; Phase 7 (write-* refactor) expanded with concrete target sizes; new Phase 8 (audit tooling); Phase 9 reframed as real-world stress test.
+- **`STATE_SCHEMA.md`** — moved to `skills/references/state-schema.md`. Root now a 5-line pointer stub.
+- **Outer `CLAUDE.md`** — refreshed v2.0.0 → v3.4.x; documents 12 internal skills + router + 151 vendored externals.
+
+#### Archive
+
+- **`PHASE0_CLEANUP_AUDIT.md`** → `docs/archive/` (obsolete since 2026-04-01).
+- **`append_hnscc_lessons.py`** → `clinical-research-assistant/tools/archive/` (one-shot from 2026-05-03).
+- Leaked `.DS_Store` files removed from tree.
+
+### Changed
+
+- Plugin metadata version bumped to `3.4.0`.
+- `marketplace.json` metadata version bumped to `3.4.0`.
+
+### Migration note
+
+If you have CRA installed as a Claude Code plugin and your installed copy is older than 3.4.0, refresh it from the marketplace to pick up the K-Dense delegation references. If your `~/.claude/plugins/clinical-research-assistant` is a symlink to a dev checkout (the recommended setup), no action is required.
+
 ## [3.0.0] - 2026-05-17
 
 ### Added — Router-first CRA architecture
