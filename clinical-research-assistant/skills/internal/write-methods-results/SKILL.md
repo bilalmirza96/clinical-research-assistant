@@ -26,6 +26,20 @@ Before drafting any text, read `skills/references/writing-style.md` and apply AL
 - **Avoid AI-tell phrases**: Never use "delve into," "shed light on," "pave the way," "in the realm of," "robust," "comprehensive," "leveraging," "utilizing"
 </writing_style>
 
+<prerequisite>
+## PREREQUISITE — Citation Hard Gate (L041)
+
+Methods/Results citations are rare but high-risk (registry primary citations, statistical-method primary references). Before inserting any reference, read `../../references/kdense-delegations.md` §1.
+
+Every reference inserted into Methods or Results must already exist in `citation_bank.json` with `.verified = true`, OR pass the `scientific-skills:citation-management` hard gate during this session before insertion:
+
+- PASS → insert citation, update `citation_bank.json[entry].used_in_sections += ["methods"]` or `["results"]`
+- AMBIGUOUS → halt, present candidates, require user disambiguation
+- FAIL → DO NOT insert; log to `decision_log.md`
+
+Statistical-method references (e.g., Fine-Gray, R `survival` package version, Benjamini-Hochberg) must cite the actual primary paper, not a textbook paraphrase. The hard gate catches version drift and misattribution. No citing from memory. Closure Zotero auto-sync per `kdense-delegations.md` §4 if `ZOTERO_API_KEY` env detected.
+</prerequisite>
+
 <state_management>
 ## State Management
 

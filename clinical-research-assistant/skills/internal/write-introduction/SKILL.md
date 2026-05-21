@@ -23,6 +23,20 @@ Before drafting any text, read `skills/references/writing-style.md` and apply AL
 - **Hedging**: Zero hedging on established facts; light hedging only on the hypothesis or gap statement
 </writing_style>
 
+<prerequisite>
+## PREREQUISITE — Citation Hard Gate (L041)
+
+Before drafting any paragraph that cites prior work, read `../../references/kdense-delegations.md` §1.
+
+Every reference inserted into the Introduction must already exist in `citation_bank.json` with `.verified = true`, OR pass the `scientific-skills:citation-management` hard gate during this session before insertion:
+
+- PASS → insert citation, update `citation_bank.json[entry].used_in_sections += ["introduction"]`
+- AMBIGUOUS → halt, present candidates, require user disambiguation
+- FAIL → DO NOT insert the citation; log to `decision_log.md`; either remove the dependent claim or mark it `[REF NEEDED]` and surface to user
+
+No citing from memory. No "PMID: pending verification" placeholders. Closure Zotero auto-sync runs at end of session per `kdense-delegations.md` §4 if `ZOTERO_API_KEY` env detected.
+</prerequisite>
+
 ## Output Format
 
 Provide all written text in the chat AND save as a Word document (.docx). Write each paragraph inline for the user to copy. Use numbered reference callouts [1], [2], etc. in the text and provide a full numbered reference list at the end.

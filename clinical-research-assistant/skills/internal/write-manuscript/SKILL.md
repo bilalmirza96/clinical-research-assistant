@@ -29,6 +29,20 @@ Before drafting any manuscript text, read `skills/references/writing-style.md` a
 All sub-commands (`/write-introduction`, `/write-methods-results`, `/write-discussion`) independently read the same style reference. During the Final Assembly & Audit (Phase 8), verify that all sections use consistent voice, transition words, and formatting per the style guide.
 </writing_style>
 
+<prerequisite>
+## PREREQUISITE — K-Dense delegations
+
+Before Phase 1 executes, read `../../references/kdense-delegations.md`. Sub-commands will independently re-read it as needed.
+
+This orchestrator enforces three K-Dense delegations at Phase 8 (Final Assembly & Audit):
+
+1. **Citation hard gate** — `scientific-skills:citation-management` re-verifies every reference in the assembled manuscript. Part B.5 below already requires this; the hard gate is the enforcement mechanism per `kdense-delegations.md` §1 (no "PMID: pending verification" allowed, AMBIGUOUS halts, FAIL removes the reference).
+2. **Peer-review simulation (optional)** — `scientific-skills:peer-review` runs a structured reviewer-perspective pass. Output saved to `Reports/peer_review_simulation_<date>.md`. Surface MAJOR comments to user before delivery.
+3. **ScholarEval scoring** — `scientific-skills:scholar-evaluation` scores the assembled manuscript across problem / methodology / analysis / writing dimensions. If total < 14/20, set verdict = NOT READY and surface weakest dimension.
+
+Zotero auto-sync at Phase 1 (pull existing collection if `ZOTERO_API_KEY` env set) and at end of Phase 8 (push newly-verified references) per `kdense-delegations.md` §4. Each pulled Zotero item still has to pass the citation hard gate before `.verified = true`.
+</prerequisite>
+
 This command is an orchestrator. It does not replace the individual phase commands. It coordinates them, tracks progress, carries verified outputs forward, and enforces consistency across all manuscript sections.
 
 ---

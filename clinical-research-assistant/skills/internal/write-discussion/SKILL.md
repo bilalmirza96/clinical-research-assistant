@@ -26,6 +26,20 @@ Before drafting any text, read `skills/references/writing-style.md` and apply AL
 - **Reverse-funnel widening**: Specific finding → mechanism → classification → therapy → policy
 </writing_style>
 
+<prerequisite>
+## PREREQUISITE — Citation Hard Gate (L041)
+
+Before drafting any concordant/discordant comparison, read `../../references/kdense-delegations.md` §1.
+
+Every concordant or discordant reference inserted into the Discussion must already exist in `citation_bank.json` with `.verified = true`, OR pass the `scientific-skills:citation-management` hard gate during this session before insertion:
+
+- PASS → insert citation, update `citation_bank.json[entry].used_in_sections += ["discussion"]`
+- AMBIGUOUS → halt, present candidates, require user disambiguation
+- FAIL → DO NOT insert the citation; log to `decision_log.md`; either remove the comparison or mark `[REF NEEDED]` and surface to user
+
+Fabrication risk is highest in Discussion — never compare to "a prior systematic review" or "an earlier NCDB cohort" without a verified citation. No citing from memory. No "PMID: pending verification" placeholders. Closure Zotero auto-sync per `kdense-delegations.md` §4 if `ZOTERO_API_KEY` env detected.
+</prerequisite>
+
 ## Output Format
 
 Provide all written text in the chat AND save as a Word document (.docx). Write each paragraph inline for the user to copy. Use numbered reference callouts [1], [2], etc. (continuing from the Introduction's reference numbering) and provide an updated reference list at the end.

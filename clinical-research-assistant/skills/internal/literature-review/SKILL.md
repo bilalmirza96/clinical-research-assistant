@@ -25,7 +25,30 @@ You are a senior surgical research methodologist and literature synthesis expert
 ## Citation Integrity
 
 Never fabricate or guess citations. If you cannot find a paper through search tools, do not invent one — state "I could not find a source for this claim" instead. After completing searches, verify each cited paper exists by confirming its DOI or PubMed ID through the search tools. Only report findings that were actually retrieved from searches.
+
+Citation verification is enforced as a **hard gate** per L041 — see PREREQUISITE below. Every paper that enters `citation_bank.json` with `.verified = true` must have passed the gate documented in `../../references/kdense-delegations.md`.
 </citation_integrity>
+
+<prerequisite>
+## PREREQUISITE — read before STEP 1
+
+Before any step executes, read these files in this order:
+
+1. `../../references/kdense-delegations.md` — citation hard gate, K-Dense literature-review delegation pattern, ScholarEval scoring, pyzotero auto-sync rule. **Mandatory** — defines how STEP 2 search execution, STEP 2 + STEP 5 verification, STEP 5 quality scoring, and closure Zotero sync work.
+2. `../../references/lessons-log.json` — relevant literature lessons (L041 Citation Integrity in particular).
+3. `../../references/writing-style.md` — only if the user asks for any narrative drafted output (synthesis paragraphs, gap statement prose).
+
+The K-Dense skills referenced below are loaded as **expert reference at runtime** (`Read` their `SKILL.md` before invoking their tools), not as separate invocations. Same pattern `/analyze` uses with `scientific-visualization`.
+
+| Delegation | K-Dense skill | When |
+|---|---|---|
+| Multi-database search execution | `scientific-skills:literature-review` | STEP 2 sweep, STEP 5 deep dive |
+| Citation verification hard gate (L041) | `scientific-skills:citation-management` | STEP 2 + STEP 5 verification passes |
+| Per-paper quality scoring | `scientific-skills:scholar-evaluation` | STEP 5 deep dive (ScholarEval rubric) |
+| Zotero library sync | `scientific-skills:pyzotero` | Closure if `ZOTERO_API_KEY` env detected |
+
+Read `kdense-delegations.md` once at the start of the session and apply its contracts at each labeled step below.
+</prerequisite>
 
 <state_management>
 ## State Management
@@ -128,7 +151,13 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .updated_at = [timestamp]
 ```
 
-**Citation verification pass:** After building the evidence table, verify the top 15-25 most relevant papers by confirming DOI or PMID via search tools. For each verified paper, set `.verified = true` in the evidence bank AND create an entry in the citation bank:
+**Citation verification pass — HARD GATE per L041:** After building the evidence table, run every candidate (top 15–25 most relevant) through the `scientific-skills:citation-management` gate per `../../references/kdense-delegations.md` §1. Result codes:
+
+- PASS (title fuzzy-match ≥ 0.9 AND year matches AND DOI/PMID resolves) → set `.verified = true` in evidence bank, create citation_bank entry below
+- AMBIGUOUS (multiple matches) → halt, present candidates, require user disambiguation
+- FAIL → DO NOT write to citation_bank; log to `decision_log.md`; do not use in prose
+
+For each verified paper, create an entry in the citation bank:
 
 **`citation_bank.json`** — create or update:
 ```
@@ -222,7 +251,9 @@ This is the completion checkpoint. Write all final state.
 .methodological_recommendations = [summary of recommended design, outcomes, covariates, methods]
 ```
 
-**Second citation verification pass:** Verify the new deep-dive papers (15-25 most relevant). Add verified ones to the citation bank.
+**Second citation verification pass — HARD GATE per L041:** Verify the new deep-dive papers (15–25 most relevant) through the `scientific-skills:citation-management` gate per `kdense-delegations.md` §1. Same PASS / AMBIGUOUS / FAIL routing as STEP 2. Add only PASS papers to the citation bank.
+
+**ScholarEval quality scoring (STEP 5 only):** Run each verified deep-dive paper through `scientific-skills:scholar-evaluation` per `kdense-delegations.md` §3. Capture the 4 dimension scores + weakest dimension + total. Write to `evidence_bank.json[entry].scholar_eval`. Sort the final deep-dive evidence table by `.scholar_eval.total` descending — highest-quality comparators surface first for Discussion drafting.
 
 **`citation_bank.json`** — update:
 ```
@@ -281,7 +312,11 @@ When writing state files, follow these rules:
 <search_strategy>
 ## Search Strategy
 
-Use ALL available search tools to maximize coverage. Search multiple sources in parallel whenever possible — run PubMed, bioRxiv, Scholar Gateway, and ClinicalTrials.gov searches simultaneously rather than sequentially to maximize speed:
+**Execution backbone:** delegate the multi-database sweep to `scientific-skills:literature-review` (vendored under `skills/external/scientific-agent-skills/scientific-skills/literature-review/`). It handles parallel PubMed / arXiv / bioRxiv / Semantic Scholar / OpenAlex queries, deduplication, and PRISMA-format flow tracking. CRA stays the orchestrator (scope, schema, gap analysis, journal-fit); K-Dense does the heavy lift. See `../../references/kdense-delegations.md` §5.
+
+Read its `SKILL.md` before invoking its tools.
+
+Direct-MCP fallback (when K-Dense delegation is unavailable or the user explicitly wants raw MCP control):
 
 1. **PubMed** (MCP tools) — primary biomedical literature, MeSH-indexed, peer-reviewed
 2. **bioRxiv/medRxiv** (MCP tools) — preprints, cutting-edge research not yet peer-reviewed
@@ -294,6 +329,8 @@ For each topic, search across multiple query formulations:
 - Author searches for known leaders in the field
 - Registry-specific searches (e.g., "NCDB" + topic, "NSQIP" + topic)
 - MeSH terms where available
+
+**Verification gate (mandatory, applies to both backends):** Every paper that reaches `citation_bank.json` with `.verified = true` must pass the `scientific-skills:citation-management` hard gate per `kdense-delegations.md` §1. No silent fallback. No "PMID: pending verification" placeholders.
 </search_strategy>
 
 ---
@@ -492,7 +529,23 @@ ASK: "Deep dive complete. Does the question still feel novel and worth pursuing?
 
 ## Next Steps Reminder
 
-Execute the STEP 5 completion checkpoint writes above, then inform the user:
+Execute the STEP 5 completion checkpoint writes above. **Then run the Zotero auto-sync check per `kdense-delegations.md` §4:**
+
+```
+if os.environ.get("ZOTERO_API_KEY") AND (os.environ.get("ZOTERO_USER_ID") OR os.environ.get("ZOTERO_GROUP_ID")):
+    Load scientific-skills:pyzotero SKILL.md as expert reference
+    For each citation_bank entry with .verified=true AND no .zotero_key:
+        - create Zotero item via pyzotero
+        - store .zotero_key in citation_bank entry
+        - tag with project name + "CRA"
+    Append sync summary to decision_log.md
+else:
+    skip silently
+```
+
+Failure mode for Zotero: log and continue — never halt the workflow on a sync failure.
+
+Then inform the user:
 
 > "Literature review complete."
 
