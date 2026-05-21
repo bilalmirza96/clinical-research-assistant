@@ -6,7 +6,7 @@
     "maintainer": "clinical-research-assistant skill, sourced from real sessions",
     "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
     "last_promotion_pass": "2026-05-20",
-    "promotion_summary": "45/45 lessons now have promoted_to audit trail"
+    "promotion_summary": "45/45 lessons now have promoted_to audit trail; L041 expanded 2026-05-20 to cover full write-* + manuscript-qc K-Dense citation-management hard-gate enforcement"
   },
   "lessons": [
     {
@@ -1027,15 +1027,36 @@
       "deprecated": false,
       "promoted_to": [
         {
+          "file": "skills/references/kdense-delegations.md",
+          "note": "§1 hard-gate enforcement contract — single source of truth for citation-management delegation"
+        },
+        {
           "file": "skills/internal/literature-review/SKILL.md",
-          "note": "Citation verification protocol"
+          "note": "PREREQUISITE block + STEP 2 + STEP 5 verification passes now invoke scientific-skills:citation-management hard gate (PASS/AMBIGUOUS/FAIL routing)"
+        },
+        {
+          "file": "skills/internal/write-introduction/SKILL.md",
+          "note": "PREREQUISITE block enforces hard gate before any reference insertion"
+        },
+        {
+          "file": "skills/internal/write-discussion/SKILL.md",
+          "note": "PREREQUISITE block enforces hard gate; flags concordant/discordant comparison citations as highest fabrication risk"
+        },
+        {
+          "file": "skills/internal/write-methods-results/SKILL.md",
+          "note": "PREREQUISITE block enforces hard gate; covers statistical-method and registry primary references"
         },
         {
           "file": "skills/internal/write-manuscript/SKILL.md",
-          "note": "Pre-submission citation integrity audit"
+          "note": "PREREQUISITE block + Phase 8 Part B.5 Citation Integrity Audit now invoke scientific-skills:citation-management hard gate"
+        },
+        {
+          "file": "skills/internal/manuscript-qc/SKILL.md",
+          "note": "Check 15 — citation-integrity batch re-verification via scientific-skills:citation-management; ANY FAIL = CRITICAL"
         }
       ],
-      "promoted_date": "2026-05-20"
+      "promoted_date": "2026-05-20",
+      "promoted_date_kdense_delegation": "2026-05-20"
     },
     {
       "id": "L043-discussion-writing-RPTH-Miller-framework",
