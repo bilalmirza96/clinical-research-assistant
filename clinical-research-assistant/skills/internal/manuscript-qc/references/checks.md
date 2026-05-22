@@ -14,6 +14,7 @@
 11. Journal-Specific Formatting
 12. Logical Flow and Argument Strength
 13. Audit-Step Tagging and Traceability  *(per L038)*
+14. Introduction ↔ Results Structural Symmetry  *(per L047)*
 
 ---
 
@@ -297,3 +298,29 @@ When the manuscript reports ORs / HRs / RRs for a multi-level exposure (race, in
 - **Correct:** "Compared to non-Hispanic White patients (reference), non-Hispanic Black patients had higher adjusted odds of non-surgical management (aOR 1.42, 95% CI 1.21–1.67)."
 
 When subgroup-stratified results are reported, make the comparator within each stratum explicit. Verify that the comparator stated in the text matches the one used in the model code (often the lowest factor level, alphabetically or numerically). Mismatched comparators between text and code is the most common silent error in disparity manuscripts.
+
+---
+
+## Check 14 — Introduction ↔ Results Structural Symmetry  *(per L047)*
+
+This check exists because the Methods–Results alignment check (Check 3) and the Logical-Flow check (Check 12) test only the *Methods → Results* direction and the *Introduction-objective → Results* direction. Neither tests the *Results → Introduction* direction. When a new analytical dimension is added to a manuscript (e.g., a new multivariable predictor model is added alongside an existing outcome model, or a new sensitivity analysis becomes a primary result), the new Results subsection can be fully populated and the Methods can correctly describe the new method, while the Introduction still telegraphs only the original aim. This is structurally invisible to Checks 3 and 12 because each Results subsection *does* have a Methods sentence and the *existing* aim *does* have a Result — the asymmetry hides in what is missing from the Introduction, not in what is present.
+
+Treat this as a CRITICAL or MAJOR check depending on the magnitude of the gap.
+
+- Enumerate every Results subsection in order (e.g., "Patient Characteristics", "Perioperative Characteristics", "Independent Predictors of CR-POPF", "Unadjusted Outcomes", "Adjusted Outcomes").
+- For each subsection, identify the sentence(s) in the Introduction that motivate it. The motivating sentence must be a gap statement OR an aim/objective statement that names the question the subsection answers.
+- Flag any Results subsection whose motivating Introduction sentence is absent OR is only implicit (one-direction framing covering only a subset of the Results). This is a CRITICAL issue if the missing aim is one of the two or more primary aims; MAJOR if it is a secondary aim or a sensitivity analysis.
+- Apply the symmetry check to the Discussion as well: every Results subsection should have at least one Discussion paragraph that contextualizes it against the literature, and the Discussion ¶1 ("principal findings") should explicitly enumerate the findings of every primary Results subsection — not just the headline.
+- **Discussion body paragraph order must match Results subsection order.** Enumerate the Discussion body paragraphs (¶2 onward, excluding limitations) and verify the topic sequence mirrors the Results subsection sequence. If the Introduction states the aim as "predictors and then consequences" (or any other ordering), the Discussion body must discuss the topics in the same order. A Discussion that promises predictors-first in ¶1 but discusses consequences first in ¶3–4 violates this rule and must be reordered. This is a frequent artifact when a manuscript evolves: an original one-direction draft is amended with a new arm and new Results subsection, but the Discussion body is not reordered to match the new architecture. Severity: MAJOR.
+- Apply the symmetry check to the Abstract: the Abstract Results should reflect every primary Results subsection; the Abstract Conclusion should reflect every primary aim from the Introduction.
+
+When a manuscript adds a new analytical dimension to an existing draft (for example, a new table that introduces a new model direction), apply this check before declaring the manuscript ready. The two-pronged framing is the canonical case but not the only one — any time a Results section has parallel subsections that answer different questions, the Introduction should have a parallel gap/aim structure that motivates each subsection.
+
+Trigger patterns (any of the following should prompt running Check 14 from scratch):
+- A new Table is added that contains a new model direction (e.g., outcome → exposure becomes exposure → outcome).
+- A new Results subsection is added whose subheading is not already paraphrased in the Introduction's aim sentence.
+- A new analysis dimension is added (e.g., predictor model alongside an existing outcome model).
+- A new primary endpoint is added or the existing primary endpoint is supplemented by a co-primary endpoint.
+- The user describes the study with a word ("two-pronged", "dual", "co-primary", "in parallel", "bidirectional", "predictor and consequence", "antecedent and downstream") that signals more than one aim.
+- The Introduction or Discussion ¶1 is restructured. If either is reordered, the Discussion body paragraph order must be re-audited against the Results subsection order — restructuring ¶1 without restructuring ¶2 onward is the canonical failure mode (worked example: CR-POPF v4 had a two-pronged Introduction and ¶1 but kept the v3 Discussion body order with consequences first, until v5 reordered to predictors-first).
+- The user asks why the Discussion order differs from the Introduction or Results order — treat the question itself as a trigger that the symmetry has been violated.
