@@ -1,5 +1,15 @@
 # Clinical Research Assistant — Plugin for Claude Code
 
+> **Canonical location: `~/Claude/dev/clinical-research-assistant/` (local filesystem only).**
+> Do not clone this repo into iCloud (`~/Library/Mobile Documents/com~apple~CloudDocs/Claude/dev/`).
+> iCloud Drive evicts files to save space and can corrupt `.git/index` and refs. GitHub is the
+> portable backup — on any new machine, clone fresh:
+>
+> ```bash
+> git clone https://github.com/bilalmirza96/clinical-research-assistant.git \
+>   ~/Claude/dev/clinical-research-assistant
+> ```
+
 A personal end-to-end clinical research and manuscript system for Claude Code. Guides the full research pipeline — literature review, statistical analysis, figure generation, and manuscript writing — with shared state across sessions, verified citations, numeric cross-verification, and publication-ready outputs.
 
 ## Architecture
