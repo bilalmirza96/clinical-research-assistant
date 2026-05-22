@@ -1,23 +1,24 @@
 {
-  "name": "clinical-research-assistant",
+  "name": "cra-marketplace",
   "owner": {
     "name": "Muhammad Bilal Mirza"
   },
-  "metadata": {
-    "description": "Clinical research assistant for surgical residents",
-    "version": "3.4.0",
-    "pluginRoot": "./"
-  },
+  "description": "Clinical research assistant for surgical residents",
+  "version": "3.4.0",
   "plugins": [
     {
       "name": "clinical-research-assistant",
       "source": "./clinical-research-assistant",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
+      "version": "3.4.0",
       "category": "research",
       "tags": ["clinical-research", "biostatistics", "manuscript-writing", "literature-review", "surgical-research"],
       "author": {
         "name": "Muhammad Bilal Mirza"
-      }
+      },
+      "homepage": "https://github.com/bilalmirza96/clinical-research-assistant",
+      "repository": "https://github.com/bilalmirza96/clinical-research-assistant",
+      "license": "MIT"
     }
   ]
 }
