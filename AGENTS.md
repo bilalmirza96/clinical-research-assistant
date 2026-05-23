@@ -126,9 +126,11 @@ All paths are absolute on Bilal's Mac. CRA lives at
 
 ### External (K-Dense) skills
 
-139 vendored K-Dense skills live at
-`clinical-research-assistant/skills/external/scientific-skills/`. The most relevant for
-clinical research are listed in §6 below. Read individual SKILL.md files as needed.
+138 vendored K-Dense skills live at
+`clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/`.
+The most relevant for clinical research are listed in §6 below. Read individual SKILL.md
+files as needed. (There's also a separate vendored copy of `biomedagent` at
+`clinical-research-assistant/skills/external/biomedagent/`.)
 
 ---
 
@@ -140,11 +142,11 @@ honor these same contracts — they are not Claude-specific.
 
 | Delegation | Triggered by | K-Dense SKILL.md | Gate |
 |---|---|---|---|
-| **Citation integrity (L041)** | Any citation in any manuscript draft | `clinical-research-assistant/skills/external/scientific-skills/citation-management/SKILL.md` | **Hard gate**: PASS / AMBIGUOUS / FAIL. AMBIGUOUS and FAIL block submission. No silent fallback. |
-| **Peer review (Check 13)** | `manuscript-qc` Check 13 (L038 audit-tagging) | `clinical-research-assistant/skills/external/scientific-skills/peer-review/SKILL.md` | Block submission until L038 audit tags resolved. |
-| **Scholar evaluation (Check 14)** | `manuscript-qc` Check 14 (L047 Introduction↔Results symmetry) | `clinical-research-assistant/skills/external/scientific-skills/scholar-evaluation/SKILL.md` | **NOT READY** if total score < 14/20. |
-| **Zotero integration** | `ZOTERO_API_KEY` environment variable detected | `clinical-research-assistant/skills/external/scientific-skills/pyzotero/SKILL.md` | Auto-on; not a gate. |
-| **Systematic literature search** | Any `literature-review` invocation | `clinical-research-assistant/skills/external/scientific-skills/literature-review/SKILL.md` | Execution backbone — CRA orchestrates, K-Dense executes. |
+| **Citation integrity (L041)** | Any citation in any manuscript draft | `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/citation-management/SKILL.md` | **Hard gate**: PASS / AMBIGUOUS / FAIL. AMBIGUOUS and FAIL block submission. No silent fallback. |
+| **Peer review (Check 13)** | `manuscript-qc` Check 13 (L038 audit-tagging) | `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/peer-review/SKILL.md` | Block submission until L038 audit tags resolved. |
+| **Scholar evaluation (Check 14)** | `manuscript-qc` Check 14 (L047 Introduction↔Results symmetry) | `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/scholar-evaluation/SKILL.md` | **NOT READY** if total score < 14/20. |
+| **Zotero integration** | `ZOTERO_API_KEY` environment variable detected | `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/pyzotero/SKILL.md` | Auto-on; not a gate. |
+| **Systematic literature search** | Any `literature-review` invocation | `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/literature-review/SKILL.md` | Execution backbone — CRA orchestrates, K-Dense executes. |
 
 **Orchestrator-contract pattern**: `/analyze` and `/visualize` (and now Codex's natural-language
 equivalents) follow the same pattern — CRA's SKILL.md tells you WHAT to do; the K-Dense SKILL.md
@@ -308,7 +310,7 @@ MCP config.
 | Systematic literature search | `Read` `clinical-research-assistant/skills/internal/literature-review/SKILL.md` |
 | Write an abstract | `Read` `clinical-research-assistant/skills/internal/write-abstract/SKILL.md` + run 12-principle rubric |
 | Pre-submission QC | `Read` `clinical-research-assistant/skills/internal/manuscript-qc/SKILL.md` — 14 checks, citation hard gate, scholar-eval ≥ 14/20 |
-| Verify a citation | `Read` `clinical-research-assistant/skills/external/scientific-skills/citation-management/SKILL.md` |
+| Verify a citation | `Read` `clinical-research-assistant/skills/external/scientific-agent-skills/scientific-skills/citation-management/SKILL.md` |
 
 ---
 
