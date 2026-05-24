@@ -103,8 +103,11 @@ Directories: data/, outputs/, figures/ created
 ```
 
 Then:
-> "Project initialized. Next steps:"
+> "Project initialized. **Required next step: `/literature-review`** — this is now a Phase 0 prerequisite for `/analyze` per L048 (added 2026-05-24). `/analyze` will auto-invoke it if you skip and try to proceed, but running it deliberately first lets you scope without time pressure."
+>
+> Other next steps:
 > - Upload your dataset to the `data/` directory
-> - `/analyze` to begin statistical analysis
-> - `/literature-review` for evidence synthesis
+> - `/analyze` to begin statistical analysis (will auto-invoke `/literature-review` if Phase 0 artifacts missing)
 > - `/resume-project` to return to this project in a future session
+
+**Phase 0 prerequisite (per L048):** Before `/analyze` Phase 1 can fire, the project must contain `evidence_bank.json`, `citation_bank.json`, `novelty_assessment.json`, and `differentiation_brief.md` (all populated and PI-signed). These are produced by `/literature-review`. The CRA workflow now enforces this as a HARD GATE — `/analyze` will not lock specs or write the analysis plan without PI sign-off on the differentiation brief.

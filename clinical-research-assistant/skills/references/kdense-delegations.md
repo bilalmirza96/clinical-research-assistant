@@ -206,6 +206,50 @@ hard gate before `.verified = true`.
 
 ---
 
+## 4b. Phase 0 Pre-Design Literature Recon — `/analyze` HARD GATE (per L048)
+
+**When:** automatically, every time `/analyze` is invoked. Phase 1 INTAKE cannot fire without Phase 0 sign-off. Implemented as auto-invocation of `/literature-review` Mode 0 (see `internal/literature-review/SKILL.md` §State-Management).
+
+**Role in CRA:** prevents the "I-analyzed-it-but-someone-already-published-this" failure mode. Per L048 (added 2026-05-24 after Esophageal-Organ-Preservation v2 vs Sakowitz 2025 JTCVS discovery), running Phase 1+ without lit recon is the canonical bug.
+
+### Phase 0 K-Dense delegation chain
+
+| Step | K-Dense skill | Why this skill |
+|---|---|---|
+| Initial ideation (broad question) | `scientific-skills:scientific-brainstorming` | Cast wider net before narrowing — surface adjacent literatures the user may not have considered |
+| Multi-database systematic sweep | `scientific-skills:literature-review` | PRISMA-quality search across PubMed + bioRxiv + OpenAlex + Semantic Scholar |
+| Direct DB query (targeted) | `scientific-skills:pubmed-database`, `scientific-skills:openalex-database` | When a specific landmark trial / author / dataset needs to be confirmed |
+| Quality scoring of nearest comparators | `scientific-skills:scholar-evaluation` | Rank top 5–10 prior papers by ScholarEval rubric — drives the "nearest_comparators" entries with `.scholar_eval_score` |
+| Critical assessment of prior evidence | `scientific-skills:scientific-critical-thinking` | Identify limitations / biases / generalizability gaps in prior work that justify our study |
+| Research-question refinement (if pivot needed) | `scientific-skills:hypothesis-generation` | Sharpen the question if Phase 0 reveals it should be modified |
+| Citation verification | `scientific-skills:citation-management` | L041 hard gate — every entry in citation_bank verified before lock |
+
+### Required outputs at Phase 0 close
+
+| Artifact | Purpose | Schema |
+|---|---|---|
+| `evidence_bank.json` | Broad prior-work inventory | `templates/state/evidence_bank.template.json` (existing) |
+| `citation_bank.json` | L041-verified citations only | `templates/state/citation_bank.template.json` (existing) |
+| `novelty_assessment.json` | Structured differentiation analysis | `templates/state/novelty_assessment.template.json` (added 2026-05-24) |
+| `differentiation_brief.md` | PI-facing narrative for HALT 0 sign-off | `templates/state/differentiation_brief.template.md` (added 2026-05-24) |
+
+### HALT 0 — non-skippable
+
+After Phase 0 produces the four artifacts, `/analyze` presents differentiation_brief.md to the PI and requires one of:
+
+- `(a) Novel` — proceed to Phase 1
+- `(b) Replication with extension` — proceed; differentiation_brief becomes Discussion scaffolding
+- `(c) Pivot scope` — research question modified, re-hash, re-enter Phase 0
+- `(d) Abandon` — archive project, stop
+
+PI signature is required; rationale text is required. SHA256 of the signed differentiation_brief is locked into `novelty_assessment.lock_hash`. Valid for 30 days; auto-re-fires if research_question changes.
+
+### Failure mode this gate prevents
+
+The Esophageal-Organ-Preservation project (Bilal Mirza, May 2026) ran a full Standing-Rule-A analysis with 5 rungs of methodological rigor on N=53,389 NCDB patients comparing trimodality vs definitive CRT — only to discover at write-up planning that **Sakowitz et al. 2025 (J Thorac Cardiovasc Surg)** had published a 3,786-patient NCDB SCC analysis with essentially identical headline finding (HR 1.75) earlier the same year. The analysis is not wasted (HTE quantification + adenocarcinoma inclusion + methodological extensions are genuinely novel) but the framing now requires "replication with extension" repositioning that should have been the design choice from day one. Phase 0 prevents this in all future CRA projects.
+
+---
+
 ## 5. Formal systematic-review workflow — K-Dense `literature-review`
 
 **When:** `/literature-review` when the user wants a PRISMA-quality systematic review

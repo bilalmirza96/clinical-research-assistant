@@ -14,6 +14,9 @@ You orchestrate end-to-end clinical research analyses at manuscript-rigor by def
 ## What runs when you invoke `/analyze`
 
 ```
+Phase 0 PRE-DESIGN  pre-analysis literature recon — auto-invokes /literature-review
+                    produces evidence_bank, citation_bank, novelty_assessment, differentiation_brief
+   ✋ HALT 0        PI signs off on differentiation: novel | replication-with-extension | pivot | abandon
 Phase 1 INTAKE      lock dataset_spec, variable_spec, table_layouts, figure_intent
 Phase 2 PLAN        produce analysis_plan.json + manuscript_shopping_list
 Phase 3 CRITIQUE    4 parallel Task() spawns (Methodologist / Skeptic / Editor / Lessons-applier)
@@ -26,7 +29,7 @@ Phase 6 AUDIT       5 parallel Task() spawns (numerical / statistical / biologic
 Phase 7 DELIVER     master analysis_report.md with reproducibility manifest + SCAR registration
 ```
 
-Three halts. Everything between halts is autonomous. Status emits at every phase boundary.
+Four halts. Phase 0 is a HARD GATE — Phase 1 cannot fire without PI sign-off on differentiation. Everything between halts is autonomous. Status emits at every phase boundary.
 
 ---
 
@@ -58,6 +61,10 @@ Read first; resume from the first incomplete phase if any exist.
 |---|---|---|---|
 | `project_state.json` | project root | yes | progress + timestamps |
 | `study_spec.json` | project root | yes (research question, target journal) | no |
+| `evidence_bank.json` | project root | yes (Phase 0 prerequisite) | by `/literature-review` |
+| `citation_bank.json` | project root | yes (Phase 0 prerequisite) | by `/literature-review` |
+| `novelty_assessment.json` | project root | yes (Phase 0 prerequisite + HALT 0 sign-off) | Phase 0 |
+| `differentiation_brief.md` | project root | yes (Phase 0 prerequisite + HALT 0 sign-off) | Phase 0 |
 | `dataset_spec.json` (+ `_v1.json`, `_v2.json` on revision) | `specs/` | yes | Phase 1 |
 | `variable_spec.json` (+ revisions) | `specs/` | yes | Phase 1 |
 | `variable_spec_amendments.json` | `specs/` | yes | on soft-lock amendments |
@@ -90,6 +97,100 @@ Read first; resume from the first incomplete phase if any exist.
 ## Halt presentation policy (per Concern #7 decision)
 
 Every halt presents in **concise mode by default** when results match the plan (primary result aligns with hypothesis direction, no gate failures, no audit CRITICALs, no HIGH lesson fires). Auto-switches to **verbose mode** if any surprise: sign reversal, unexpected effect size, gate failure, CRITICAL audit, HIGH lesson fire. A `show full details` option is always available at every halt.
+
+---
+
+## PHASE 0 — PRE-DESIGN LITERATURE RECON (HARD GATE)
+
+**Goal:** Surface prior work that already answers the research question — BEFORE locking specs, BEFORE writing any analysis code. Force PI to explicitly classify the study as novel / replication-with-extension / pivot / abandon based on actual evidence of what is already published.
+
+**Why this is a HARD GATE:** Per L048 (added 2026-05-24 after Esophageal-Organ-Preservation v2 vs Sakowitz 2025 JTCVS discovery), running Phase 1+ without Phase 0 is the canonical failure mode that produces analyses redundant with literature published in the prior 12 months. Phase 0 is non-skippable.
+
+### 0.1 Prerequisite check
+
+Phase 0 fires UNLESS all of the following exist AND are fresh (≤30 days old) AND the `research_question_sha256` in `novelty_assessment.json` matches the current `study_spec.research_question`:
+
+| File | Required | Location |
+|---|---|---|
+| `evidence_bank.json` | yes, with ≥1 entry | project root |
+| `citation_bank.json` | yes, with ≥1 verified entry | project root |
+| `novelty_assessment.json` | yes, with PI sign-off | project root |
+| `differentiation_brief.md` | yes, with PI signature | project root |
+
+If any are missing, stale, or research-question-mismatched → **auto-invoke `/literature-review`**, then come back to 0.2.
+
+### 0.2 Auto-invocation of /literature-review
+
+Spawn `/literature-review` via Task() (subagent_type=`general-purpose`) with the briefing:
+
+> "Phase 0 pre-design literature recon for `/analyze`. Read `study_spec.json` for the research question. Produce evidence_bank.json (prior work landscape), citation_bank.json (L041-verified citations), novelty_assessment.json (using `templates/state/novelty_assessment.template.json` schema), and differentiation_brief.md (using `templates/state/differentiation_brief.template.md` schema). Use K-Dense delegations per `references/kdense-delegations.md` §Phase-0. Hand control back to /analyze when all four artifacts exist and the differentiation brief is populated up to (but not including) PI signature."
+
+/literature-review handles the search; /analyze does NOT proceed to HALT 0 until the four artifacts exist.
+
+### 0.3 K-Dense skill delegations (Phase 0 specific)
+
+Read these as expert reference, do not re-invoke if already loaded in /literature-review:
+
+| Step | K-Dense skill | Purpose |
+|---|---|---|
+| Initial ideation if Q is broad | `scientific-skills:scientific-brainstorming` | Cast wider net before narrowing |
+| Systematic search | `scientific-skills:literature-review` | Multi-database (PubMed + bioRxiv + OpenAlex) sweep |
+| Search infrastructure | `scientific-skills:pubmed-database`, `scientific-skills:openalex-database` | Direct DB query when needed |
+| Quality scoring of comparators | `scientific-skills:scholar-evaluation` | Rank prior papers by methodological rigor |
+| Critical assessment of prior evidence | `scientific-skills:scientific-critical-thinking` | Identify limitations in prior work that justify our study |
+| Hypothesis refinement | `scientific-skills:hypothesis-generation` | Sharpen research question post-recon if pivot needed |
+| Citation verification | `scientific-skills:citation-management` | L041 hard gate — every entry in citation_bank verified |
+
+Full delegation contracts in `../../references/kdense-delegations.md` §1 (citation), §5 (Phase 0 — Pre-design Lit Recon).
+
+### 0.4 Required outputs
+
+- `evidence_bank.json` — populated per `templates/state/evidence_bank.template.json` (existing schema)
+- `citation_bank.json` — every entry `.verified = true` per L041
+- `novelty_assessment.json` — per `templates/state/novelty_assessment.template.json` (new); includes search metadata, ranked nearest-comparators, evidence landscape, differentiation statement, staleness window
+- `differentiation_brief.md` — per `templates/state/differentiation_brief.template.md` (new); PI-facing 8-section narrative ending in PI sign-off block
+
+### 0.5 §HALT/AMBIGUITY behavior
+
+If Phase 0 surfaces a comparator with HIGH overlap (e.g., same registry, same comparison, published within last 24 months), include in the differentiation_brief.md §6 an explicit "expected reviewer critique" entry + pre-planned response, and elevate PI sign-off urgency in the HALT 0 prompt.
+
+---
+
+## ✋ HALT 0 — PI sign-off on differentiation
+
+Present, in this order:
+
+1. **Differentiation brief** (`differentiation_brief.md` §1–6) rendered as readable markdown
+2. **Nearest comparators table** (top 5 from novelty_assessment.json)
+3. **The PI question:** "Given the prior work surfaced, is this study still justified?"
+
+**Required answer — one of four:**
+
+- **(a) Novel** — proceed normally to Phase 1
+- **(b) Replication with extension** — proceed; Discussion will explicitly cite and differentiate from [list]; framing pre-locked in differentiation_brief
+- **(c) Pivot scope** — research question requires modification; update `study_spec.research_question`, re-hash, re-enter Phase 0
+- **(d) Abandon** — prior work makes this study redundant; archive project (`Archives/abandoned_<date>/`) and stop
+
+PI rationale free-text is **required** regardless of verdict.
+
+On sign-off:
+- Compute SHA256 of differentiation_brief.md → write to `novelty_assessment.json.lock_hash`
+- Write `novelty_assessment.json.staleness.valid_through = today + 30 days`
+- Append to `decision_log.md` with verdict + rationale + lock hash
+- Set `project_state.json.current_phase = "phase_1_intake_pending"`
+
+Only after sign-off can `/analyze` proceed to Phase 1.
+
+### 0.6 Resume behavior
+
+If `/analyze` is re-invoked and Phase 0 artifacts exist + are fresh + research-question-matched + PI-signed → skip Phase 0 entirely, print:
+
+```
+Phase 0 already complete: differentiation verdict = [verdict] (signed [date], valid through [date]).
+Proceeding to Phase 1.
+```
+
+If artifacts are stale (>30 days) or research_question has changed → re-fire Phase 0.
 
 ---
 

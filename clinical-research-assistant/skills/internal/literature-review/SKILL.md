@@ -53,7 +53,33 @@ Read `kdense-delegations.md` once at the start of the session and apply its cont
 <state_management>
 ## State Management
 
-`/literature-review` operates in two modes depending on whether state files exist.
+`/literature-review` operates in three modes depending on invocation context.
+
+### Mode 0 — Phase 0 Pre-Design Gate (auto-invoked by `/analyze`)
+
+Triggered when `/analyze` auto-invokes `/literature-review` because Phase 0 prerequisites are missing or stale (per L048, added 2026-05-24).
+
+**Detection:** The Task() invocation briefing from `/analyze` will explicitly state "Phase 0 pre-design literature recon for `/analyze`." If you see this in the briefing, you are in Mode 0.
+
+**On entry:**
+1. Read `study_spec.json` for the research question. Do NOT re-ask for scope — `/analyze` has already locked the question and computed its SHA256.
+2. Run STEPS 1–5 of the normal `/literature-review` workflow (interactive with PI throughout), BUT with the following Mode-0-specific additions.
+3. After STEP 5 deep dive, **also produce two new artifacts** required by `/analyze` Phase 0:
+   - `novelty_assessment.json` per `templates/state/novelty_assessment.template.json`
+   - `differentiation_brief.md` per `templates/state/differentiation_brief.template.md`
+4. **Do NOT collect PI signature** on the differentiation brief here — `/analyze` HALT 0 handles sign-off. Populate everything up to and including §6 "Expected reviewer critique"; leave §7 PI sign-off blocks empty.
+5. Hand control back to `/analyze` once all four Phase-0 artifacts exist (`evidence_bank.json`, `citation_bank.json`, `novelty_assessment.json`, `differentiation_brief.md`).
+
+**Mode-0-specific output schema enforcement:**
+- `novelty_assessment.json.research_question_sha256` MUST match `study_spec.research_question` SHA256
+- `novelty_assessment.json.nearest_comparators[]` MUST contain ≥5 entries OR an explicit "no comparable prior work found after exhaustive search" justification
+- `novelty_assessment.json.differentiation_statement.differentiation_score_self_assessed` MUST be populated
+- `novelty_assessment.json.staleness.valid_through` = today + 30 days
+
+**Mode-0 K-Dense delegations:** Same as Modes A/B (per `kdense-delegations.md`), plus:
+- `scientific-skills:scientific-critical-thinking` for rigorous assessment of prior-work limitations
+- `scientific-skills:scholar-evaluation` for quantitative ranking of nearest comparators
+- `scientific-skills:hypothesis-generation` IF the comparator scan suggests the research question should be refined before /analyze proceeds
 
 ### Mode A — Stateful Project Mode
 

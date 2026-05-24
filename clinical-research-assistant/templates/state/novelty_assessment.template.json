@@ -1,0 +1,80 @@
+{
+  "$schema_version": "1.0.0",
+  "novelty_assessment_version": "1.0",
+  "created_at": "",
+  "research_question_at_assessment": "",
+  "research_question_sha256": "",
+  "search_metadata": {
+    "search_dates": [],
+    "databases_queried": ["pubmed", "openalex", "biorxiv", "scholar"],
+    "kdense_skills_invoked": [],
+    "search_strategy_brief": "",
+    "n_records_screened": 0,
+    "n_full_text_reviewed": 0,
+    "n_relevant_comparators": 0
+  },
+  "nearest_comparators": [
+    {
+      "rank": 1,
+      "citation": "",
+      "year": null,
+      "venue": "",
+      "doi": "",
+      "pmid": "",
+      "design": "",
+      "dataset": "",
+      "n": null,
+      "primary_finding": "",
+      "what_they_answered": "",
+      "what_they_did_NOT_answer": "",
+      "magnitude_of_overlap_with_our_question": "high|moderate|low",
+      "differentiation_from_ours": "",
+      "scholar_eval_score": null
+    }
+  ],
+  "evidence_landscape": {
+    "is_already_answered": false,
+    "what_is_known": "",
+    "what_is_uncertain": "",
+    "what_is_unknown": ""
+  },
+  "differentiation_statement": {
+    "our_unique_contribution": [
+      ""
+    ],
+    "what_we_replicate": [
+      ""
+    ],
+    "what_we_extend": [
+      ""
+    ],
+    "differentiation_score_self_assessed": "novel|replication-with-extension|replication-only|redundant",
+    "expected_reviewer_critique": "",
+    "anticipated_what-is-new sentence": ""
+  },
+  "pi_signoff": {
+    "verdict": null,
+    "verdict_options": [
+      "novel",
+      "replication-with-extension",
+      "pivot-scope",
+      "abandon"
+    ],
+    "signed_by": "",
+    "signed_at": "",
+    "rationale": "",
+    "scope_change_required": false,
+    "framing_change_required": false
+  },
+  "staleness": {
+    "valid_through": "",
+    "expires_after_days": 30,
+    "refresh_required_if": [
+      "research_question changes",
+      "more than 30 days elapsed since assessment",
+      "PI requests refresh",
+      "major comparable paper appears"
+    ]
+  },
+  "lock_hash": ""
+}
