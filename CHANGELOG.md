@@ -2,6 +2,57 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.6.0] - 2026-05-24
+
+### Added — Registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 (per L050)
+
+This release closes the **silent-default-filter** failure mode. The trigger was the **Esophageal Organ-Preservation HTE SEER replication** (Bilal Mirza, 2026-05-24) — NCDB Phase 1 silently defaulted "all primaries" while SEER Phase 1 silently defaulted "first primary only," producing a 16,000-patient methodological gap between cohorts that the PI caught only post-hoc. Neither default was an explicit PI decision; both were assistant choices the PI could not audit because no checklist forced explicit review.
+
+#### Phase 1.1 hard gate
+
+- **`skills/internal/analyze/SKILL.md`** — new §1.1.a inserted before `dataset_spec.json` is written. Requires the assistant to load the registry-appropriate checklist, present a structured table (filter | common defaults | proposed value + rationale | PI checkbox) for every conventional filter, and obtain explicit PI attestation that no filter is silently defaulted. Cross-registry studies require a side-by-side comparison with §HALT/AMBIGUITY notation for every divergence.
+- **`skills/references/registry-cohort-checklists.md`** — new 6-registry reference file (NCDB 26 items, SEER 26, NSQIP 10, UNOS 10, TriNetX 7, generic 5) + cross-registry consistency rule. Each item lists common literature defaults and prompts the assistant to surface a specific recommendation with rationale.
+- **L050 added** to `lessons-log.json` — full worked-example failure-mode narrative. Last 3 lessons (L048/L049/L050) all originated in the Esophageal Organ-Preservation HTE project; this represents the most concentrated CRA hardening sprint to date.
+
+#### What this prevents
+
+Silent-default-filter failures across registries: future projects cannot have NCDB and SEER cohorts diverge on a filter the PI never consciously decided. Every filter that any common registry analysis would conventionally apply is surfaced for explicit yes/no/custom. The completed checklist (including rejected items) is appended to the Phase 1 CONSORT report as a permanent audit record — answering "what filters were even considered?" after the fact.
+
+---
+
+## [3.5.0] - 2026-05-24
+
+### Added — Phase 0 PRE-DESIGN LITERATURE RECON as hard gate in `/analyze` (per L048)
+
+This release closes the canonical "I-analyzed-it-but-someone-already-published-this" failure mode by making `/literature-review` a non-skippable prerequisite for `/analyze`. The trigger was the **Esophageal Organ-Preservation HTE** project (Bilal Mirza, 2026-05-23) — a full Standing-Rule-A analysis (5 rungs, multi-estimator concordance, N=53,389 NCDB) was completed before discovering that **Sakowitz et al. 2025 (J Thorac Cardiovasc Surg, N=3,786)** had published essentially the same NCDB analysis 4 months prior with the same headline HR 1.75. The work was not wasted (HTE quantification, adenocarcinoma inclusion, and methodological extensions are genuinely novel) but the framing had to reposition from "first NCDB evidence" to "replication with extension" — a decision that should have been made at Phase 1 not at Phase 7.
+
+#### Phase 0 hard gate
+
+- **`skills/internal/analyze/SKILL.md`** — new **PHASE 0 — PRE-DESIGN LITERATURE RECON** section inserted before Phase 1 INTAKE. Workflow header updated (now four halts). Phase 0 auto-invokes `/literature-review` Mode 0 via Task() if any of {`evidence_bank.json`, `citation_bank.json`, `novelty_assessment.json`, `differentiation_brief.md`} are missing, stale (>30 days), or research-question-mismatched (SHA256 differs from `study_spec.research_question`). State files table expanded to include the four Phase 0 prerequisites. New §0.6 Resume behavior — skips Phase 0 if artifacts are fresh + matched + signed.
+- **HALT 0** — PI must select one of: `(a) Novel`, `(b) Replication with extension`, `(c) Pivot scope`, `(d) Abandon`, with required free-text rationale. PI sign-off SHA256-locks `differentiation_brief.md` and writes hash to `novelty_assessment.lock_hash`. Without sign-off, `/analyze` cannot proceed to Phase 1 INTAKE.
+- **`skills/internal/literature-review/SKILL.md`** — State-management section now lists three modes (was two): **Mode 0 Phase 0 Pre-Design Gate** (auto-invoked by /analyze; produces `novelty_assessment.json` and `differentiation_brief.md` in addition to evidence + citation banks), Mode A Stateful, Mode B Standalone.
+- **`skills/internal/project-init/SKILL.md`** — STEP 4 next-steps language now leads with "**Required next step: `/literature-review`**" and explicitly explains the Phase 0 prerequisite. Existing alternatives (upload dataset, /analyze, /resume-project) retained but framed correctly.
+- **`skills/references/kdense-delegations.md`** — new §4b documenting the Phase 0 delegation chain: `scientific-brainstorming` (initial ideation), `literature-review` (systematic sweep), `pubmed-database` + `openalex-database` (direct queries), `scholar-evaluation` (quantitative ranking), `scientific-critical-thinking` (assess prior-work limitations), `hypothesis-generation` (refine if pivot needed), `citation-management` (L041 verification). Includes worked-example failure-mode narrative for L048.
+
+#### New templates
+
+- **`templates/state/novelty_assessment.template.json`** — structured differentiation analysis (search metadata, ranked nearest comparators with ScholarEval scores, evidence landscape, differentiation statement, PI sign-off block, staleness window).
+- **`templates/state/differentiation_brief.template.md`** — 8-section PI-facing narrative (what is known / uncertain / unknown, comparators table, what we replicate vs extend vs make novel, anticipated reviewer critique, PI sign-off block with required rationale, audit trail).
+
+#### Lessons log
+
+- **L048 added** to `skills/references/lessons-log.json` — "Pre-design literature recon as non-skippable gate before analysis design lock." Originating session and worked-example narrative documented in detail. `_meta.last_updated` bumped to 2026-05-24; promotion summary updated (48/48 lessons with audit trail).
+
+#### What this prevents
+
+The Phase 0 gate prevents future projects from discovering high-overlap published comparators only at the Discussion-writing stage. Auto-invocation makes the gate friction-free for the PI; SHA256 lock + 30-day staleness window prevents stale assessments from carrying forward without re-check. The differentiation brief becomes Discussion scaffolding regardless of verdict — even a "novel" determination produces a structured rationale that strengthens the manuscript framing.
+
+#### Outstanding follow-up
+
+- `00_Context/working-rules.md` should be updated with the corresponding session-wide rule: "Pre-design literature recon (Phase 0) is required before /analyze locks any specs; PI must sign the differentiation brief; sign-off is valid for 30 days or until research_question changes." This file is not in the CRA repo and must be edited by the user.
+
+---
+
 ## [3.4.0] - 2026-05-20
 
 ### Added — K-Dense delegation layer + Phase A/B doc refresh
