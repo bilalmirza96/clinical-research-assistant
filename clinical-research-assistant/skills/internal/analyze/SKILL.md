@@ -21,15 +21,16 @@ Phase 1 INTAKE      lock dataset_spec, variable_spec, table_layouts, figure_inte
 Phase 2 PLAN        produce analysis_plan.json + manuscript_shopping_list
 Phase 3 CRITIQUE    4 parallel Task() spawns (Methodologist / Skeptic / Editor / Lessons-applier)
    ✋ HALT 1        user approves intake + plan + critique (bundle or section-by-section)
-Phase 4 PRIMARY     resource check → cohort assembly → Table 1 → primary analysis → diagnostics
-   ✋ HALT 2        user reviews primary result (concise by default; verbose if surprises)
-Phase 5 SECONDARY   all secondary + sensitivity + subgroup analyses (autonomous; gate-remediated)
+Phase 4 PRIMARY     resource check → cohort assembly → build Master Excel shells → PRIMARY (CRUDE / UNADJUSTED) analysis → fills Table_1 (bold p<0.05) → diagnostics
+   ✋ HALT 2        user reviews Table_1 + crude effect estimates (concise by default; verbose if surprises)
+   ✋ HALT 2A       user APPROVES matching + adjustment variables for Phase 5 (HARD STOP)
+Phase 5 SECONDARY   PSM + multivariable + KM + IPTW with locked variables → fills Table_2 (bold q<0.05) + Sensitivity + Supplementary_* (autonomous; gate-remediated)
 Phase 6 AUDIT       5 parallel Task() spawns (numerical / statistical / biological / repro / completeness)
    ✋ HALT 3        user reviews audit + 4-tier evidence classification
 Phase 7 DELIVER     master analysis_report.md with reproducibility manifest + SCAR registration
 ```
 
-Four halts. Phase 0 is a HARD GATE — Phase 1 cannot fire without PI sign-off on differentiation. Everything between halts is autonomous. Status emits at every phase boundary.
+Five halts (Phase 0, HALT 1, HALT 2, HALT 2A, HALT 3). Phase 0 is a HARD GATE — Phase 1 cannot fire without PI sign-off on differentiation. HALT 2A is a HARD STOP — Phase 5 cannot fire without PI sign-off on matching + adjustment variables. Everything between halts is autonomous. Status emits at every phase boundary.
 
 ---
 
@@ -196,7 +197,19 @@ If artifacts are stale (>30 days) or research_question has changed → re-fire P
 
 ## PHASE 1 — INTAKE (lock specs)
 
-Goal: produce four locked artifacts so nothing can sneak in mid-analysis.
+Goal: produce five locked artifacts so nothing can sneak in mid-analysis. The first lock (objectives) is the source from which the other four derive — the Excel workbook tabs, dataset filters, variable spec, and analysis plan are all scoped to the locked objectives.
+
+### 1.0 `objectives_locked.json` — PRIMARY + SECONDARY OBJECTIVES (locks first; added per L051)
+
+Before any other spec is touched, lock the study objectives:
+
+- **`primary_objective`** — one sentence pre-specifying the primary contrast: population, exposure, primary outcome, time horizon, comparator
+- **`secondary_objectives[]`** — numbered list; each entry pre-specifies its own outcome, exposure, time horizon, and comparator
+- Save to `specs/objectives_locked.json` (machine schema) **and** `Protocol/objectives_locked_<date>.md` (PI-facing markdown rendering)
+
+**PI sign-off is mandatory at this sub-step.** Once locked, any change to a primary or secondary objective requires a dated SAP §9-style amendment logged in `Protocol/sap_amendments.md` — never a silent edit. The Master Excel Workbook tabs (1.3), the analysis plan (Phase 2), and downstream HALT presentations are all scoped to these objectives.
+
+Rationale: locking objectives separately from the analysis plan prevents post-hoc objective drift. Under the new primary/secondary terminology (primary = crude/unadjusted, secondary = PSM/multivariable/KM/IPTW per L051), the objectives define WHAT is being tested; Phase 4 and Phase 5 define HOW.
 
 ### 1.1 `dataset_spec.json`
 
@@ -206,15 +219,48 @@ Every dataset touched (primary + merged + external):
 - merge/join keys if multiple
 - Schema: `references/intake-schemas.md`
 
+#### 1.1.a Registry-specific inclusion/exclusion checklist (HARD GATE per L050)
+
+**Before any filter is written to `dataset_spec.json`,** the assistant must invoke the registry-specific checklist from `../../references/registry-cohort-checklists.md`:
+
+1. Identify the registry from `study_spec.dataset_type` (NCDB / SEER / NSQIP / UNOS / TriNetX / generic).
+2. Load the corresponding checklist (~25 standard items per registry).
+3. Present as a structured table with: filter name | common defaults in literature | proposed value for this study with rationale | `[ ]` PI checkbox.
+4. PI selects yes / no / custom for each item. Custom values require free-text rationale.
+5. PI must explicitly tick `[ ] I have reviewed every item; no filter is silently defaulted` before `dataset_spec.json` is written.
+6. **Cross-registry studies (e.g., NCDB + SEER replication)** must present a side-by-side comparison table; every deviation between registries surfaces as a §HALT/AMBIGUITY note requiring justification.
+
+The completed checklist (including filters considered AND rejected) is appended to `Reports/phase1_consort_<date>.md` as a permanent record.
+
+**Failure mode this gate prevents (per L050 worked example):** Esophageal Organ-Preservation HTE — NCDB Phase 1 silently defaulted "all primaries" (no sequence-number filter); SEER Phase 1 silently defaulted "first primary only." The two cohorts were not methodologically comparable until the PI caught it. The root cause was that no structured checklist forced explicit review of each conventional filter at design lock.
+
 ### 1.2 `variable_spec.json`
 
 Every variable in any analysis (primary, secondary, sensitivity, subgroup). Categories: `outcomes` (primary + secondaries), `exposure(s)`, `covariates`, `effect_modifiers`, `subgroup_vars`, `sensitivity_only_vars`. Each entry: `name`, `label`, `type`, `source_columns`, `derivation`, `missing_handling`, plus `levels` + `reference` for categorical.
 
 **Variable collapse defaults** *(pending Concern #12 decision):* For multi-category variables without user-specified collapse rules, apply the defaults in `../data-analysis/references/variable-collapse-defaults.md` and surface every auto-collapse decision in the Phase 3 critique. User overrides via section-by-section revise at HALT 1.
 
-### 1.3 `table_layouts.md`
+### 1.3 Master Excel Workbook — `Reports/MASTER_TABLES_<project>_<date>.xlsx` (per L051)
 
-Pre-design every manuscript table as a markdown skeleton with `[auto]` placeholders. Map each row to a `variable_spec` entry; each statistical test to its method. Minimum: Table 1 (baseline), Table 2 (univariate), Table 3 (multivariable primary), Table 4 (secondary), Supplementary tables (sensitivity).
+Pre-design every manuscript table as **a single Excel workbook with named tabs** — this is the source of truth for every numeric result in the project. Build the empty shell at Phase 1.3; cells stay empty until populated in Phase 4 (`Table_1`) and Phase 5 (`Table_2` / `Sensitivity` / `Supplementary_*`).
+
+**Mandatory tabs:**
+
+- `Table_1` — cohort characteristics by exposure (rows = variables from `variable_spec.json`, columns = exposure groups defined by `objectives_locked.json` primary contrast)
+- `Table_2` — adjusted estimates (rows = variables, columns = crude / PSM / multivariable / IPTW)
+- `Table_3`, `Table_4`, … — additional main tables per locked secondary objective
+- `Sensitivity` — sensitivity analyses (caliper variants, MI, competing risks, stratum-specific, E-value)
+- `Supplementary_1`, `Supplementary_2`, … — supplementary tables (subgroups, extended results)
+
+Each tab: variables, row labels, and column headers defined from `variable_spec.json` + `objectives_locked.json`; cells empty. Map each row to a `variable_spec` entry; each statistical test to its method.
+
+**This Excel workbook coexists with** `MASTER_ANALYSIS_REGISTRY.json` (per L045 — machine source of truth with `history[]`) and its auto-rendered `.md` index. Three-artifact role split:
+
+- **JSON registry** = machine audit trail with supersede history (what catches drift)
+- **Excel workbook** = production-ready tabular source for the manuscript (human-facing, formatted, bolded; what gets pulled into Word)
+- **MD index** = quick scannable human view (auto-generated from JSON)
+
+Backward-compat note: a markdown `table_layouts.md` is no longer required. If a legacy project still has one, the Phase 4 cohort-assembly step should convert it to the Excel workbook before any data is written.
 
 ### 1.4 `figure_intent.md`
 
@@ -232,14 +278,16 @@ Generate a complete plan from locked specs:
 
 | Section | Content |
 |---|---|
-| `estimand` | "Among [population], the effect of [exposure] on [outcome], adjusted for [covariates]." |
-| `primary` | method, model formula, expected output, **delegation pointer** (K-Dense skill name + resource_class) |
-| `secondary[]` | same fields per analysis |
-| `sensitivity[]` | missing-data, E-value (per L005), alternative specs, alternative cohort definitions |
-| `subgroups[]` | pre-specified subgroups + power justification (per L009) |
+| `estimand` | "Among [population], the effect of [exposure] on [outcome]; primary = crude/unadjusted, secondary = adjusted for [adjustment_covariates] / matched on [matching_variables]." |
+| `primary` | **Crude / unadjusted** per locked objective (per L051 terminology). Appropriate statistical test by outcome class: χ² (or Fisher exact) for categorical, t-test (or Wilcoxon rank-sum) for continuous, log-rank + univariable Cox for time-to-event, χ² + crude OR for cross-sectional binary. **Delegation pointer** + populates `Table_1` tab in Master Excel Workbook. |
+| `matching_variables[]` (proposed) | Candidate variables for PSM matching. Each entry: `name`, `rationale` (DAG, clinical relevance, comparator paper precedent, missingness profile), `proposed_for_match` boolean. **Locked at HALT 2A** before Phase 5 fires. |
+| `adjustment_covariates[]` (proposed) | Candidate covariates for multivariable adjustment (Cox / logistic / linear). Each entry: same fields as `matching_variables[]` with `proposed_for_adjust` boolean. **Locked at HALT 2A**. Distinct from `matching_variables[]` — overlap allowed but not required; a variable may be matched-but-not-adjusted (and vice versa). |
+| `secondary[]` | **Adjusted, matched, weighted, survival** per locked objective (per L051 terminology): PSM (with HALT 2A-approved `matching_variables`) + multivariable (with HALT 2A-approved `adjustment_covariates`) + KM + IPTW + method variants (GBT-IPTW / AIPW / frailty Cox). **Delegation pointer** + populates `Table_2` tab. |
+| `sensitivity[]` | missing-data, E-value (per L005), caliper sensitivity (per L040), alternative specs, alternative cohort definitions. Populates `Sensitivity` tab in Master Excel Workbook. |
+| `subgroups[]` | pre-specified subgroups + power justification (per L009). Populates `Supplementary_*` tabs. |
 | `diagnostics` | required per method (per `data-analysis/references/diagnostics-checklist.md`) |
-| `multiple_testing` | BH-FDR within families; Bonferroni for primary (per L006, L032) |
-| `manuscript_shopping_list` | required tables + figures (cross-ref `table_layouts`, `figure_intent`); Discussion topics; Limitations to address |
+| `multiple_testing` | BH-FDR within families; Bonferroni for primary (per L006, L032). **Bolding rule (per L051):** bold cells where p<0.05 in `Table_1`; bold cells where BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*` tabs. |
+| `manuscript_shopping_list` | required tables + figures (cross-ref Master Excel Workbook tab names, `figure_intent`); Discussion topics; Limitations to address |
 
 Each analysis step has a `delegation` field naming the executing K-Dense or BioMedAgent skill. See `references/delegation-matrix.md` for routing rules and `resource_class` per task.
 
@@ -278,7 +326,9 @@ On `reject`: archive current artifacts, restart Phase 1.
 
 ---
 
-## PHASE 4 — PRIMARY EXECUTION (autonomous, with resource check)
+## PHASE 4 — PRIMARY (CRUDE / UNADJUSTED) → fills Table_1 (autonomous, with resource check)
+
+**Terminology lock (per L051):** "Primary analysis" in this skill = crude / unadjusted relationship between exposure and outcome for each locked objective. Adjusted models (PSM, multivariable, KM, IPTW) are SECONDARY and run in Phase 5. This terminology overrides any prior usage in this skill where "primary" meant "adjusted multivariable headline."
 
 ### 4.0 Resource check (per Concern #5 decision)
 
@@ -301,11 +351,21 @@ User picks; analyze continues.
 ### 4.1 Execution order
 
 1. **Cohort assembly** per `dataset_spec` (apply filters; produce CONSORT flow values; write `data/working/cohort.csv` + filter logs)
-2. **Table 1** populated per `table_layouts` Table 1 skeleton
-3. **Primary analysis** per `analysis_plan.primary` (delegate to named K-Dense skill — load that skill's SKILL.md as reference, write code following its patterns)
-4. **Required diagnostics** for the primary model
+2. **Build Master Excel Workbook shells** (per L051) — instantiate `Reports/MASTER_TABLES_<project>_<date>.xlsx` with the tab structure defined in Phase 1.3 (`Table_1`, `Table_2`, `Table_3`, `Sensitivity`, `Supplementary_*`). Variables, row labels, and column headers defined from `variable_spec.json` + `objectives_locked.json`. **All cells empty.**
+   - **SHELL SIGN-OFF GATE:** Show the empty workbook to the PI for shell sign-off BEFORE populating any cell. PI confirms tab structure, row/column labels, and variable assignments match intent. This gate is non-skippable.
+3. **Primary (crude / unadjusted) analysis** per `analysis_plan.primary` — for each locked objective in `objectives_locked.json`, run the appropriate test by outcome class:
+   - **Categorical outcome:** χ² (or Fisher exact if any expected cell <5) → counts, % (n/N), crude OR or RR with 95% CI, p
+   - **Continuous outcome:** t-test (or Wilcoxon rank-sum if non-normal) → mean ± SD or median (IQR), mean difference with 95% CI, p
+   - **Time-to-event outcome:** log-rank on KM survival + crude HR with 95% CI from univariable Cox; median follow-up
+   - **Binary outcome (cross-sectional):** χ² + crude OR / RR with 95% CI
+   - Delegate to named K-Dense skill per `analysis_plan.primary.delegation`
+4. **Populate `Table_1` tab** in Master Excel Workbook from crude results. Add SMDs for the primary contrast.
+5. **Apply bold formatting** (per L051) to every row/cell in `Table_1` where p < 0.05 — visual flag for what was significant on crude analysis.
+6. **Required diagnostics** for the primary tests (χ² cell expectations, normality assumptions if t-test used, PH assumption on univariable Cox).
 
-Each computation writes to `results_registry.json` with full provenance: source CSV rows, model call, random seed (default 42 per L033), software version. Per-result keys are stable identifiers (e.g., `M1::asa_class_IV::aOR`) that downstream skills reference.
+Each computation writes to `results_registry.json` AND to `MASTER_ANALYSIS_REGISTRY.json` (per L045) with full provenance: source CSV rows, model call, random seed (default 42 per L033), software version. Per-result keys are stable identifiers (e.g., `M0::crude_OR::asa_class_IV`) that downstream skills reference. The Excel workbook is the human-facing tabular view; the JSON registry is the machine source of truth with `history[]` for supersedes.
+
+**Forbidden at Phase 4 (per L051):** matching, weighting, covariate adjustment, multivariable models, KM stratified by anything other than the primary exposure. Those are Phase 5 only, gated by HALT 2A.
 
 ### 4.2 Execution gates (no silent errors)
 
@@ -318,25 +378,67 @@ If a gate fails → apply prescribed remediation (in `data-analysis/references/d
 
 ---
 
-## ✋ HALT 2 — Review primary result
+## ✋ HALT 2 — Review Table_1 (crude / unadjusted)
 
-**Concise mode** (default when primary matches plan):
+**Concise mode** (default when crude estimates match plan):
 ```
-Primary analysis complete.
-- [primary effect estimate + CI + P + reference category]
+Phase 4 complete — Table_1 populated.
+- [primary objective: crude effect + 95% CI + p, bold if p<0.05]
+- [secondary objective 1: crude effect + 95% CI + p]
+- [secondary objective 2: crude effect + 95% CI + p]
 - Diagnostics: all passed
-- N secondary + N sensitivity analyses queued
+- SMDs for primary contrast: [list]
+- Bolded cells (p<0.05): [count]
 
-[proceed | revise primary | pivot strategy | show full details]
+[proceed to HALT 2A | revise primary | pivot strategy | show full details]
 ```
 
 **Verbose mode** (auto-triggered on surprises): full detail including all diagnostics, all gate-remediation events, all relevant lesson hits, and recommended next steps.
 
 ---
 
-## PHASE 5 — SECONDARY + SENSITIVITY + DIAGNOSTICS (autonomous)
+## ✋ HALT 2A — Variable Pre-specification & Approval Gate (HARD STOP before Phase 5) (per L051)
 
-Execute every analysis in `analysis_plan.secondary` and `analysis_plan.sensitivity`. For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json`.
+**Mandatory before any Phase 5 analysis fires.** No matching, weighting, or adjusted model is fit until this halt is signed. This is non-skippable, even in autonomous resume mode.
+
+At this halt, propose to the PI two distinct variable lists, each with per-variable rationale:
+
+1. **`matching_variables[]`** — variables for PSM matching (the design dimension)
+2. **`adjustment_covariates[]`** — covariates for multivariable adjustment in Cox / logistic / linear models (the estimation dimension)
+
+Overlap between the two lists is allowed but not required — a variable may be matched-but-not-adjusted (e.g., demographics where match handles confounding) or adjusted-but-not-matched (e.g., a clinical severity score with high missingness that excludes it from the match but supports it as a covariate).
+
+Present as a structured table per locked objective:
+
+```
+Variable | Match? | Adjust? | Rationale (DAG / clinical / comparator / missingness) | PMID
+---------|--------|---------|------------------------------------------------------|------
+[var 1]  | [ ]    | [ ]     | [text]                                               | [PMID]
+[var 2]  | [ ]    | [ ]     | [text]                                               | [PMID]
+```
+
+PI selects yes / no per variable per role (match, adjust, both, neither). Custom additions require free-text rationale. PI must explicitly tick `[ ] I have reviewed every variable; no variable is silently included or excluded` before sign-off is accepted.
+
+**On sign-off:**
+- Write `Protocol/variables_locked_<date>.md` (PI-facing markdown) + `specs/variables_locked.json` (machine schema)
+- Append to `decision_log.md`: matching + adjustment lists with PI's per-variable rationale
+- Set `project_state.json.current_phase = "phase_5_secondary_pending"`
+
+**Hard rule:** No matching, weighting, or adjusted model fires in Phase 5 until HALT 2A is signed. Any post-HALT-2A addition or removal of a variable is a SAP §9-style amendment logged in `Protocol/sap_amendments.md`, never a silent edit. Phase 5 reads `specs/variables_locked.json` at start and HALTS if the file is absent or unsigned.
+
+---
+
+## PHASE 5 — SECONDARY (ADJUSTED) → fills Table_2 + Sensitivity + Supplementary_* (autonomous)
+
+**Terminology lock (per L051):** "Secondary analysis" in this skill = PSM + multivariable adjusted models + KM survival curves + IPTW + method variants. These use ONLY the variables locked at HALT 2A.
+
+**Variable load gate:** Read `specs/variables_locked.json` at the start of Phase 5. If absent or unsigned → HALT immediately with error: "Phase 5 cannot fire; HALT 2A not signed. Return to Phase 4 review." No exceptions.
+
+Execute every analysis in `analysis_plan.secondary` and `analysis_plan.sensitivity` using the HALT 2A-approved variables. For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json` AND `MASTER_ANALYSIS_REGISTRY.json` (per L045), and populate the corresponding Master Excel tab (`Table_2`, `Sensitivity`, or `Supplementary_*`).
+
+**Bolding rule (per L051):** every cell in `Table_2`, `Sensitivity`, or `Supplementary_*` where BH-FDR q < 0.05 is bolded — the rigor-gate threshold for secondary (adjusted) analyses. Cells where p<0.05 but q≥0.05 are NOT bolded; this distinguishes raw-significance from FDR-significance for the reader.
+
+**Concordance check vs. Phase 4 crude (per L051):** for every primary objective, compare the Phase 5 adjusted estimate to the Phase 4 crude estimate. Direction agreement, magnitude within ~30%, CI overlap = concordant. Disagreement is itself a finding and gets logged in `decision_log.md` for Limitations section drafting.
 
 **Special-case enforcement:**
 - PSM → caliper-sensitivity table per **L040**
@@ -451,3 +553,35 @@ Mandatory at end of every `/analyze` run:
 2. Update `project_state.json` completion timestamp
 3. Append `decision_log.md` summary
 4. Queue any new lessons earned this session for `lessons-log.json` append at SESSION-END
+
+---
+
+## CHANGELOG / Lessons Learned
+
+### 2026-05-28 — L051 — Analysis-skill internal workflow + Master Excel Workbook + bolding + HALT 2A
+
+Refinements added by Bilal Mirza in an interactive workflow design session (2026-05-28). All seven sub-items are interrelated and were specified together; they should be propagated to working-rules.md, the clinical-research-playbook, and the parent CRA repo CHANGELOG.md as a single coherent update.
+
+1. **Primary / secondary terminology locked.** Primary analysis = crude / unadjusted with the appropriate statistical test by outcome class (χ²/Fisher, t/Wilcoxon, log-rank + univariable Cox, χ² + crude OR). Secondary analysis = PSM + multivariable + KM + IPTW + method variants (GBT-IPTW / AIPW / frailty Cox). This terminology is enforced throughout this skill and overrides any prior usage where "primary" meant "adjusted multivariable headline." See §"Terminology lock" callouts in Phase 4 and Phase 5.
+
+2. **Phase 1.0 objectives lock** (new sub-step before §1.1). PI pre-specifies and signs off on `primary_objective` (single contrast sentence) + numbered `secondary_objectives[]`, each with their own outcome, exposure, time horizon, and comparator. Output: `specs/objectives_locked.json` + `Protocol/objectives_locked_<date>.md`. Immutable after PI sign-off; any change is a dated SAP §9-style amendment in `Protocol/sap_amendments.md`.
+
+3. **Phase 1.3 Master Excel Workbook** (replaces legacy markdown `table_layouts.md`). Single file `Reports/MASTER_TABLES_<project>_<date>.xlsx` with explicit named tabs: `Table_1`, `Table_2`, `Table_3`, …, `Sensitivity`, `Supplementary_1`, `Supplementary_2`, …. Coexists with `MASTER_ANALYSIS_REGISTRY.json` (per L045 — machine truth with `history[]`) and its auto-rendered `.md` index. The Excel is the human-facing tabular artifact the manuscript pulls from; the JSON is the audit trail.
+
+4. **Phase 2 PLAN — `matching_variables[]` separated from `adjustment_covariates[]`.** Two distinct lists in `analysis_plan.json`, each entry carrying per-variable rationale (DAG, clinical relevance, comparator precedent, missingness profile). Overlap allowed but not required.
+
+5. **Phase 4 restructured** as PRIMARY (CRUDE / UNADJUSTED) → fills `Table_1`. New shell sign-off gate before any cell is populated. Bold cells where p<0.05. No matching / weighting / adjustment at Phase 4 — those are forbidden until HALT 2A is signed.
+
+6. **HALT 2A inserted** between Phase 4 and Phase 5 — Variable Pre-specification & Approval Gate. Propose matching + adjustment variables with rationale per locked objective; PI signs off; lock to `Protocol/variables_locked_<date>.md` + `specs/variables_locked.json`. Phase 5 reads `specs/variables_locked.json` at start; halts if absent or unsigned.
+
+7. **Phase 5 restructured** as SECONDARY (ADJUSTED) → fills `Table_2` + `Sensitivity` + `Supplementary_*`. Bold cells where BH-FDR q<0.05. Concordance check vs. Phase 4 crude (direction agreement, magnitude within ~30%, CI overlap) for every primary objective; disagreement logged for Limitations.
+
+**Why this matters:** Prior workflow conflated "primary" with "primary contrast" (the adjusted headline), bypassing the standard biostatistical convention that primary = unadjusted and secondary = adjusted. The bolding rule + Excel workbook give the PI an immediately scannable artifact that maps directly to the manuscript tables; the HALT 2A gate prevents covariates from sneaking into the adjusted model without explicit PI review. The objectives lock prevents post-hoc objective drift.
+
+**Companion edits in this same release** (push together):
+- `internal/project-init/SKILL.md` — added primary + secondary objective questions to STEP 1; added `Protocol/` folder to STEP 2 directory tree.
+- `internal/manuscript-qc/SKILL.md` — added Check 16 (4-artifact numeric reconciliation: abstract ↔ manuscript ↔ Excel ↔ JSON).
+- `iCloud:SESSION-END PROTOCOL.md` — added Step 4.6 per-project 4-artifact reconciliation (iCloud-local, not in this repo).
+- `references/lessons-log.json` — L051 machine-readable entry with trigger patterns + actions.
+
+**Worked example pending:** First clinical-research project initiated under this workflow will become the canonical worked example (link to be added here at first project completion).

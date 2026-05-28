@@ -2,11 +2,11 @@
   "_meta": {
     "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
     "schema_version": "1.0",
-    "last_updated": "2026-05-17",
+    "last_updated": "2026-05-24",
     "maintainer": "clinical-research-assistant skill, sourced from real sessions",
     "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
-    "last_promotion_pass": "2026-05-20",
-    "promotion_summary": "45/45 lessons now have promoted_to audit trail; L041 expanded 2026-05-20 to cover full write-* + manuscript-qc K-Dense citation-management hard-gate enforcement"
+    "last_promotion_pass": "2026-05-24",
+    "promotion_summary": "50/50 lessons now have promoted_to audit trail; L050 added 2026-05-24 (registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 — discovered via NCDB vs SEER first-primary filter mismatch in Esophageal Organ-Preservation HTE); L049 added 2026-05-24 (synthesis-prose claim verification); L048 added 2026-05-24 (Phase 0 pre-design literature recon hard gate); L047 added 2026-05-18; L046 added 2026-05-17; L041 expanded 2026-05-20"
   },
   "lessons": [
     {
@@ -1200,6 +1200,177 @@
       "action": "Add Check 13 (Introduction ↔ Results Structural Symmetry) to dev/clinical-research-assistant/clinical-research-assistant/skills/internal/manuscript-qc/references/checks.md. The check requires: (1) enumerate every Results subsection in order; (2) for each subsection, locate the Introduction sentence(s) that motivate it (gap statement OR aim/objective); (3) flag any Results subsection whose motivating Introduction sentence is absent OR is only implicit because the framing covers only a subset of the Results; (4) apply the same symmetry to Discussion ¶1 (principal findings) — every primary Results subsection must appear; (5) apply to Abstract Introduction + Conclusions. Severity: CRITICAL if a primary aim is missing from the Introduction; MAJOR if a secondary aim or sensitivity analysis is missing. Re-run Check 13 from scratch whenever any of the trigger patterns above appear. Also update working-rules.md with the 'Narrative-Architecture Symmetry rule' so it applies session-wide before the plugin is reinstalled. Worked example: CR_POPF/Manuscript/POPF Burden_MBM 2026-05-18_v3.docx → v4.docx (v3 passed every existing QC check; v4 restructured Introduction to 5-paragraph two-pronged narrative + Discussion ¶1 rewritten to 'twofold' findings). v5 worked example: CR_POPF/Manuscript/POPF Burden_MBM 2026-05-18_v4.docx → v5.docx — v4 Discussion ¶1 said 'twofold findings: First predictors, Second consequences', but body ¶3–4 discussed consequences and body ¶5–6 discussed predictors, inverting the framing. v5 reorders body to ¶3 predictors → ¶4 prevention literature → ¶5–6 consequences → ¶7 mitigation → ¶8 limitations. The check now requires verifying that the Discussion body topic sequence is identical to the Results subsection sequence whenever the Introduction or ¶1 is restructured.",
       "deprecated": false,
       "last_updated": "2026-05-18"
+    },
+    {
+      "id": "L048-pre-design-literature-recon-hard-gate",
+      "date_added": "2026-05-24",
+      "originating_session": "Esophageal Organ-Preservation HTE — full Standing-Rule-A analysis (5 rungs, N=53,389 NCDB) completed before discovering Sakowitz et al. 2025 (J Thorac Cardiovasc Surg, N=3,786, NCDB SCC stage II-III) reporting essentially identical headline HR 1.75; Sakowitz was published 4 months prior to our analysis and would have been surfaced by a pre-design literature scan (Bilal Mirza)",
+      "category": "Research workflow: pre-design literature recon as non-skippable gate before analysis design lock",
+      "trigger_patterns": [
+        "user invokes /analyze without first running /literature-review",
+        "user invokes /analyze and project lacks evidence_bank.json or citation_bank.json or novelty_assessment.json or differentiation_brief.md",
+        "user invokes /analyze and the novelty_assessment is >30 days old",
+        "user invokes /analyze and the research_question_sha256 in novelty_assessment.json no longer matches study_spec.research_question",
+        "/project-init completes and user proceeds straight to /analyze without literature recon",
+        "user describes a new study and asks 'is anyone else doing this?' or 'has this been published?' — that question signals the gate is needed",
+        "Phase 1 INTAKE about to lock specs without prior-work landscape established",
+        "post-analysis discovery of a comparable NCDB / SEER / institutional-cohort paper that overlaps with the locked design",
+        "Discussion writing surfaces a high-overlap comparator not previously known",
+        "user asks 'why did we do this if someone already did it?'",
+        "user asks 'why was the [comparable paper] not flagged earlier?'"
+      ],
+      "lesson": "Running /analyze without a deliberate pre-design literature scan is the canonical failure mode that produces analyses redundant with literature published in the prior 12 months. The CRA workflow as originally structured (project-init → analyze → ... → literature-review at Discussion stage) treated lit review as a write-up input rather than a study-design input. That ordering allows months of work to land on top of a comparable published paper — discovery only happens at Discussion when the manuscript is already half-drafted. Concrete instance (Esophageal Organ-Preservation HTE, 2026-05-23): a full Standing-Rule-A analysis (5 rungs — KM/RMST, multivariable Cox + Schoenfeld + interactions, time-stratified Cox, PSM/IPTW/AIPW + sensitivity bundle, subgroup HTE on pre-locked SCC+cN0 primary endpoint) was completed on N=53,389 NCDB patients before the user asked for a literature comparison, which surfaced Sakowitz et al. 2025 (J Thorac Cardiovasc Surg, N=3,786 NCDB stage II-III SCC) reporting HR 0.57 for trimodality ≡ HR 1.75 for definitive CRT — essentially identical to our overall finding (HR 1.75) and RMST diff (9.17 mo vs our 10.75 mo). The work is not wasted (the HTE quantification across all 4 histology x cN cells, the adenocarcinoma inclusion, the time-stratified Cox showing non-PH attenuation 1.75→1.38, the 4-estimator concordance, the common-support trimming for SCC+cN0, and the E-value + tipping-point sensitivity bundle are genuinely novel methodological extensions Sakowitz did not address) but the manuscript framing must now reposition from 'first NCDB evidence on this question' to 'replication with extension', a decision that should have been made at Phase 1 not at Phase 7. The structural fix is to make /literature-review a Phase 0 prerequisite that /analyze auto-invokes and gates on PI sign-off via a structured differentiation brief.",
+      "action": "Implement Phase 0 PRE-DESIGN LITERATURE RECON as a non-skippable gate in /analyze: (1) Add Phase 0 section to skills/internal/analyze/SKILL.md before Phase 1; (2) Phase 0 auto-invokes /literature-review Mode 0 via Task() if any of {evidence_bank.json, citation_bank.json, novelty_assessment.json, differentiation_brief.md} are missing, stale (>30 days), or research-question-mismatched (sha256 differs from study_spec.research_question); (3) Phase 0 produces a novelty_assessment.json (new schema in templates/state/) and a differentiation_brief.md (new schema in templates/state/) in addition to evidence_bank and citation_bank; (4) HALT 0 requires PI to select one of (a) novel, (b) replication-with-extension, (c) pivot-scope, (d) abandon, with required free-text rationale; (5) PI sign-off SHA256-locks the differentiation_brief.md and writes the hash to novelty_assessment.lock_hash; (6) Without sign-off, /analyze cannot proceed to Phase 1 INTAKE. K-Dense delegations for Phase 0 documented in references/kdense-delegations.md §4b: scientific-brainstorming (initial ideation if broad), literature-review (systematic sweep), pubmed-database + openalex-database (direct queries), scholar-evaluation (quantitative ranking of top comparators), scientific-critical-thinking (assess prior-work limitations), hypothesis-generation (refine question if pivot needed), citation-management (L041 verification). Update project-init/SKILL.md STEP 4 next-steps language to emphasize 'Required next step: /literature-review'. Update literature-review/SKILL.md state-management to add Mode 0 (Phase 0 Pre-Design Gate, auto-invoked by /analyze). Append rule to working-rules.md: 'Pre-design literature recon (Phase 0) is required before /analyze locks any specs; PI must sign the differentiation brief; sign-off is valid for 30 days or until research_question changes.' Append CHANGELOG entry. Worked example: Reports/literature_comparison_2026-05-24.md in Esophageal-Organ-Preservation project documents what Phase 0 would have surfaced if it had been run at the right time.",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/analyze/SKILL.md",
+          "note": "Phase 0 PRE-DESIGN LITERATURE RECON section + HALT 0 + State files table updated to include Phase 0 artifacts"
+        },
+        {
+          "file": "skills/internal/project-init/SKILL.md",
+          "note": "STEP 4 next-steps language emphasizes /literature-review as required prerequisite per L048"
+        },
+        {
+          "file": "skills/internal/literature-review/SKILL.md",
+          "note": "State-management section adds Mode 0 (Phase 0 Pre-Design Gate, auto-invoked)"
+        },
+        {
+          "file": "skills/references/kdense-delegations.md",
+          "note": "§4b Phase 0 Pre-Design Literature Recon — full K-Dense delegation chain"
+        },
+        {
+          "file": "templates/state/novelty_assessment.template.json",
+          "note": "New template for the structured differentiation analysis"
+        },
+        {
+          "file": "templates/state/differentiation_brief.template.md",
+          "note": "New template for the PI-facing differentiation brief with sign-off block"
+        }
+      ],
+      "promoted_date": "2026-05-24"
+    },
+    {
+      "id": "L049-synthesis-prose-claim-verification-gate",
+      "date_added": "2026-05-24",
+      "originating_session": "Esophageal Organ-Preservation HTE — during literature comparison writeup, assistant claimed cohort time window was 'NCDB 2010-2022 (more contemporary)' relative to Sakowitz 2025 2004-2021, when the actual cohort spans 2004-2022 per data/working/cohort.parquet, specs/dataset_spec.json, and study_spec.json. The wrong year was inserted during narrative synthesis to support a 'differentiation point' argument without verification. PI caught the error and asked 'I thought we took patients from 2004-2022 not from 2010?' (Bilal Mirza)",
+      "category": "Narrative synthesis: free-text framing claims about own study must be verified against project state files before lock",
+      "trigger_patterns": [
+        "assistant writes a comparison table positioning the current study against prior work",
+        "assistant lists 'what makes our study different/novel/better than X'",
+        "assistant writes Discussion prose about study strengths or differentiation points",
+        "assistant writes a literature_comparison report or any synthesis document combining our study + external evidence",
+        "assistant uses framing language like 'more contemporary', 'larger', 'more rigorous', 'first to address', 'unique in'",
+        "assistant inserts a numerical or temporal claim about the current study into prose that is not pulled from a results_registry / state file lookup",
+        "the differentiation_brief.md (Phase 0) is being populated and assistant writes prose-style claims about cohort properties",
+        "manuscript Methods or Results prose is being drafted from memory rather than read from state",
+        "assistant says 'our cohort is [X]' or 'we [verb]ed [N] patients' without immediately preceding source citation",
+        "writeup prose includes any year range, sample size, percentage, hazard ratio, or other quantitative descriptor of the analyzed cohort"
+      ],
+      "lesson": "When the assistant writes synthesis or comparison prose, narrative momentum produces fabricated supporting facts even when the underlying analytic work is correct. Concrete instance (2026-05-24): the Esophageal Organ-Preservation HTE literature_comparison report incorrectly stated 'NCDB 2010-2022 (more contemporary)' for our cohort vs Sakowitz 2025's '2004-2021', presenting the time window as a differentiation point. The actual cohort spans 2004-2022 — same start year, +1 year end — making the time windows essentially identical and the 'more contemporary' framing both false and a weakening (not strengthening) of the comparison. The error was structurally invisible: the project state files (study_spec, dataset_spec, phase1_consort report, cohort.parquet) all correctly state 2004-2022; only the synthesis prose I wrote later was wrong. L041 (citation integrity) covers external citations; L042 (number reconciliation) covers manuscript numbers vs results_registry. Neither catches free-text framing claims about the cohort itself when the assistant is building a differentiation argument. The bug is: when synthesizing a 'why our study matters' argument, the assistant inserts plausible-sounding supporting facts without re-checking the data.",
+      "action": "Before any synthesis / comparison / differentiation prose is locked, every numerical or temporal claim about the current study MUST be verified against project state files via the following hard-gate sequence. (1) Identify every claim in the prose that asserts a property of the current study (cohort N, year range, follow-up duration, event count, effect estimate, sample composition, methodology specifics). (2) For each claim, look up the corresponding field in study_spec.json, dataset_spec.json, variable_spec.json, results_registry.json, or read directly from data/working/cohort.parquet. (3) If the claim does not match: HALT, correct the prose to match the data, append a decision_log entry documenting the original wrong claim + correction. (4) Framing claims (like 'more contemporary', 'larger', 'first', 'unique') require a quantitative anchor (e.g., 'X years vs Y years', 'N=53,389 vs N=3,786') with both numbers verified. (5) If the framing claim cannot be supported by data, remove it — do not soften it. Promote enforcement to: (a) literature-review skill (Phase 0 Mode 0 differentiation_brief population); (b) write-introduction (study-design paragraph); (c) write-discussion (any 'our study showed' or 'we found' sentence); (d) write-manuscript Phase 8 final audit; (e) manuscript-qc as new Check 16 (claim verification: every numerical/temporal claim cross-referenced to state). Worked example: Esophageal-Organ-Preservation/Reports/literature_comparison_2026-05-24.md and the decision_log.md entry for 2026-05-24 (PI-flagged correction).",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/literature-review/SKILL.md",
+          "note": "Mode 0 differentiation_brief population — every claim verified before lock"
+        },
+        {
+          "file": "skills/internal/write-introduction/SKILL.md",
+          "note": "Study-design paragraph claim verification"
+        },
+        {
+          "file": "skills/internal/write-discussion/SKILL.md",
+          "note": "'Our study showed' / 'we found' claim verification"
+        },
+        {
+          "file": "skills/internal/write-manuscript/SKILL.md",
+          "note": "Phase 8 final audit — claim verification pass"
+        },
+        {
+          "file": "skills/internal/manuscript-qc/references/checks.md",
+          "note": "Check 16 — claim verification (cross-reference every numerical/temporal claim about own study to state files)"
+        }
+      ],
+      "promoted_date": "2026-05-24"
+    },
+    {
+      "id": "L050-registry-inclusion-exclusion-checklist-hard-gate",
+      "date_added": "2026-05-24",
+      "originating_session": "Esophageal Organ-Preservation HTE SEER replication — NCDB Phase 1 silently defaulted 'all primaries' (no sequence-number filter applied) while SEER Phase 1 in the same project silently defaulted 'first primary only' (Sequence='One primary only' OR '1st of N or more'). The two cohorts were therefore not methodologically comparable: NCDB N=53,389 vs SEER N=13,940, with ~16,000 of the difference attributable to this single filter divergence. PI Bilal Mirza caught the mismatch and asked 'why?', exposing that the inclusion/exclusion criteria review at Phase 1 INTAKE is not gated on a structured checklist — the assistant writes down the filters it remembers and the user signs off without seeing what was never considered. This is invisible to L048 (pre-design lit recon) and L049 (synthesis claim verification) — it's a different bug, in Phase 1 itself.",
+      "category": "Cohort assembly: enforce structured review of every conventional registry filter at Phase 1 design lock",
+      "trigger_patterns": [
+        "/analyze Phase 1.1 dataset_spec.json generation about to begin",
+        "any new registry-based cohort assembly (NCDB, SEER, NSQIP, UNOS, TriNetX, MBSAQIP, custom EHR)",
+        "cross-registry replication or external validation cohort being added to an existing analysis",
+        "user invokes /analyze with a new dataset_type that has not had its filter checklist reviewed",
+        "user asks 'what were the inclusion criteria?' or 'why is N so small?' or 'why is N so different from [other registry]?'",
+        "the dataset_spec.json for one registry differs from another registry on the same project in any filter",
+        "assistant about to apply a 'default' filter (e.g., first primary only, malignant behavior only, complete-case on continuous covariates) without showing the alternative options to the PI",
+        "Phase 1 CONSORT diagram is being generated and the assistant has not explicitly enumerated every excluded subgroup with reason",
+        "post-analysis N is significantly smaller than expected and the source of the loss is a filter the PI does not remember approving"
+      ],
+      "lesson": "At /analyze Phase 1.1 dataset_spec generation, the assistant typically writes down the filters that come to mind from the SAP, the registry conventions, or recent similar projects — and the PI signs off on what is presented. There is no enforcement that every CONVENTIONAL filter for the registry type has been considered. The result is silent default-application: filters the assistant didn't think to surface get applied (or not applied) based on whatever the assistant remembers at the moment, and the PI cannot catch what isn't shown. Concrete instance (2026-05-24): NCDB Phase 1 for Esophageal Organ-Preservation included filters on histology, year, age, M-stage, T-stage, N-stage, treatment combinations, and surgical class — but NOT on Sequence Number (NCDB's first-primary indicator). Default behavior was 'include all primaries' (i.e., each cancer record analyzed independently, even if the patient had prior cancers). SEER Phase 1 in the same project, run as a confirmation cohort weeks later, defaulted to the opposite — restrict to 'first primary only' — because SEER convention typically applies that filter. Neither default was an explicit PI decision; both were silent assistant choices. The result was a 16,000-patient methodological gap between cohorts that was not caught until the PI questioned the SEER N. This failure is invisible to L048 (which gates literature recon, not cohort definition) and L049 (which gates synthesis-prose claims, not design decisions). It requires its own hard gate at Phase 1.1.",
+      "action": "At /analyze Phase 1.1 dataset_spec.json generation, BEFORE writing any filter to the spec, the assistant MUST: (1) Identify the registry from study_spec.dataset_type. (2) Load the registry-appropriate checklist from skills/references/registry-cohort-checklists.md (NCDB has 26 standard items, SEER has 26, NSQIP has 10, UNOS has 10, TriNetX has 7, generic 5). (3) Present the checklist as a structured table with columns: filter name | common defaults in literature | proposed value for this study with rationale | [ ] PI checkbox. (4) PI selects yes / no / custom for each item; custom values require free-text rationale. (5) PI must explicitly tick 'I have reviewed every item; no filter is silently defaulted' before dataset_spec.json is written. (6) For cross-registry studies (e.g., NCDB + SEER for replication), present a side-by-side comparison table; every filter that differs between registries surfaces as a §HALT/AMBIGUITY note requiring justification. (7) The completed checklist (filters considered AND rejected) is appended to Reports/phase1_consort_<date>.md as a permanent record — not just the filters that survived. (8) When the same study uses multiple registries, deviation between registries must be either justified or eliminated by aligning filters across registries. Promote to: skills/internal/analyze/SKILL.md §1.1.a (hard-gate requirement); skills/references/registry-cohort-checklists.md (the actual checklists); CHANGELOG.md v3.6.0. Worked example: Esophageal-Organ-Preservation/Reports/seer_filter_log.json + decision_log.md 2026-05-24 entry documenting the NCDB-vs-SEER first-primary mismatch and corrective re-run.",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/analyze/SKILL.md",
+          "note": "Phase 1.1.a section — registry-specific inclusion/exclusion checklist as HARD GATE before dataset_spec.json can be written"
+        },
+        {
+          "file": "skills/references/registry-cohort-checklists.md",
+          "note": "New reference file containing 6 registry-specific checklists (NCDB, SEER, NSQIP, UNOS, TriNetX, generic) with 5-26 items each + cross-registry consistency rule"
+        }
+      ],
+      "promoted_date": "2026-05-24"
+    },
+    {
+      "id": "L051-analysis-skill-workflow-master-excel-bolding-halt2a",
+      "date_added": "2026-05-28",
+      "originating_session": "Interactive workflow design session 2026-05-28 with PI Bilal Mirza. The CRA workflow was visualized as an interactive HTML (best-practice/CRA_workflow_interactive.html in iCloud workspace); through iteration the PI corrected several structural ambiguities in the analyze skill: (a) the prior workflow conflated 'primary analysis' with 'primary contrast' (the adjusted multivariable headline), bypassing the standard biostatistical convention that primary = unadjusted crude analysis and secondary = PSM / multivariable / KM / IPTW; (b) the table layouts were specified as a markdown skeleton (table_layouts.md), but the production-grade artifact the PI actually edits and circulates is an Excel workbook with named tabs (Table_1, Table_2, Sensitivity, Supplementary_*); (c) the variable spec was locked at Phase 1 without a separate, explicit PI approval step for matching vs adjustment variables before adjusted models fire; (d) primary + secondary objectives were not pre-locked separately from the analysis plan; (e) significance was not visually flagged in the Excel workbook; (f) numeric drift between abstract / manuscript / Excel / JSON registry had no per-session integrity gate. Worked out interactively; canonical workflow visualization at iCloud:Claude_Projects/best-practice/CRA_workflow_interactive.html.",
+      "category": "Analysis skill workflow: primary/secondary terminology + objectives lock + Master Excel Workbook + matching/adjustment split + HALT 2A variable approval + bolding + session-end 4-artifact reconciliation",
+      "trigger_patterns": [
+        "/analyze invocation with research question + dataset",
+        "/project-init invocation gathering study information",
+        "any clinical-research analysis task where adjusted models will be fit (PSM, multivariable Cox/logistic/linear, IPTW)",
+        "any session-end where a project has both abstract.docx and manuscript.docx in its Manuscripts/ folder",
+        "/analyze Phase 1.3 table_layouts.md generation about to begin (legacy markdown skeleton — replace with Master Excel Workbook)",
+        "/analyze Phase 4 about to fit adjusted/PSM/IPTW models without HALT 2A sign-off",
+        "/analyze Phase 5 about to fire without specs/variables_locked.json existing or being PI-signed",
+        "assistant about to call the Phase 4 output 'primary analysis' while running an adjusted multivariable model — terminology violation",
+        "manuscript-qc invocation pre-submission (Check 16 runs)",
+        "user asks 'what's the difference between primary and secondary analysis here?' or 'when did we pick the adjustment variables?' or 'why does the abstract say X but the table says Y?'",
+        "any project where the JSON registry (L045) exists but the Master Excel Workbook does not (must be built at Phase 1.3)",
+        "session-end protocol about to run on a project with abstract + manuscript",
+        "any /analyze run that does not produce specs/objectives_locked.json + Protocol/objectives_locked_<date>.md before Phase 2 PLAN"
+      ],
+      "lesson": "The /analyze skill workflow had six interrelated ambiguities that were resolved together in the 2026-05-28 session. (1) PRIMARY vs SECONDARY TERMINOLOGY. 'Primary analysis' means crude/unadjusted relationship between exposure and outcome using the appropriate statistical test by outcome class (chi-square or Fisher for categorical; t-test or Wilcoxon for continuous; log-rank + univariable Cox for time-to-event; chi-square + crude OR for cross-sectional binary). 'Secondary analysis' means PSM + multivariable adjusted models + KM survival curves + IPTW + method variants (GBT-IPTW, AIPW, frailty Cox). The prior skill called the adjusted multivariable model 'primary,' which is incorrect under standard biostatistical convention and confuses the workflow boundary between Phase 4 (where no adjustment is allowed) and Phase 5 (where adjustment lives). (2) OBJECTIVES LOCK at Phase 1.0. The primary objective (single contrast sentence: population, exposure, primary outcome, time horizon, comparator) and numbered secondary_objectives[] (each with their own outcome/exposure/time-horizon/comparator) are locked separately from the analysis plan and saved to specs/objectives_locked.json + Protocol/objectives_locked_<date>.md. Immutable after PI sign-off. Any change is a dated SAP §9-style amendment in Protocol/sap_amendments.md, never a silent edit. This prevents post-hoc objective drift; everything downstream (Excel workbook tabs, analysis plan, HALT presentations) is scoped to these objectives. (3) MASTER EXCEL WORKBOOK at Phase 1.3. Replaces the legacy markdown table_layouts.md with a single production-grade Excel file Reports/MASTER_TABLES_<project>_<date>.xlsx carrying named tabs (Table_1, Table_2, Table_3, Sensitivity, Supplementary_1, Supplementary_2, ...). Coexists with MASTER_ANALYSIS_REGISTRY.json (per L045 — machine truth with history[]) and its auto-rendered .md index. Three-artifact role split: JSON = machine audit trail with supersede history; Excel = human-facing tabular manuscript source (formatted, bolded); MD = quick scannable human view. (4) MATCHING vs ADJUSTMENT VARIABLES SEPARATED. Phase 2 analysis_plan.json holds matching_variables[] (the design dimension) distinct from adjustment_covariates[] (the estimation dimension). Each entry has its own rationale (DAG, clinical relevance, comparator paper precedent, missingness profile). Overlap allowed but not required. (5) HALT 2A. A new hard-stop halt between Phase 4 and Phase 5. PI is presented with a structured table per locked objective showing each candidate variable with Match? Adjust? Rationale columns; PI selects yes/no per variable per role; custom additions require free-text rationale; PI must explicitly tick 'I have reviewed every variable; no variable is silently included or excluded' before sign-off. On sign-off: write Protocol/variables_locked_<date>.md + specs/variables_locked.json. Phase 5 reads specs/variables_locked.json at start and halts immediately if absent or unsigned. (6) BOLDING RULE. In the Excel workbook, bold every cell in Table_1 where p<0.05 (Phase 4 crude/unadjusted threshold); bold every cell in Table_2/Sensitivity/Supplementary_* where BH-FDR q<0.05 (Phase 5 adjusted rigor-gate threshold). Cells where p<0.05 but q>=0.05 are NOT bolded — this distinguishes raw from FDR significance for the PI scanner. (7) SESSION-END 4-ARTIFACT RECONCILIATION. At every session-end, for every project with both abstract.docx and manuscript.docx, cross-walk every numeric value across abstract ↔ manuscript ↔ Excel ↔ JSON at 3-decimal precision. Per L042, scan BOTH manuscript paragraphs AND embedded table cells (python-docx Document.paragraphs excludes table-cell text — the canonical bug where prose updates leave stale Table values). Output Reports/session_end_reconciliation_<date>.md with PASS/FAIL/DRIFT per claim. Any FAIL or DRIFT must be resolved or logged as an explicit open blocker before session close; never silently passed. Companion implementation in manuscript-qc Check 16.",
+      "action": "Promoted to four files in a coordinated release (push to GitHub together where applicable): (a) skills/internal/analyze/SKILL.md — overview Phase 4/5 lines updated; new Phase 1.0 section for objectives lock; Phase 1.3 replaced with Master Excel Workbook; Phase 2 PLAN table split matching_variables[] from adjustment_covariates[] with bolding rule row; Phase 4 retitled 'PRIMARY (CRUDE/UNADJUSTED) → fills Table_1' with terminology lock + shell sign-off gate + bolding step + Forbidden-at-Phase-4 callout; HALT 2 retitled 'Review Table_1 (crude/unadjusted)'; new HALT 2A 'Variable Pre-specification & Approval Gate' as HARD STOP before Phase 5; Phase 5 retitled 'SECONDARY (ADJUSTED) → fills Table_2 + Sensitivity + Supplementary_*' with variable-load gate + bolding rule + concordance check; CHANGELOG entry. (b) skills/internal/project-init/SKILL.md — STEP 1 questions 8-9 added (primary_objective + secondary_objectives); question 10 relabeled as candidate covariates with HALT 2A handoff; STEP 2 directory tree includes Protocol/ folder + notes Reports/ holds Master Excel + JSON registry; CHANGELOG entry. (c) skills/internal/manuscript-qc/SKILL.md — new Check 16 (4-artifact numeric reconciliation) inserted after Check 15 with full implementation steps + L042 table-cell traversal callout; output format summary block adds RECONCILIATION line; no-approve list adds Check 16 FAIL; CHANGELOG entry. (d) iCloud Claude_Projects/SESSION-END PROTOCOL.md — new Step 4.6 between Step 4.5 (sync) and Step 5 (confirmation): per-project conditional 4-artifact reconciliation that invokes manuscript-qc Check 16 logic for any project with both abstract.docx and manuscript.docx; wrap-up template surfaces per-project reconciliation status. The first three files are in the GitHub-tracked CRA repo and ship together; the fourth is iCloud-local. Worked example to be backfilled here at first project completion under this workflow. Visualization: best-practice/CRA_workflow_interactive.html in the iCloud workspace (also iCloud-local).",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/analyze/SKILL.md",
+          "note": "Phase 1.0 objectives lock + Phase 1.3 Master Excel Workbook + Phase 2 PLAN matching/adjustment split + Phase 4 PRIMARY (CRUDE/UNADJUSTED) restructure + HALT 2A insert + Phase 5 SECONDARY (ADJUSTED) restructure + CHANGELOG"
+        },
+        {
+          "file": "skills/internal/project-init/SKILL.md",
+          "note": "STEP 1 primary + secondary objectives questions (8-9) + STEP 2 Protocol/ folder + CHANGELOG"
+        },
+        {
+          "file": "skills/internal/manuscript-qc/SKILL.md",
+          "note": "Check 16 4-artifact numeric reconciliation + output format RECONCILIATION line + no-approve list update + CHANGELOG"
+        },
+        {
+          "file": "iCloud:Claude_Projects/SESSION-END PROTOCOL.md",
+          "note": "Step 4.6 per-project conditional 4-artifact reconciliation; iCloud-local, not in GitHub-tracked CRA repo"
+        },
+        {
+          "file": "iCloud:Claude_Projects/best-practice/CRA_workflow_interactive.html",
+          "note": "Canonical visualization of the refined workflow; iCloud-local, not in GitHub-tracked CRA repo"
+        }
+      ],
+      "promoted_date": "2026-05-28"
     }
   ]
 }

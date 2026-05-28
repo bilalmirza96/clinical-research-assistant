@@ -67,6 +67,29 @@ Re-run the L041 hard gate against every reference in the assembled manuscript pe
 7. Severity rule: ANY FAIL = CRITICAL (potential fabrication); AMBIGUOUS = MAJOR
 ```
 
+### Check 16 — Four-artifact numeric reconciliation (CRA-native, added 2026-05-28 per L051)
+
+Cross-walk every numeric value across all four source-of-truth artifacts to catch stale-vintage drift between abstract / manuscript / Excel / JSON before submission. This is the canonical pre-submission integrity gate for the L045 + L051 dual-registry architecture (JSON registry as machine audit trail; Excel workbook as human-facing manuscript source).
+
+```
+1. Extract every numeric claim from abstract.docx — %, OR/HR/RR with 95% CI, p, q
+2. Extract every numeric claim from manuscript.docx — body + embedded tables + standalone supplement eTables
+     (per L042: python-docx Document.paragraphs EXCLUDES table-cell text. Both must be scanned;
+      use the table-cell traversal pattern in L042's worked example to avoid the canonical bug
+      where prose says 3.23 but Table 5 still holds the stale 5.83.)
+3. Extract every cell value from Reports/MASTER_TABLES_<project>_*.xlsx across all tabs
+     (Table_1, Table_2, Table_3, ..., Sensitivity, Supplementary_1, Supplementary_2, ...)
+4. Extract every `current` value from Reports/MASTER_ANALYSIS_REGISTRY.json
+5. Pairwise cross-walk: every value should match abstract ↔ manuscript ↔ Excel ↔ JSON
+     at 3-decimal precision
+6. Write Reports/reconciliation_<date>.md with PASS / FAIL / DRIFT per claim, organized by
+     [primary objective | secondary objective 1 | ... | sensitivity | supplementary]
+7. Severity rule: ANY FAIL = CRITICAL (numeric drift between artifacts is the canonical
+     desk-reject trigger and the symptom of a stale vintage somewhere in the chain);
+     DRIFT (matches >3 decimal but differs <5% at lower precision) = MAJOR; PASS counts toward
+     submission readiness
+```
+
 Before starting, read the full native checklist:
 ```
 view references/checks.md
@@ -95,13 +118,15 @@ MAJOR: [n] — should fix before submission
 MINOR: [n] — recommended fixes
 SCHOLAR-EVAL: [problem]/5  [methodology]/5  [analysis]/5  [writing]/5  TOTAL [n]/20
 CITATION AUDIT: PASS [n]  AMBIGUOUS [n]  FAIL [n]
+RECONCILIATION (4-artifact): PASS [n]  DRIFT [n]  FAIL [n]
 VERDICT: READY / NOT READY FOR SUBMISSION
 ```
 
 Do not approve any manuscript with:
-- Unresolved CRITICAL issues (native checks 1–12 OR Check 15 FAIL)
+- Unresolved CRITICAL issues (native checks 1–12 OR Check 15 FAIL OR Check 16 FAIL)
 - ScholarEval TOTAL < 14/20 (Check 14)
 - Any Check 15 FAIL (potential fabrication)
+- Any Check 16 FAIL (numeric drift between abstract / manuscript / Excel / JSON — symptom of a stale vintage in the source-of-truth chain)
 
 ## Severity Definitions
 
@@ -131,3 +156,19 @@ Before running checks, identify the study design to determine which reporting gu
 - Quality improvement → **SQUIRE**
 
 Apply the relevant checklist in Check 10. If the design is ambiguous, ask the user.
+
+---
+
+## CHANGELOG / Lessons Learned
+
+### 2026-05-28 — L051 — Check 16: 4-artifact numeric reconciliation
+
+Added in tandem with the `analyze/SKILL.md` L051 refinement (Master Excel Workbook + JSON registry coexistence). Three changes here:
+
+1. **New Check 16** (CRA-native, inserted after the K-Dense delegations Check 13/14/15): pairwise cross-walk of every numeric value across `abstract.docx` ↔ `manuscript.docx` (body + embedded tables + supplement eTables, per L042 table-cell traversal) ↔ `Reports/MASTER_TABLES_<project>_*.xlsx` (all tabs) ↔ `Reports/MASTER_ANALYSIS_REGISTRY.json` at 3-decimal precision. Output: `Reports/reconciliation_<date>.md` with PASS / FAIL / DRIFT per claim.
+
+2. **Output format summary block** now includes a `RECONCILIATION (4-artifact)` line alongside CITATION AUDIT.
+
+3. **No-approve list** now includes Check 16 FAIL as a desk-reject blocker (any numeric drift between abstract / manuscript / Excel / JSON is the canonical symptom of a stale vintage somewhere in the source-of-truth chain).
+
+This check is also embedded at session-end in `iCloud:SESSION-END PROTOCOL.md` Step 4.6 (per-project conditional, only fires when both abstract.docx and manuscript.docx exist) — so drift is caught at every session-end, not just at pre-submission. See `internal/analyze/SKILL.md` CHANGELOG 2026-05-28 L051 entry for full rationale.
