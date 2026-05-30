@@ -202,3 +202,10 @@ Lesson enforcement directly relevant to figures:
 2. Update `project_state.json` with figures completion timestamp
 3. Append `decision_log.md` summary
 4. Hand off to `/write-methods-results` if user requests next step
+
+
+---
+
+## Delegated helper (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+- `scientific-skills:scientific-schematics` — conceptual / mechanism diagrams + graphical abstracts (Nano-Banana). Use ONLY for non-data conceptual figures. Data figures stay in CRA's matplotlib/seaborn house pipeline (Poppins/Lora, five-color palette, no figure titles).

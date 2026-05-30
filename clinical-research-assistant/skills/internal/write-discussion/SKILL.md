@@ -629,3 +629,12 @@ Then always:
 > - Figures → PDF/PNG from `/visualize`
 >
 > "Use `/write-manuscript` for the complete assembled manuscript with final audit."
+
+
+---
+
+## Delegated helpers (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+- `scientific-skills:research-lookup` — situate findings against current literature (deep research); every claim still passes the L041 citation gate.
+
+The house Discussion framework (RPTH 8-paragraph + Miller two-mechanism, L043) and the 7-check audit remain authoritative.

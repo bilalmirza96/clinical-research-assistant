@@ -550,3 +550,12 @@ If running in Mode A (stateful):
 - Percentages: 1 decimal place (34.6%)
 - Association language for observational studies — never causal language
 - Every number in the text must match the corresponding table exactly — no rounding discrepancies
+
+
+---
+
+## Delegated helpers (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+- `scientific-skills:venue-templates` — target-journal Methods/Results formatting overrides. CRA house standard (Times New Roman 12pt, double-spaced) is the default; apply a venue template only when the target journal requires it.
+
+No generic prose skill overrides the house style or the observational-language rule.

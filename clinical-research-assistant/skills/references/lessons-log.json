@@ -1452,6 +1452,46 @@
         }
       ],
       "promoted_date": "2026-05-30"
+    },
+    {
+      "id": "L054-scientific-writer-delegated-not-vendored",
+      "date_added": "2026-05-30",
+      "originating_session": "Cowork — wire claude-scientific-writer as delegated refs (Bilal Mirza)",
+      "category": "Architecture: avoid duplicate vendoring; delegate writing/output skills",
+      "trigger_patterns": [
+        "add claude-scientific-writer",
+        "scientific writer external skills",
+        "vendor a skill repo",
+        "scientific-slides poster grant",
+        "writing delegation",
+        "duplicate skills"
+      ],
+      "lesson": "claude-scientific-writer is a curated subset of scientific-agent-skills, which CRA already vendors. Wholesale vendoring would duplicate ~20 skills and re-introduce the bloat the v3.7-3.8 refactor removed.",
+      "action": "Wired the useful pieces as delegated scientific-skills:* references (research-lookup, scientific-schematics, venue-templates, scientific-slides, latex-posters, research-grants, paper-2-web, markitdown) in DELEGATION_RULES.md §F + pointer blocks in write-introduction/methods-results/discussion/abstract/manuscript + visualize. CRA write-* + house standards remain authoritative; citation-management/peer-review/scholar-evaluation already wired. Did NOT vendor the repo.",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "DELEGATION_RULES.md",
+          "note": "§F scientific-writing & output delegations"
+        },
+        {
+          "file": "skills/internal/write-manuscript/SKILL.md",
+          "note": "delegated output helpers block"
+        },
+        {
+          "file": "skills/internal/write-* + visualize/SKILL.md",
+          "note": "delegated helper pointer blocks"
+        },
+        {
+          "file": "iCloud:Claude_Projects/00_Context/working-rules.md",
+          "note": "writing/output delegations note"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "note": "[3.9.0]"
+        }
+      ],
+      "promoted_date": "2026-05-30"
     }
   ]
 }

@@ -514,3 +514,20 @@ Once the brief is approved by PIs, the manuscript drafts AGAINST the brief — t
 - **Tier-based claim placement** (L035) — partition every finding into Tier 1–4 BEFORE drafting; the Tier determines where it can appear (abstract / body / discussion-only).
 - **Canonical Table 1 = `meta_validation_v2_summary.csv`** (L034) — the 17-finding (or N-finding) summary table from Phase 4 of the rigor remediation pipeline becomes Manuscript Table 1 directly. Drop the `Source_phase` column for publication; keep all other columns.
 - **Internal audit must verify abstract numbers vs Results vs Tables** (L036). The Phase 8 internal consistency check should be programmatic — claimed numbers in the abstract grep against the source CSV. Target 100% match at 3-decimal precision.
+
+
+---
+
+## Delegated output & research helpers (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+CRA `write-*` skills + house standards remain the authority. Delegate to these `scientific-skills:*` references for outputs CRA does not produce natively:
+
+- `scientific-schematics` — graphical abstract / mechanism diagrams (Nano-Banana). NOT for data figures (those stay in `/visualize`).
+- `venue-templates` — target-journal formatting (house TNR-12pt default unless the journal requires otherwise).
+- `scientific-slides` — conference talk deck from the finished paper.
+- `latex-posters` / `pptx-posters` — research poster.
+- `research-grants` — NSF / NIH / DOE / DARPA proposal from the work.
+- `paper-2-web` — paper -> website / video.
+- `markitdown` — ingest source PDFs/docx.
+
+Already wired elsewhere: `citation-management` (L041 hard gate), `peer-review` + `scholar-evaluation` (manuscript-qc Checks 13/14).

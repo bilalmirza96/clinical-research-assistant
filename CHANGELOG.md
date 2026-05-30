@@ -2,6 +2,14 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.9.0] - 2026-05-30
+
+### Added — claude-scientific-writer skills wired as delegated references (no duplicate vendoring)
+
+- Evaluated `K-Dense-AI/claude-scientific-writer`; found it a curated subset of the already-vendored `scientific-agent-skills`. Chose NOT to vendor it (would duplicate ~20 skills) — wired the useful pieces by reference instead.
+- New `DELEGATION_RULES.md` §F maps `scientific-skills:*` execution helpers to CRA `write-*`/`visualize`: `research-lookup`, `scientific-schematics`, `venue-templates`, `scientific-slides`, `latex-posters`/`pptx-posters`, `research-grants`, `paper-2-web`, `markitdown`. `citation-management` / `peer-review` / `scholar-evaluation` already wired (§D).
+- Pointer blocks appended to `write-introduction`, `write-methods-results`, `write-discussion`, `write-abstract`, `write-manuscript`, `visualize`. CRA `write-*` + house standards remain authoritative over any generic writing skill. Lessons-log L054; working-rules updated.
+
 ## [3.8.0] - 2026-05-30
 
 ### Changed — checkpoint phase-flow + science-superpowers audits replace the 9-agent panels (Stages 2-4)

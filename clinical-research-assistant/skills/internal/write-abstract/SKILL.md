@@ -245,3 +245,10 @@ Run the 12-point gate:
 Initial 12-principle rubric authored by Bilal Mirza (PGY-1 General Surgery, U Arizona). Source: response to ITSOS 2026 abstract draft. Added 12-point gate, venue cheat-sheet, and worked example on the ITSOS abstract.
 
 > **Maintainer note.** Append new lessons here, dated, with the originating session and the action item. This skill should accrete capability over time. If a future session finds a principle is wrong or superseded, mark it as deprecated rather than deleting — the audit trail matters.
+
+
+---
+
+## Delegated helpers (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+No generic writing skill is adopted here — the Bilal Mirza 12-Principle Editorial Rubric (L017–L025) governs every abstract. `scientific-skills:scientific-writing` may be consulted for generic prose mechanics only; the rubric overrides.

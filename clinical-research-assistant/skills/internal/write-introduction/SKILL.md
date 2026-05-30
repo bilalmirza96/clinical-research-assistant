@@ -435,3 +435,13 @@ Then always:
 > - `/write-methods-results` to write the Methods and Results sections
 > - `/write-discussion` to write the Discussion and Conclusion
 > - `/visualize` to generate publication-quality figures
+
+
+---
+
+## Delegated helpers (scientific-skills execution layer — see DELEGATION_RULES.md §F)
+
+- `scientific-skills:research-lookup` — real-time deep research (Perplexity Sonar) for background + gap. Every fact still passes the L041 citation hard gate via `scientific-skills:citation-management`.
+- `scientific-skills:markitdown` — convert uploaded prior papers (PDF/docx) to markdown for ingestion.
+
+CRA `/literature-review` + the L041 gate remain authoritative; these are supplements, not replacements.

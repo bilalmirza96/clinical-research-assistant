@@ -385,3 +385,26 @@ If it becomes specialized, execution-heavy, or modality-specific, delegate to Bi
 **Category-error guard.** K-Dense `scientific-skills` are expert library references, not a no-code engine — using them still produces (governed) Python. Validation lives in the rigor + orchestration layers, not in raw library access.
 
 **Bootstrap precedence.** For clinical-research analysis, CRA `/analyze` is the entry orchestrator and invokes the SP rigor skills at defined points; SP's framing/surveying/designing/reporting and the generic `superpowers` bootstrap are suppressed for clinical tasks. See `analyze/references/sp-integration.md`.
+
+
+---
+
+## F. Scientific-writing & output delegations (added 2026-05-30, v3.9)
+
+These skills are a curated subset of `scientific-agent-skills` (already vendored under `skills/external/scientific-agent-skills/`), repackaged upstream as `K-Dense-AI/claude-scientific-writer`. **We do NOT vendor that repo — it would duplicate ~20 skills we already carry.** Instead the CRA `write-*` / `visualize` skills delegate to these `scientific-skills:*` references at runtime, like the analysis layer. CRA `write-*` + house standards (TNR 12pt double, 16-section report, 12-principle abstract rubric, observational language) remain the authority; these are execution helpers only.
+
+| scientific-skills skill | Used by | Purpose | Notes |
+|---|---|---|---|
+| `research-lookup` | write-introduction, write-discussion, literature-review | deep research (Perplexity Sonar) | every fact behind the L041 citation gate |
+| `scientific-schematics` | visualize, write-manuscript | conceptual / mechanism diagrams + graphical abstract | NOT data figures (house matplotlib pipeline) |
+| `venue-templates` | write-manuscript, write-methods-results | target-journal formatting | house TNR-12pt is default |
+| `scientific-slides` | write-manuscript | conference deck from the paper | output CRA lacks |
+| `latex-posters` / `pptx-posters` | write-manuscript | research poster | output CRA lacks |
+| `research-grants` | write-manuscript | NSF/NIH/DOE/DARPA proposal | output CRA lacks |
+| `paper-2-web` | write-manuscript | paper -> website / video | dissemination |
+| `markitdown` | literature-review, write-* | convert PDF/docx of prior work to markdown | utility |
+| `citation-management` | all write-*, literature-review, manuscript-qc | citation verification | ALREADY wired (L041, §D) |
+| `peer-review`, `scholar-evaluation` | manuscript-qc | review audit + quality scoring | ALREADY wired (Checks 13/14, §D) |
+| `scientific-writing` (generic) | — | generic IMRAD prose | NOT adopted as authority; CRA write-* + rubric override |
+
+Source of the curated set: https://github.com/K-Dense-AI/claude-scientific-writer (its skills already present in your `scientific-agent-skills`).
