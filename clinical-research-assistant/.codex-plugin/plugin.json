@@ -1,0 +1,43 @@
+{
+  "name": "clinical-research-assistant",
+  "version": "3.9.1",
+  "description": "Clinical research assistant for the full research-to-publication pipeline: orchestrated registry/outcomes analysis, pre-registered statistics with primary/secondary/sensitivity checkpoints, publication-quality figures, and IMRAD manuscript drafting. Orchestrates science-superpowers (rigor) and K-Dense scientific-skills + BioMedAgent (execution) underneath.",
+  "author": {
+    "name": "Muhammad Bilal Mirza"
+  },
+  "homepage": "https://github.com/bilalmirza96/clinical-research-assistant",
+  "repository": "https://github.com/bilalmirza96/clinical-research-assistant",
+  "license": "MIT",
+  "keywords": [
+    "clinical-research",
+    "biostatistics",
+    "manuscript-writing",
+    "literature-review",
+    "surgical-research",
+    "registry-analysis",
+    "pre-registration",
+    "reproducibility"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Clinical Research Assistant",
+    "shortDescription": "Orchestrated clinical-research analysis and manuscript pipeline for surgical/clinical researchers",
+    "longDescription": "Clinical Research Assistant (CRA) orchestrates the full research-to-publication workflow: project initialization, pre-design literature recon, pre-registered analysis with primary / secondary / sensitivity checkpoints and PI approval gates, publication-quality figures, and IMRAD manuscript drafting with house formatting standards. CRA is the orchestrator (the brain) and delegates rigor to science-superpowers (pre-registration, result verification, red-team review) and execution to K-Dense scientific-skills and BioMedAgent.",
+    "developerName": "Muhammad Bilal Mirza",
+    "category": "Science",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Initialize a new clinical research project.",
+      "Run a registry analysis and draft the manuscript."
+    ],
+    "websiteURL": "https://github.com/bilalmirza96/clinical-research-assistant",
+    "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

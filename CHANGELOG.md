@@ -2,6 +2,13 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.9.1] - 2026-05-30
+
+### Added — Codex packaging layer + version alignment
+
+- New `clinical-research-assistant/.codex-plugin/plugin.json` (mirrors the K-Dense science-superpowers Codex manifest schema; `skills: "./skills/"`) so CRA installs as a Codex plugin alongside the existing Claude (`.claude-plugin`) packaging.
+- Aligned version fields: `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` bumped 3.4.0 -> 3.9.1 to match the CHANGELOG (they had drifted behind through v3.5-v3.9).
+
 ## [3.9.0] - 2026-05-30
 
 ### Added — claude-scientific-writer skills wired as delegated references (no duplicate vendoring)
