@@ -2,6 +2,39 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.8.0] - 2026-05-30
+
+### Changed — checkpoint phase-flow + science-superpowers audits replace the 9-agent panels (Stages 2-4)
+
+#### Stage 2 — checkpoint phase flow
+- `/analyze` Phase 4 PRIMARY now ends with **Checkpoint A** (inline verify). Phase 5 split into **5A SECONDARY (adjusted)** + **Checkpoint B** + new **5B SENSITIVITY & SUBGROUPS**. Sensitivity no longer runs inside the secondary phase — it is gated on Checkpoint B passing. New **HALT 2B** between adjusted results and sensitivity.
+
+#### Stage 3 — audits via science-superpowers (token reduction)
+- Phase 3's 4-agent plan critique now runs **INLINE** (escalates to one reviewer only on a CRITICAL plan flaw) and locks the pre-registration via `science-superpowers:preregistering-analysis`.
+- Phase 6's 5-agent audit panel is replaced by **ONE** `science-superpowers:requesting-red-team-review` subagent briefed with new `analyze/references/red-team-brief.md`. Numerical / reproducibility / completeness are done **inline** at Checkpoints A/B via `science-superpowers:verifying-results-before-claiming`. ~32K tokens of panels -> ~3-5K.
+
+#### Stage 4 — three-layer delegation codified
+- New `analyze/references/sp-integration.md` (SP-skill -> phase map + bootstrap precedence). `DELEGATION_RULES.md` §E + `00_Context/working-rules.md` ratify the three layers — **science-superpowers (rigor) + CRA (orchestration/brain) + K-Dense scientific-skills & BioMedAgent (validated execution)** — with maximal delegation to the validated layers and a bootstrap-precedence rule so the competing session-starts don't fight.
+- `references/audit-agents.md` and `references/critique-panel.md` superseded/repurposed (retained for reference). Lessons-log L053.
+
+## [3.7.0] - 2026-05-30
+
+### Changed — `data-analysis` merged into `/analyze`; lazy reference loading (token reduction)
+
+Refactor (Bilal Mirza, Cowork session) consolidating the analysis layer and ratifying the three-layer delegation architecture.
+
+#### Stage 1 (this entry) — skill merge
+
+- The standalone `data-analysis` (clinical-analysis-policy) skill is merged into `/analyze`. Its policy body now lives at `skills/internal/analyze/references/clinical-analysis-policy.md`; its four reference files (`method-selection-guide`, `diagnostics-checklist`, `registry-cautions`, `variable-collapse-defaults`) + `settings-template` moved under `analyze/references/`.
+- `/analyze` PREREQUISITE switched from bulk-reading all 6 prerequisite files every run to **lazy on-demand loading** (read `lessons-log.json` up front; read each policy reference only at the phase that needs it). Token reduction.
+- Consumers repointed: `write-methods-results`, `project-init`, router `clinical-research-assistant/SKILL.md`, `skill-registry.yaml`, `OWNERSHIP_MAP.md`, `AGENTS.md`, `README.md`, `skills/internal/README.md`.
+- `skills/internal/data-analysis/SKILL.md` left as a **deprecation stub**; original `data-analysis/references/` retained as backup pending Bilal's confirmation to delete the folder. Nothing deleted.
+
+#### Architecture ratified (Stages 2-4 pending)
+
+- **Three layers:** science-superpowers (rigor — pre-registration, verify, red-team) + CRA (clinical orchestration / brain) + K-Dense scientific-skills & BioMedAgent (validated execution). Maximal delegation to the specialized/validated layers; CRA stays the orchestrator.
+- **Pending:** Stage 2 phase-flow checkpoints (sanity at end of PRIMARY and SECONDARY, sensitivity split out); Stage 3+4 replace the 9-agent critique+audit panels with inline `verifying-results-before-claiming` at checkpoints + one clinically-augmented `requesting-red-team-review`, codify delegation in `DELEGATION_RULES.md`, add bootstrap-precedence rule.
+
 ## [3.6.0] - 2026-05-24
 
 ### Added — Registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 (per L050)

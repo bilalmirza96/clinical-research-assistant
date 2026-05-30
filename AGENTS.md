@@ -109,7 +109,7 @@ All paths are absolute on Bilal's Mac. CRA lives at
 | "QC the manuscript", "pre-submission rigor check", "run manuscript-qc" | `clinical-research-assistant/skills/internal/manuscript-qc/SKILL.md` |
 | "start a new project", "scaffold a clinical research project" | `clinical-research-assistant/skills/internal/project-init/SKILL.md` |
 | "resume project X", "pick up where we left off" | `clinical-research-assistant/skills/internal/resume-project/SKILL.md` |
-| (policy-only — no command) | `clinical-research-assistant/skills/internal/data-analysis/SKILL.md` |
+| (policy-only — no command) | `clinical-research-assistant/skills/internal/analyze/references/clinical-analysis-policy.md` |
 
 ### Reference documents (read on demand, not workflows)
 

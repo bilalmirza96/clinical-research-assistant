@@ -6,7 +6,7 @@ Defines the single canonical owner for each command in the Clinical Research Ass
 
 1. Each command has exactly ONE canonical skill file that owns its workflow.
 2. `skills/clinical-research-assistant/SKILL.md` is the **user-facing router** — invoke this first when the user says "use CRA" or does not name a subskill.
-3. `skills/internal/data-analysis/SKILL.md` is a **policy file** — it owns no commands.
+3. `skills/internal/analyze/references/clinical-analysis-policy.md` is a **policy file** — it owns no commands.
 4. `CLAUDE.md` is the **orchestrator brief** — it defines global behavior but does not override skill workflows.
 5. BioMedAgent (`skills/external/biomedagent/SKILL.md`) is an **external delegated execution engine** — it is invoked by the router/orchestrator when data complexity requires autonomous multi-agent processing, but does not own first-party CRA workflow commands.
 6. External pasted skills live under `skills/external/` and are indexed in `skills/references/skill-registry.yaml`.
@@ -31,7 +31,7 @@ Defines the single canonical owner for each command in the Clinical Research Ass
 
 | File | Role |
 |---|---|
-| `skills/internal/data-analysis/SKILL.md` | Analytical policy: guardrails, diagnostics, registry cautions, reporting rules |
+| `skills/internal/analyze/references/clinical-analysis-policy.md` | Analytical policy: guardrails, diagnostics, registry cautions, reporting rules |
 | `skills/references/writing-style.md` | Writing style reference for manuscript skills |
 | `skills/references/skill-registry.yaml` | Generated registry mapping triggers to internal and external skills |
 | `skills/references/external-skills.md` | Generated human-readable index of pasted external skills |

@@ -199,7 +199,7 @@ clinical-research-assistant/                         # Marketplace root
 │   │   │   ├── write-abstract/                      # /write-abstract
 │   │   │   ├── write-manuscript/                    # /write-manuscript — orchestrator
 │   │   │   ├── manuscript-qc/                       # /manuscript-qc — final audit (v3.x)
-│   │   │   └── data-analysis/                       # Analytical policy (not a command)
+│   │   │   └── data-analysis/                       # DEPRECATED 2026-05-30 -> analyze/references/clinical-analysis-policy.md
 │   │   ├── external/                                # Vendored K-Dense + biomedagent (151 total)
 │   │   │   ├── biomedagent/                         # External delegated execution engine
 │   │   │   └── scientific-agent-skills/             # K-Dense scientific-skills (139 vendored)

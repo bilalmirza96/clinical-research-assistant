@@ -7,7 +7,7 @@ These are the original native workflows that CRA owns:
 - `project-init`
 - `resume-project`
 - `analyze`
-- `data-analysis`
+- _(merged into `analyze` 2026-05-30; policy now at `analyze/references/clinical-analysis-policy.md`)_
 - `literature-review`
 - `visualize`
 - `write-introduction`

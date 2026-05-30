@@ -15,7 +15,7 @@ skills:
     source: "internal"
     source_type: "internal"
     role: "support-policy"
-    path: "skills/internal/data-analysis/SKILL.md"
+    path: "skills/internal/analyze/references/clinical-analysis-policy.md"
     description: "Supporting policy skill containing methodological guardrails, diagnostics expectations, registry cautions, and reporting rules for clinical research analysis. NOT a command owner — the canonical /analyze workflow lives in skills/internal/analyze/SKILL.md."
     triggers: ["methods", "diagnostics", "registry cautions", "statistical policy", "assumptions"]
   - id: "literature-review"

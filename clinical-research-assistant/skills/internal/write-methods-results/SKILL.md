@@ -183,7 +183,7 @@ When the analysis reports a **within-treatment-recipient** estimate — e.g., a 
 1. **Declare the estimand explicitly:** *"Among patients who received [treatment], we estimated the [exposure] association with [outcome] using propensity score matching on pre-treatment access and treatment-quality covariates."*
 2. **State that this is an effectiveness/quality estimand, not an access estimand.** Within-recipient HRs do **not** capture pre-treatment death or non-receipt — those are upstream access components.
 3. **If both estimands are scientifically relevant, report them separately** with distinct labels: "access HR" (full cohort) vs "effectiveness HR" (within-recipient).
-4. **Cross-reference the matching diagnostics** from `data-analysis/references/diagnostics-checklist.md` — especially the caliper-binding sensitivity table (L040).
+4. **Cross-reference the matching diagnostics** from `../analyze/references/diagnostics-checklist.md` — especially the caliper-binding sensitivity table (L040).
 
 **Anti-pattern:** Presenting a within-recipient adjusted HR as if it represented the overall disparity. This understates the access component (Stage IV / pre-treatment death) and overstates the effectiveness component. Reviewers will flag this in any disparity manuscript.
 

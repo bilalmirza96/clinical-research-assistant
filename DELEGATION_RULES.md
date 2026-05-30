@@ -4,6 +4,7 @@ This document defines when and how `clinical-research-assistant` delegates work 
 
 1. **BioMedAgent** — for execution-heavy modality-specific workflows (omics, ML, non-tabular)
 2. **K-Dense scientific-skills** — for citation integrity, peer-review-style audits, quality scoring, Zotero sync, and systematic-search execution (v3.3+)
+3. **science-superpowers** — the RIGOR layer: pre-registration, inline result verification, red-team review, anomaly root-cause (v3.8+; see §E and `skills/internal/analyze/references/sp-integration.md`)
 
 The core rule is the same for both:
 
@@ -366,3 +367,21 @@ The orchestrator should ask one question:
 
 If it is still standard clinical research, stay native.
 If it becomes specialized, execution-heavy, or modality-specific, delegate to BioMedAgent — then pull the outputs back into the Clinical Research Assistant state layer and continue the manuscript pipeline from there.
+
+
+---
+
+## E. science-superpowers (rigor layer) + three-layer delegation (added 2026-05-30, v3.8)
+
+**Principle — maximal delegation to the specialized, validated layers; CRA stays the brain.** Delegate execution and rigor to validated tools as much as possible. CRA orchestrates (decides WHAT/WHEN, owns clinical judgment, halts, reporting) and never freelances statistics from memory.
+
+**Three layers**
+1. **Rigor — `science-superpowers`.** `preregistering-analysis` (freeze predictions + decision rules + confirmatory/exploratory split before outcomes), `verifying-results-before-claiming` (inline, at every checkpoint), `requesting-red-team-review` (one adversarial reviewer), `investigating-anomalous-results` (root-cause).
+2. **Orchestration — CRA.** `/analyze` + `/write-*` + `/visualize` + `/literature-review` + `/manuscript-qc` + `/project-init`.
+3. **Execution — K-Dense `scientific-skills` + `biomedagent`.** Standard tabular biostatistics runs natively in CRA against the relevant `scientific-skills:*` reference loaded at runtime; omics/ML/non-tabular → `biomedagent`.
+
+**Audit delegation (replaces the old 9-agent panels).** Inline `verifying-results-before-claiming` at Checkpoints A/B covers numerical/reproducibility/completeness; the single `requesting-red-team-review` (briefed by `analyze/references/red-team-brief.md`) covers statistical + biological-plausibility scrutiny. Full map: `analyze/references/sp-integration.md`.
+
+**Category-error guard.** K-Dense `scientific-skills` are expert library references, not a no-code engine — using them still produces (governed) Python. Validation lives in the rigor + orchestration layers, not in raw library access.
+
+**Bootstrap precedence.** For clinical-research analysis, CRA `/analyze` is the entry orchestrator and invokes the SP rigor skills at defined points; SP's framing/surveying/designing/reporting and the generic `superpowers` bootstrap are suppressed for clinical tasks. See `analyze/references/sp-integration.md`.

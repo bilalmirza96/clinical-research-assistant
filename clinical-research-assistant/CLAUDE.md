@@ -97,7 +97,7 @@ Show concise disagreement summaries, not full debate transcripts. The panel impr
 
 ## Analytical Policy
 
-Methodological guardrails, diagnostics expectations, registry cautions, reporting rules, and observational language rules are defined in `skills/internal/data-analysis/SKILL.md` (policy file). All command skills reference these shared standards.
+Methodological guardrails, diagnostics expectations, registry cautions, reporting rules, and observational language rules are defined in `skills/internal/analyze/references/clinical-analysis-policy.md` (merged 2026-05-30; formerly the data-analysis policy skill). All command skills reference these shared standards.
 
 ## Shared State
 

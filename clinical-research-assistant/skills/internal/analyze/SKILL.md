@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: Manuscript-rigor orchestrator for clinical research analysis. Locks data, variables, table layouts, and figure intent upfront; generates and critiques the analysis plan via a 4-agent panel; runs autonomously between three approval halts; delegates execution to K-Dense scientific skills and BioMedAgent at runtime; delivers one master analysis_report with full reproducibility manifest. Use for any clinical-research statistical analysis where rigor, audit-traceability, and publication-grade outputs are required.
+description: Manuscript-rigor orchestrator for clinical research analysis. Locks data, variables, table layouts, and figure intent upfront; generates and critiques the analysis plan inline (escalating to a single red-team only when needed); runs autonomously between approval halts and inline verification checkpoints; delegates execution to K-Dense scientific skills and BioMedAgent at runtime; delivers one master analysis_report with full reproducibility manifest. Use for any clinical-research statistical analysis where rigor, audit-traceability, and publication-grade outputs are required.
 argument-hint: "[research question, dataset path, or 'resume']"
 allowed-tools: Read Write Edit Bash Task
 ---
@@ -19,13 +19,16 @@ Phase 0 PRE-DESIGN  pre-analysis literature recon — auto-invokes /literature-r
    ✋ HALT 0        PI signs off on differentiation: novel | replication-with-extension | pivot | abandon
 Phase 1 INTAKE      lock dataset_spec, variable_spec, table_layouts, figure_intent
 Phase 2 PLAN        produce analysis_plan.json + manuscript_shopping_list
-Phase 3 CRITIQUE    4 parallel Task() spawns (Methodologist / Skeptic / Editor / Lessons-applier)
+Phase 3 CRITIQUE    INLINE plan-sanity (Methodologist/Skeptic/Editor/Lessons run inline, no panel) + LOCK pre-registration (SP preregistering-analysis)
    ✋ HALT 1        user approves intake + plan + critique (bundle or section-by-section)
 Phase 4 PRIMARY     resource check → cohort assembly → build Master Excel shells → PRIMARY (CRUDE / UNADJUSTED) analysis → fills Table_1 (bold p<0.05) → diagnostics
+   ✓ CHECKPT A     INLINE verify (SP verifying-results-before-claiming): re-run, read estimate+CI, confirm reproduction
    ✋ HALT 2        user reviews Table_1 + crude effect estimates (concise by default; verbose if surprises)
    ✋ HALT 2A       user APPROVES matching + adjustment variables for Phase 5 (HARD STOP)
-Phase 5 SECONDARY   PSM + multivariable + KM + IPTW with locked variables → fills Table_2 (bold q<0.05) + Sensitivity + Supplementary_* (autonomous; gate-remediated)
-Phase 6 AUDIT       5 parallel Task() spawns (numerical / statistical / biological / repro / completeness)
+Phase 5A SECONDARY  PSM + multivariable + KM + IPTW with locked variables → fills Table_2 (bold q<0.05) (adjusted only)
+   ✓ CHECKPT B     INLINE verify + crude-vs-adjusted concordance (SP verifying-results) before sensitivity runs
+Phase 5B SENSITIVITY sensitivity battery + subgroups → Sensitivity + Supplementary_* (runs only after Checkpoint B passes)
+Phase 6 AUDIT       ONE clinically-augmented red-team (SP requesting-red-team-review) — replaces the 5-agent panel; verify/repro/completeness already done inline at A/B
    ✋ HALT 3        user reviews audit + 4-tier evidence classification
 Phase 7 DELIVER     master analysis_report.md with reproducibility manifest + SCAR registration
 ```
@@ -36,19 +39,19 @@ Five halts (Phase 0, HALT 1, HALT 2, HALT 2A, HALT 3). Phase 0 is a HARD GATE �
 
 ## PREREQUISITE — read before anything else
 
-Before any phase executes, read these files **in this order**:
+Read `lessons-log.json` up front. Read each policy reference below **on demand, at the phase that needs it** — do not bulk-load (token-lean):
 
-1. `../data-analysis/SKILL.md` — methodological policy; parent contract
-2. `../data-analysis/references/method-selection-guide.md` — model selection
-3. `../data-analysis/references/diagnostics-checklist.md` — required diagnostics per method
-4. `../data-analysis/references/registry-cautions.md` — registry-specific rules
-5. `../data-analysis/references/variable-collapse-defaults.md` *(pending Concern #12 decision)* — default category-collapse rules
+1. `references/clinical-analysis-policy.md` — methodological policy; parent contract
+2. `references/method-selection-guide.md` — model selection
+3. `references/diagnostics-checklist.md` — required diagnostics per method
+4. `references/registry-cautions.md` — registry-specific rules
+5. `references/variable-collapse-defaults.md` *(pending Concern #12 decision)* — default category-collapse rules
 6. `../../references/lessons-log.json` — trigger patterns + actions for 45 lessons
 
-**All policies in `data-analysis` OVERRIDE defaults stated here.** Lessons in `lessons-log.json` are enforced via:
-- Phase 3 critique panel (Lessons-applier subagent surfaces any lesson whose `trigger_patterns` match the plan)
+**All policies in `clinical-analysis-policy.md` OVERRIDE defaults stated here.** Lessons in `lessons-log.json` are enforced via:
+- Phase 3 INLINE plan-sanity (lessons checked inline against `trigger_patterns`; no subagent panel)
 - Phase 4 / 5 execution gates (diagnostics-checklist enforcement; prescribed remediation on failure)
-- Phase 6 audit panel (statistical agent verifies multiple-testing, PH, EPV, etc.)
+- Phase 6 red-team: one SP requesting-red-team-review subagent verifies multiple-testing, PH, EPV, etc. via `references/red-team-brief.md` (most checks already done inline at Checkpoints A/B)
 
 If any prerequisite file is missing, halt and surface the gap. Do not proceed without the parent contract loaded.
 
@@ -88,8 +91,9 @@ Read first; resume from the first incomplete phase if any exist.
 ## References (load only when needed)
 
 - `references/intake-schemas.md` — JSON schemas for dataset_spec, variable_spec, table_layouts, figure_intent
-- `references/critique-panel.md` — Methodologist / Skeptic / Editor / Lessons-applier role briefs + structured-output schema
-- `references/audit-agents.md` — Numerical / Statistical / Biological-plausibility / Code-reproducibility / Completeness agent briefs
+- `references/critique-panel.md` — the four critique lenses' question checklist, now run INLINE (no subagent panel)
+- `references/red-team-brief.md` — clinically-augmented brief for the single SP requesting-red-team-review subagent (supersedes the legacy 5-agent `audit-agents.md`)
+- `references/sp-integration.md` — which science-superpowers skill fires at which phase (rigor layer contract)
 - `references/delegation-matrix.md` — K-Dense + BioMedAgent routing by task type, with `resource_class` per task
 - `references/analysis-report-template.md` — 16-section + reproducibility manifest
 
@@ -238,7 +242,7 @@ The completed checklist (including filters considered AND rejected) is appended 
 
 Every variable in any analysis (primary, secondary, sensitivity, subgroup). Categories: `outcomes` (primary + secondaries), `exposure(s)`, `covariates`, `effect_modifiers`, `subgroup_vars`, `sensitivity_only_vars`. Each entry: `name`, `label`, `type`, `source_columns`, `derivation`, `missing_handling`, plus `levels` + `reference` for categorical.
 
-**Variable collapse defaults** *(pending Concern #12 decision):* For multi-category variables without user-specified collapse rules, apply the defaults in `../data-analysis/references/variable-collapse-defaults.md` and surface every auto-collapse decision in the Phase 3 critique. User overrides via section-by-section revise at HALT 1.
+**Variable collapse defaults** *(pending Concern #12 decision):* For multi-category variables without user-specified collapse rules, apply the defaults in `references/variable-collapse-defaults.md` and surface every auto-collapse decision in the Phase 3 critique. User overrides via section-by-section revise at HALT 1.
 
 ### 1.3 Master Excel Workbook — `Reports/MASTER_TABLES_<project>_<date>.xlsx` (per L051)
 
@@ -268,7 +272,7 @@ Plan figure **intent** (design lives in `/visualize`): figure number, type, what
 
 ### 1.5 Data layer
 
-Follow the data provenance protocol in `../data-analysis/SKILL.md` ("Data Provenance" section): raw source files are read-only (never modified, never copied). Read from the source location, apply filters in memory, write the filtered cohort to `data/working/cohort.csv` with `filter_operations.json` (replayable) + `filter_log.md` (human-readable). The folder structure (`data/working/`, `specs/`, `plans/`, `Reports/`) is created by `/project-init`. If `data/working/` does not exist, halt and prompt user to run `/project-init` first.
+Follow the data provenance protocol in `references/clinical-analysis-policy.md` ("Data Provenance" section): raw source files are read-only (never modified, never copied). Read from the source location, apply filters in memory, write the filtered cohort to `data/working/cohort.csv` with `filter_operations.json` (replayable) + `filter_log.md` (human-readable). The folder structure (`data/working/`, `specs/`, `plans/`, `Reports/`) is created by `/project-init`. If `data/working/` does not exist, halt and prompt user to run `/project-init` first.
 
 ---
 
@@ -285,7 +289,7 @@ Generate a complete plan from locked specs:
 | `secondary[]` | **Adjusted, matched, weighted, survival** per locked objective (per L051 terminology): PSM (with HALT 2A-approved `matching_variables`) + multivariable (with HALT 2A-approved `adjustment_covariates`) + KM + IPTW + method variants (GBT-IPTW / AIPW / frailty Cox). **Delegation pointer** + populates `Table_2` tab. |
 | `sensitivity[]` | missing-data, E-value (per L005), caliper sensitivity (per L040), alternative specs, alternative cohort definitions. Populates `Sensitivity` tab in Master Excel Workbook. |
 | `subgroups[]` | pre-specified subgroups + power justification (per L009). Populates `Supplementary_*` tabs. |
-| `diagnostics` | required per method (per `data-analysis/references/diagnostics-checklist.md`) |
+| `diagnostics` | required per method (per `references/diagnostics-checklist.md`) |
 | `multiple_testing` | BH-FDR within families; Bonferroni for primary (per L006, L032). **Bolding rule (per L051):** bold cells where p<0.05 in `Table_1`; bold cells where BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*` tabs. |
 | `manuscript_shopping_list` | required tables + figures (cross-ref Master Excel Workbook tab names, `figure_intent`); Discussion topics; Limitations to address |
 
@@ -293,9 +297,9 @@ Each analysis step has a `delegation` field naming the executing K-Dense or BioM
 
 ---
 
-## PHASE 3 — CRITIQUE (parallel 4-agent panel)
+## PHASE 3 — CRITIQUE (inline, no panel) + PRE-REGISTRATION
 
-**Mechanic (per Concern #2 decision):** Spawn 4 parallel `Task()` subagents (subagent_type=`general-purpose`) in a single Agent() invocation. Each receives the locked specs + plan + its role brief from `references/critique-panel.md`. Each returns structured JSON. Analyze merges into `plan_audit_report.md`. Expected total: ~15K tokens, ~30–60 seconds latency.
+**Mechanic (revised 2026-05-30 — token reduction):** Run the four critique lenses below INLINE against the locked specs + plan, using the question checklist in `references/critique-panel.md`. Do NOT spawn a 4-agent panel. Write findings to `plan_audit_report.md`. Escalate to ONE `science-superpowers:requesting-red-team-review` subagent ONLY if an inline lens surfaces a CRITICAL plan flaw. Then LOCK THE PRE-REGISTRATION with `science-superpowers:preregistering-analysis`: freeze hypotheses, directional predictions, decision rules, and the confirmatory/exploratory split for every objective BEFORE any outcome is seen → write `Protocol/preregistration_<date>.md`. Inline cost ~2–3K tokens vs. ~15K for the old panel.
 
 | Agent | Question | Output |
 |---|---|---|
@@ -308,13 +312,14 @@ Each analysis step has a `delegation` field naming the executing K-Dense or BioM
 
 ---
 
-## ✋ HALT 1 — Approve intake + plan + critique
+## ✋ HALT 1 — Approve intake + plan + critique + pre-registration
 
 Present, in this order:
 1. Locked specs: `dataset_spec`, `variable_spec`, `table_layouts`, `figure_intent`
 2. Plan (`analysis_plan.json` rendered as readable markdown)
 3. Plan audit report (`plan_audit_report.md`) + critique findings + revised plan
 4. Lesson hits (severity ≥ HIGH by default)
+5. **Pre-registration** (`Protocol/preregistration_<date>.md`) — frozen hypotheses, directional predictions, decision rules, confirmatory/exploratory split (per `science-superpowers:preregistering-analysis`)
 
 Ask the user how to approve:
 - **Bundle approval** (default): single yes/no covering all four artifacts
@@ -370,11 +375,17 @@ Each computation writes to `results_registry.json` AND to `MASTER_ANALYSIS_REGIS
 ### 4.2 Execution gates (no silent errors)
 
 - Convergence on every model
-- EPV ≥ 10 warn / ≥ 5 halt (per `data-analysis` policy)
+- EPV ≥ 10 warn / ≥ 5 halt (per clinical-analysis policy)
 - VIF ≤ 5 for all covariates in adjusted models
 - Schoenfeld P ≥ 0.05 for Cox models (else time-stratified per L003)
 
-If a gate fails → apply prescribed remediation (in `data-analysis/references/diagnostics-checklist.md`), log to `decision_log.md`, continue. Only unrecoverable failures halt (e.g., data missing for required variable, model fails all remediations).
+If a gate fails → apply prescribed remediation (in `references/diagnostics-checklist.md`), log to `decision_log.md`, continue. Only unrecoverable failures halt (e.g., data missing for required variable, model fails all remediations).
+
+---
+
+## ✓ CHECKPOINT A — verify primary before proceeding (INLINE, no subagent)
+
+Apply `science-superpowers:verifying-results-before-claiming` to the crude results, inline: (1) re-run the primary analysis fresh from `data/working/cohort.csv` with the recorded seed; (2) read the actual estimate + 95% CI + p for every objective; (3) confirm `Table_1` / `results_registry.json` match the fresh run; (4) confirm required diagnostics passed. If a number is implausible, irreproducible, or a diagnostic fails → invoke `science-superpowers:investigating-anomalous-results` (root-cause before any adjustment) and do NOT advance until resolved. No crude effect is claimed without fresh reproduced evidence.
 
 ---
 
@@ -428,13 +439,13 @@ PI selects yes / no per variable per role (match, adjust, both, neither). Custom
 
 ---
 
-## PHASE 5 — SECONDARY (ADJUSTED) → fills Table_2 + Sensitivity + Supplementary_* (autonomous)
+## PHASE 5A — SECONDARY (ADJUSTED) → fills Table_2 (autonomous)
 
 **Terminology lock (per L051):** "Secondary analysis" in this skill = PSM + multivariable adjusted models + KM survival curves + IPTW + method variants. These use ONLY the variables locked at HALT 2A.
 
 **Variable load gate:** Read `specs/variables_locked.json` at the start of Phase 5. If absent or unsigned → HALT immediately with error: "Phase 5 cannot fire; HALT 2A not signed. Return to Phase 4 review." No exceptions.
 
-Execute every analysis in `analysis_plan.secondary` and `analysis_plan.sensitivity` using the HALT 2A-approved variables. For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json` AND `MASTER_ANALYSIS_REGISTRY.json` (per L045), and populate the corresponding Master Excel tab (`Table_2`, `Sensitivity`, or `Supplementary_*`).
+Execute `analysis_plan.secondary` (adjusted models ONLY — PSM, multivariable, KM, IPTW) using the HALT 2A-approved variables. **Sensitivity and subgroup analyses do NOT run here — they are Phase 5B, gated on Checkpoint B.** For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json` AND `MASTER_ANALYSIS_REGISTRY.json` (per L045), and populate `Table_2`.
 
 **Bolding rule (per L051):** every cell in `Table_2`, `Sensitivity`, or `Supplementary_*` where BH-FDR q < 0.05 is bolded — the rigor-gate threshold for secondary (adjusted) analyses. Cells where p<0.05 but q≥0.05 are NOT bolded; this distinguishes raw-significance from FDR-significance for the reader.
 
@@ -449,17 +460,35 @@ Execute every analysis in `analysis_plan.secondary` and `analysis_plan.sensitivi
 
 ---
 
-## PHASE 6 — AUDIT (5 parallel agents + remediation if needed)
+## ✓ CHECKPOINT B — verify secondary before sensitivity (INLINE, no subagent)
 
-**Mechanic (per Concern #4 decision):** Spawn 5 parallel `Task()` subagents in a single Agent() invocation. Each receives the relevant inputs + role brief from `references/audit-agents.md`. Expected total: ~17K tokens.
+Apply `science-superpowers:verifying-results-before-claiming` to the adjusted results, inline: re-run each adjusted model fresh, read estimate + 95% CI (+ q), confirm `Table_2` matches the registry, confirm diagnostics (PH / EPV / VIF / PS-overlap) passed, and run the **crude-vs-adjusted concordance check** for every primary objective. If a result is irreproducible, a diagnostic fails, or a direction flips unexpectedly → `science-superpowers:investigating-anomalous-results` (root-cause) before continuing. **Phase 5B does not start until Checkpoint B passes** — never run the sensitivity battery on an unverified adjusted result.
 
-| Agent | Input | Task |
-|---|---|---|
-| Numerical | All numbers in the analysis output + `results_registry.json` | Re-extract and cross-check at ±0.001 tolerance |
-| Statistical | `analysis_plan` + `results_registry` + diagnostics policy | Verify specs, diagnostics, multiple-testing corrections |
-| Biological-plausibility | `study_spec` + `evidence_bank` (if exists; else study_spec only with MODERATE-flagged gap) | Are findings clinically plausible? Sign reversals? Out-of-norm effects? |
-| Code-reproducibility | Replay command + working directory | Actually re-run from raw; compare sha256 of output |
-| Completeness | `analysis_plan` (full) + `results_registry` | Verify every planned analysis executed |
+---
+
+## ✋ HALT 2B — Review Table_2 (adjusted) before sensitivity
+
+Concise by default: per objective — adjusted effect + 95% CI + q (bold if q<0.05), crude-vs-adjusted concordance verdict, diagnostics status. Options: `proceed to sensitivity` | `revise adjustment` | `investigate anomaly` | `show full details`.
+
+---
+
+## PHASE 5B — SENSITIVITY & SUBGROUPS → fills Sensitivity + Supplementary_* (autonomous; only after Checkpoint B)
+
+Execute `analysis_plan.sensitivity[]` (missing-data / multiple imputation, E-value per L005, caliper sensitivity per L040, alternative specifications, alternative cohort definitions) and `analysis_plan.subgroups[]` (pre-specified subgroups + power justification per L009) using the HALT 2A-locked variables. Populate `Sensitivity` and `Supplementary_*`; bold cells where BH-FDR q<0.05. Verify each result per `verifying-results-before-claiming` before recording. Sensitivity findings that contradict the primary/secondary result are themselves findings — log to `decision_log.md` for Limitations.
+
+---
+
+## PHASE 6 — AUDIT (one clinically-augmented red-team; replaces the 5-agent panel)
+
+**Mechanic (revised 2026-05-30 — token reduction):** Numerical re-check, code-reproducibility replay, and completeness are already done INLINE at Checkpoints A and B via `science-superpowers:verifying-results-before-claiming`. Phase 6 therefore spawns exactly ONE subagent — a `science-superpowers:requesting-red-team-review` reviewer, briefed with `references/red-team-brief.md` (the generic SP reviewer AUGMENTED with CRA's clinical checklist: lessons-log L-rules, diagnostics thresholds, registry cautions, multiple-testing policy, observational-language rule). The reviewer attacks confounds, leakage, assumption violations, multiplicity, and over-claiming. Cost ~3–5K tokens vs. ~17K for the old panel.
+
+| Old audit agent | Now handled by |
+|---|---|
+| Numerical (re-check numbers) | INLINE `verifying-results-before-claiming` at Checkpoints A/B |
+| Code-reproducibility (replay from raw) | INLINE `verifying-results-before-claiming` (fresh re-run from raw + seed) |
+| Completeness (every planned analysis ran) | INLINE completeness check at Checkpoint B + Phase 5B |
+| Statistical (diagnostics, multiple-testing) | The single red-team reviewer (clinical checklist in `red-team-brief.md`) |
+| Biological-plausibility (sign reversals, clinical sanity) | The single red-team reviewer (clinical checklist) |
 
 Output: `audit_report.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR).
 

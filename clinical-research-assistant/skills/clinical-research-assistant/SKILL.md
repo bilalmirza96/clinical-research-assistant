@@ -45,7 +45,7 @@ Classify every request before acting:
 |---|---|
 | New project, project scaffold, study setup | `skills/internal/project-init/SKILL.md` |
 | Resume existing project | `skills/internal/resume-project/SKILL.md` |
-| Clinical dataset analysis, regression, survival, registry analysis | `skills/internal/analyze/SKILL.md` plus `skills/internal/data-analysis/SKILL.md` policy |
+| Clinical dataset analysis, regression, survival, registry analysis | `skills/internal/analyze/SKILL.md` plus `skills/internal/analyze/references/clinical-analysis-policy.md` policy |
 | Biomedical omics, scRNA-seq, genomics, VCF/BAM/FASTQ/h5ad, ML-heavy workflow | `skills/external/biomedagent/SKILL.md` as delegated engine |
 | Literature review, evidence synthesis, citation search | `skills/internal/literature-review/SKILL.md` |
 | Citation audit, PMID/DOI verification, bibliography cleanup | Prefer an external citation skill if registered; otherwise use `skills/internal/literature-review/SKILL.md` |
@@ -71,7 +71,7 @@ If more than one skill fits, select one primary skill and list support skills. E
 
 ```text
 Primary route: skills/internal/analyze/SKILL.md
-Support policy: skills/internal/data-analysis/SKILL.md
+Support policy: skills/internal/analyze/references/clinical-analysis-policy.md
 Delegation: none
 Reason: Standard NCDB survival/regression analysis.
 ```

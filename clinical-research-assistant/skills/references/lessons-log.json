@@ -2,7 +2,7 @@
   "_meta": {
     "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
     "schema_version": "1.0",
-    "last_updated": "2026-05-24",
+    "last_updated": "2026-05-30",
     "maintainer": "clinical-research-assistant skill, sourced from real sessions",
     "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
     "last_promotion_pass": "2026-05-24",
@@ -1371,6 +1371,87 @@
         }
       ],
       "promoted_date": "2026-05-28"
+    },
+    {
+      "id": "L052-analysis-skill-merge-and-three-layer-delegation",
+      "date_added": "2026-05-30",
+      "originating_session": "Cowork — CRA delegation-architecture debug + Stage 1 merge (Bilal Mirza)",
+      "category": "Architecture: skill consolidation + three-layer delegation",
+      "trigger_patterns": [
+        "analyze and data-analysis are two skills",
+        "merge analysis skills",
+        "token-heavy analysis run",
+        "defer all analysis to K-Dense",
+        "K-Dense vs scripts",
+        "three-layer delegation"
+      ],
+      "lesson": "`analyze` and `data-analysis` were two separate skills; `/analyze` bulk-read the policy + 4 refs every run (token-heavy). 'Defer ALL analysis to K-Dense' is a category error: K-Dense scientific-skills are expert library references (still produce governed Python), not a no-code engine. Validation lives in the orchestration + rigor layers, not in K-Dense.",
+      "action": "Stage 1: merged data-analysis into /analyze as on-demand references under analyze/references/; switched /analyze to lazy reference loading; data-analysis left as deprecation stub. Ratified three-layer architecture: science-superpowers (rigor) + CRA (clinical orchestrator/brain) + K-Dense scientific-skills & biomedagent (validated execution), with maximal delegation to the validated layers. Stages 2-4 pending: phase-flow checkpoints; replace 9-agent critique+audit panels with inline verifying-results-before-claiming + one clinically-augmented requesting-red-team-review; codify in DELEGATION_RULES.md; bootstrap-precedence rule.",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/analyze/SKILL.md",
+          "note": "PREREQUISITE repoint to local references/ + lazy on-demand loading"
+        },
+        {
+          "file": "skills/internal/analyze/references/clinical-analysis-policy.md",
+          "note": "migrated former data-analysis policy body"
+        },
+        {
+          "file": "iCloud:Claude_Projects/00_Context/working-rules.md",
+          "note": "Skill-First rule drops :data-analysis as separate skill"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "note": "[3.7.0]"
+        }
+      ],
+      "promoted_date": "2026-05-30"
+    },
+    {
+      "id": "L053-three-layer-delegation-and-audit-token-reduction",
+      "date_added": "2026-05-30",
+      "originating_session": "Cowork — CRA Stages 2-4 (checkpoint flow + SP audits + delegation) (Bilal Mirza)",
+      "category": "Architecture: phase-flow checkpoints + audit token reduction + three-layer delegation",
+      "trigger_patterns": [
+        "spawning audit agents",
+        "too many tokens in analyze",
+        "red-team instead of agent panel",
+        "science-superpowers audits",
+        "checkpoint after primary and secondary",
+        "bootstrap conflict",
+        "defer to K-Dense"
+      ],
+      "lesson": "/analyze spawned 9 subagents per run (4-agent plan critique + 5-agent audit ~32K tokens) and ran sensitivity inside the secondary phase, so a bad primary wasted compute on sensitivity. Two SP/superpowers bootstraps + CRA session-start competed.",
+      "action": "Stage 2: inline Checkpoint A (after PRIMARY) + Checkpoint B (after SECONDARY-adjusted); split SENSITIVITY into Phase 5B gated on Checkpoint B; new HALT 2B. Stage 3: 4-agent critique -> inline lenses (escalate to 1 reviewer only on CRITICAL); 5-agent audit -> ONE science-superpowers:requesting-red-team-review (numerical/repro/completeness now inline via verifying-results-before-claiming). Stage 4: three-layer architecture (SP rigor + CRA orchestration + K-Dense/biomedagent execution) codified in DELEGATION_RULES.md §E, analyze/references/sp-integration.md, working-rules.md, with bootstrap-precedence rule; created analyze/references/red-team-brief.md (SP reviewer + CRA clinical checklist).",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/analyze/SKILL.md",
+          "note": "checkpoint phase flow + inline critique + 1 red-team audit"
+        },
+        {
+          "file": "skills/internal/analyze/references/sp-integration.md",
+          "note": "SP-skill -> phase map + bootstrap precedence"
+        },
+        {
+          "file": "skills/internal/analyze/references/red-team-brief.md",
+          "note": "clinically-augmented reviewer brief"
+        },
+        {
+          "file": "DELEGATION_RULES.md",
+          "note": "§E three-layer delegation"
+        },
+        {
+          "file": "iCloud:Claude_Projects/00_Context/working-rules.md",
+          "note": "Three-Layer Delegation Architecture + bootstrap precedence"
+        },
+        {
+          "file": "CHANGELOG.md",
+          "note": "[3.8.0]"
+        }
+      ],
+      "promoted_date": "2026-05-30"
     }
   ]
 }

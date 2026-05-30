@@ -57,7 +57,7 @@ Create the following structure at the user's working location:
 
 Initialize each JSON file from the corresponding template in `templates/state/`. Copy `decision_log.template.md` as `decision_log.md`. Empty folders (`data/working`, `specs/`, `plans/`, `Protocol/`, `Reports/Archives`, `analysis/`) are created at this step so downstream skills have a place to write their artifacts. The `Protocol/` folder is the PI-facing artifact home — locked objectives (`objectives_locked_<date>.md`), locked variables (`variables_locked_<date>.md`), and any SAP §9-style amendments (`sap_amendments.md`) land here. The `Reports/` folder holds the Master Excel Workbook (per L051) and the JSON analysis registry (per L045) as coexisting source-of-truth artifacts.
 
-**Data layer discipline (per data-analysis policy):** Raw source files are NOT copied into the project — they remain at their canonical location (registry export, institutional download). The `data/working/` directory is where filtered cohorts land. The `source_manifest.json` recording WHERE raw lives + sha256 at read time is created by `/analyze` Phase 1, not at project-init. See `../data-analysis/SKILL.md` "Data Provenance" section for the full discipline.
+**Data layer discipline (per data-analysis policy):** Raw source files are NOT copied into the project — they remain at their canonical location (registry export, institutional download). The `data/working/` directory is where filtered cohorts land. The `source_manifest.json` recording WHERE raw lives + sha256 at read time is created by `/analyze` Phase 1, not at project-init. See `../analyze/references/clinical-analysis-policy.md` "Data Provenance" section for the full discipline.
 
 ### STEP 3: Populate State Files
 
