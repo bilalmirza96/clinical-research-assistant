@@ -1,6 +1,6 @@
 {
   "name": "clinical-research-assistant",
-  "version": "3.9.1",
+  "version": "3.9.2",
   "description": "Clinical research assistant for the full research-to-publication pipeline: orchestrated registry/outcomes analysis, pre-registered statistics with primary/secondary/sensitivity checkpoints, publication-quality figures, and IMRAD manuscript drafting. Orchestrates science-superpowers (rigor) and K-Dense scientific-skills + BioMedAgent (execution) underneath.",
   "author": {
     "name": "Muhammad Bilal Mirza"

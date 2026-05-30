@@ -1,19 +1,6 @@
 ---
 name: biomedagent
-description: >
-  Autonomous biomedical data analysis using a multi-agent pipeline inspired by BioMedAgent
-  (Nature Biomedical Engineering, 2026). Handles omics analyses, precision medicine, machine
-  learning on biomedical data, statistical analyses, and data visualization — all from natural
-  language instructions. Use this skill whenever the user asks to analyze biomedical data,
-  run bioinformatics pipelines, perform statistical tests on clinical/genomic data, build ML
-  models for disease prediction, create survival curves, do gene expression analysis, variant
-  calling, single-cell RNA-seq, pathway enrichment, or any computational biology task. Also
-  triggers on: "analyze my sequencing data", "run differential expression", "predict disease
-  from this CSV", "make a survival plot", "cluster these genes", "annotate these variants",
-  "what pathogenic mutations are in this VCF", "do a t-test on these groups", "train a
-  classifier on this biomedical dataset", or any request involving bioinformatics file formats
-  (FASTQ, BAM, VCF, MAF, CEL, h5ad, GTF, GFF). Even if the user doesn't say "biomedical"
-  explicitly, use this skill when the data or context is clearly biological or clinical.
+description: Autonomous biomedical data analysis engine for omics, genomics, clinical statistics, biomedical machine learning, survival analysis, visualization, and bioinformatics file formats such as FASTQ, BAM, VCF, MAF, CEL, and h5ad. Use for scRNA-seq, differential expression, pathway enrichment, variant analysis, biomedical prediction models, and other execution-heavy biological or clinical data workflows.
 ---
 
 # BioMedAgent Skill

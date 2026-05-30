@@ -2,6 +2,13 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.9.2] - 2026-05-30
+
+### Fixed — Codex skill loader compatibility
+
+- Shortened the frontmatter descriptions for vendored `biomedagent` and `hugging-science` skills so they stay under Codex's 1024-character skill-description limit.
+- Regenerated `skills/references/skill-registry.yaml` and `skills/references/external-skills.md` so CRA routing metadata matches the fixed skill frontmatter.
+
 ## [3.9.1] - 2026-05-30
 
 ### Added — Codex packaging layer + version alignment
