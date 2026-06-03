@@ -3,20 +3,24 @@
   "owner": {
     "name": "Muhammad Bilal Mirza"
   },
-  "description": "Clinical research assistant for surgical residents",
-  "version": "3.9.2",
+  "metadata": {
+    "description": "Clinical research assistant for surgical residents",
+    "version": "3.9.2"
+  },
   "plugins": [
     {
       "name": "clinical-research-assistant",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/bilalmirza96/clinical-research-assistant",
-        "path": "clinical-research-assistant"
-      },
+      "source": "./clinical-research-assistant",
       "description": "Clinical research assistant for the full research-to-publication pipeline.",
       "version": "3.9.2",
       "category": "research",
-      "tags": ["clinical-research", "biostatistics", "manuscript-writing", "literature-review", "surgical-research"],
+      "tags": [
+        "clinical-research",
+        "biostatistics",
+        "manuscript-writing",
+        "literature-review",
+        "surgical-research"
+      ],
       "author": {
         "name": "Muhammad Bilal Mirza"
       },
