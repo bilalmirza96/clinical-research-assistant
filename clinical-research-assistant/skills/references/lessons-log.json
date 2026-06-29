@@ -1522,6 +1522,34 @@
         }
       ],
       "promoted_date": "2026-06-29"
+    },
+    {
+      "id": "L056-deployed-cache-drift-guardrail",
+      "date_added": "2026-06-29",
+      "originating_session": "Bilal Mirza — repo health pass after syncing write-abstract reference examples; deployed plugin cache had silently drifted ahead of the source repo",
+      "category": "Process: source-of-truth integrity / deploy hygiene",
+      "trigger_patterns": [
+        "edit a CRA skill",
+        "skill router prints a ~/.claude/plugins/cache/ path",
+        "update SKILL.md or lessons-log",
+        "plugin cache ahead of repo",
+        "sync source repo",
+        "session start health check"
+      ],
+      "lesson": "The plugin that Skill actually loads is the marketplace CACHE at ~/.claude/plugins/cache/cra-marketplace/clinical-research-assistant/<version>/, NOT the source repo. Because the router prints the cache path, sessions naturally edit the cache in place; those edits never reach the source repo or GitHub unless explicitly copied back. This produced real, silent content drift (write-abstract examples + SKILL.md existed only in the cache under the same 3.9.2 version label) that was caught only by a manual tree diff.",
+      "action": "Treat the source repo at ~/Claude/dev/clinical-research-assistant as canonical and the cache as derived. After any cache edit, copy the change into the repo subtree (clinical-research-assistant/...) and commit. Run tools/cra-cache-drift-check.sh at session start (or pre-commit) to diff the deployed cache against the repo and flag divergence; it exits 1 on drift, 0 when in sync or when no cache is installed. Keep lessons-log.json identical in both locations after edits (it lives inside the deployed plugin subtree).",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "tools/cra-cache-drift-check.sh",
+          "note": "new drift-detection tool (cache vs repo)"
+        },
+        {
+          "file": "AGENTS.md",
+          "note": "corrected stale plugin-copy path + drift-check pointer in Hard prohibitions"
+        }
+      ],
+      "promoted_date": "2026-06-29"
     }
   ]
 }
