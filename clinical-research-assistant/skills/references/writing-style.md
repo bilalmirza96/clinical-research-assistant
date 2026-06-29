@@ -323,3 +323,57 @@ The ideal prose should feel:
 - sophisticated but not ornate
 - assertive without sounding like an opinion piece
 - unmistakably human
+
+
+---
+
+# Collective Abstract Style — Extracted From the Five Reference Abstracts
+
+> **Standing instruction (added 2026-06-29 at author request):** Whenever drafting OR auditing an abstract, reference **all five** canonical example abstracts in `write-abstract/examples/`, not only the one matching the venue. Read the venue-matched example most closely for architecture, but treat the patterns below — distilled across all five — as the author's load-bearing abstract voice. These patterns sit on top of, and never override, the 12-principle editorial rubric.
+
+The five sources span the author's full range: CR-POPF surgical-outcomes (NSQIP), esophageal disparities (SEER/NCDB/GENIE, mediation), glutamine-antagonism CPM (scRNA-seq + TCGA + in vivo), divergent epithelial states (descriptive scRNA-seq), and GZMK+ T-cells (clinical-trial scRNA + bulk biomarker). What is common to all five — across registry, translational, descriptive, and biomarker registers — is the durable style. What varies is noted as register-conditional.
+
+## 1. Opening move (Objective / Introduction)
+
+Every abstract opens on the **clinical or biological stake**, then narrows to the **specific unaddressed gap**, then closes the opening on an **explicit objective in first-person active voice**.
+
+- Stake first: "POPF remains the most concerning complication following distal pancreatectomy"; "over 70% of patients do not respond"; "Tumor heterogeneity… is a key determinant of treatment outcomes and survival."
+- Gap second, signposted with a "remains" construction: "the true burden… remains underexplored"; "site-specific heterogeneity… remains unknown"; "genomic determinants remain poorly defined."
+- Objective last, first-person: "This study aims to evaluate…"; "We assessed whether…"; "We evaluated the therapeutic potential of…"; "we offer novel insights into…".
+- For **registry / disparities / determinant** questions, sharpen the objective into a **two-alternative question** ("whether residual disparity reflects tumor biology or inequitable access"; "whether tumor genotype is associated with not only the site but the timing"). The two-alternative framing is the author's signature for outcomes/registry work; bench-translational openers are declarative rather than dichotomous.
+
+## 2. Methods — dense, specific, only-real-rigor
+
+- **Name the data source and N up front**, in the first clause: "2019-2022 NSQIP Pancreas PUF"; "SEER (n=32,820), NCDB (n=114,633)"; "25 tumor samples from 19 patients"; "4 and 28 HNSCC patients… pre- and post-treatment."
+- **List the actual covariates / stratification**, not "adjusted for confounders" alone — enumerate them ("age, sex, diagnosis era, histology, stage, anatomic site, comorbidity, facility type, insurance, area-level socioeconomic measures").
+- **Name each analytic move and only the rigor steps actually performed**: multivariable logistic regression, propensity-score matching, inverse-probability weighting, causal mediation, E-value, competing-risks/cause-specific hazards, Kaplan-Meier, Bonferroni, the specific computational function (`scanpy.tl.score_gene`). Never advertise a sensitivity analysis that was not run.
+- **Name external validation explicitly**, with identifier when present ("external HNSCC cohort treated with Pembrolizumab, NCT03238365"; "validated… in independent datasets").
+- **Name instruments / readouts** for experimental work (IVIS optical imaging, tumor weight, multiplex imaging).
+
+## 3. Results — the dominant section, prose, fully quantified
+
+- **Largest section, always flowing prose, never bullets.** Long multi-clause sentences that layer several estimates each.
+- **Every comparison carries its full statistical triplet**: count as **n (%) with explicit numerator**, **effect size with 95% CI**, and **exact P**. Models: "943 (13.3%)"; "17.6% vs 3.4%, p<0.01"; "OR 2.98, 95% CI 2.35-3.78, p<0.01"; "adjusted HR, 1.29; 95% CI, 1.23-1.36." No bare proportion (always its n/N) and no bare effect size (always its CI and P).
+- **Report null and no-difference findings honestly**, in line with the positives: "without a difference in postoperative acute pancreatitis (14.5% vs 14%, p=0.98)"; "mortality was not significantly impacted (1% vs 0.7%, p=0.76)." Honest nulls strengthen rather than dilute.
+- **Report within-stratum robustness and ranges** where available: "robust within every stage and histology… (OR range, 0.48-0.61; E-value, 3.41)."
+- **Biologist-grade specificity** (Principle 5): name genes (ASCL2, AXIN2, OLFM4, CDX2; ANXA1, S100A4, TROP2; GZMK, GZMB), cell types (tumor-associated macrophages, CD8+ effector T-cells, cytotoxic T lymphocytes), and subtypes (iCMS2/iCMS3, CMS4) rather than abstracted categories.
+- **The "Despite [A], [B]" pivot appears exactly once**, to mark the single key tension: "Despite these complications, mortality was not significantly impacted"; "Despite both representing adverse tumor-suppressor losses, TP53 and SMAD4 were associated with metastasis to opposite compartments"; "Despite favorable tumor biology predicting greater ICI benefit…". One pivot per abstract — using it more than once spends its force.
+
+## 4. Conclusions — interpret, name the driver, land on the lever
+
+- **Open by interpreting, not recapping**; state what the findings mean and name the dominant driver or mechanism.
+- **Carry the key contrast forward** from Results (the access-driven mechanism; the opposite-compartment dichotomy; the responder/non-responder split).
+- **End on the single highest-leverage, concrete clinical lever**: a surveillance target ("intensified liver imaging in TP53-mutated disease"), a referral pathway ("equitable referral to high-volume surgical centers"), a trial-enrollment priority ("prioritized inclusion of Black patients in ICI trials"), a therapeutic strategy ("glutamine antagonism… combined with immune checkpoint blockade"), or a prevention/management need.
+- **Keep causal language calibrated** to design (Principles 3, 7, 9): "supporting an access-driven mechanism"; "potential biomarkers"; "may represent a promising therapeutic strategy"; "suggesting distinct cellular origins"; "warrant prospective validation." Reserve "mediates" for an actual mediation analysis. Use strong novelty claims ("for the first time") sparingly and only when literally true.
+
+## 5. Cross-cutting mechanics (all five)
+
+- **No em dashes**, ever. Commas, semicolons, colons, parentheses; en dash only inside compounds (Black-White, pre-/post-treatment).
+- **First-person active voice is welcome** and used throughout ("We conducted", "We identified", "we discovered", "We validated").
+- **Database names are allowed** in the body (NSQIP, SEER, NCDB, AACR Project GENIE, TCGA); spell out non-standard abbreviations at first use (POPF, DGE, iCMS, CTL).
+- **Structural label is register-conditional**: surgical/registry and descriptive single-cell work use an **Introduction**-led header; bench-translational mechanism-to-therapy work uses an **Objective**-led header. Match the example closest to the study type.
+- **Section weight** (Principle 6) holds in all five: Results dominates; Methods is the minimum needed to establish rigor; Conclusions is interpretation, not summary.
+
+## How to use this section
+
+Before drafting any abstract: (1) read the venue/study-type-matched example in `examples/` for architecture, (2) read the other four quickly to re-absorb the common voice, (3) draft against the five-part shape above, (4) run the 12-point gate. When auditing, check the submitted draft against both the 12-point gate and the five points here, and quote the matching reference pattern when proposing a fix.
