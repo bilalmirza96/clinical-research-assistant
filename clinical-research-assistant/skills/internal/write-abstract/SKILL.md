@@ -238,7 +238,39 @@ Run the 12-point gate:
 
 ---
 
+## Reference Example Abstracts — Bilal's preferred style (canonical templates)
+
+Five author-approved abstracts in `examples/` define the target voice. **Read the one matching the venue and study type before drafting**, and replicate its register:
+
+*Surgical / registry-outcomes register:*
+- **`examples/example_crpopf_surgical-outcomes.md`** — single-registry surgical-outcomes abstract (NSQIP). Template for **surgical-meeting abstracts (SSO / ASC / AATS / WSA)**.
+- **`examples/example_disparities_genomics-registry.md`** — multi-database + genomics, rigor- and mediation-heavy (SEER/NCDB/AACR Project GENIE). Template for **registry/molecular abstracts**.
+
+*Translational single-cell / immuno-oncology register (OBJECTIVE/INTRODUCTION-led bench-translational venues):*
+- **`examples/example_glutamine-cpm_scrna-invivo.md`** — scRNA-seq + TCGA survival + in vivo treatment arms (DRP104 ± anti-PD1). Template for **mechanism-to-therapy abstracts** that pair single-cell biology with a public survival dataset and an interventional in vivo experiment.
+- **`examples/example_epithelial-states_scrna-mcrc.md`** — descriptive single-cell taxonomy abstract (iCMS/CMS, stem-cell vs metaplasia signatures), no interventional arm. Template for **cell-state / signature-defining single-cell abstracts** with independent-dataset validation.
+- **`examples/example_gzmk-tcells_hnscc-ici.md`** — clinical-trial scRNA + bulk predictive-biomarker abstract with external-cohort validation and survival (GZMK+ vs GZMB+ T-cells). Template for **predictive-biomarker abstracts** built on trial data with pre-/post-treatment contrast architecture.
+
+Distilled patterns to replicate (these are *how Bilal likes abstracts*, on top of the 12 principles):
+
+1. **Open with the clinical stakes in one sentence, then pose the question as a sharp two-alternative** ("...whether residual disparity reflects tumor biology or inequitable access"). Use first-person active voice ("We assessed", "We conducted").
+2. **Methods are dense and specific**: name the database(s) with N up front, **list the actual covariates adjusted for**, name each analytic move, and name only the rigor steps **actually performed** (PSM, IPW, mediation, E-value, Bonferroni). Never advertise a sensitivity analysis that was not run.
+3. **Results is the dominant section, in flowing prose (never bullets)**, layering many estimates in long multi-clause sentences. Every comparison as **n (%) with numerator/denominator, effect size with 95% CI, and exact P** (e.g., "943 (13.3%)"; "17.6% vs 3.4%, P<.01"; "OR 2.98, 95% CI 2.35-3.78"). Report within-stratum robustness and ranges where available.
+4. **Use the signature "Despite [finding A], [finding B]" pivot** once, to mark the key tension ("Despite these complications, mortality was not significantly impacted"; "despite favorable tumor biology predicting greater ICI benefit").
+5. **Conclusions interpret and name the dominant driver/mechanism, then END on the concrete highest-leverage clinical lever** (surveillance target, referral pathway, trial-enrollment priority). Keep causal language hedged ("supporting an access-driven mechanism", "markers predicting", "in this cohort").
+6. **No em dashes** (commas/semicolons/parentheses; en dash only inside compounds like Black-White). Database names allowed; spell out non-standard abbreviations at first use.
+
+When the user asks for an abstract, open the matching example, mirror its architecture and density, then run the 12-point gate.
+
 ## CHANGELOG / Lessons Learned
+
+### 2026-06-29 — Catalogued three translational scRNA-seq reference abstracts
+
+Added three author-supplied abstracts as canonical style templates for the **translational single-cell / immuno-oncology register**, a register not previously represented (the prior two examples were surgical / registry-outcomes): `examples/example_glutamine-cpm_scrna-invivo.md` (CPM glutamine antagonism — scRNA-seq + TCGA survival + in vivo DRP104 ± anti-PD1), `examples/example_epithelial-states_scrna-mcrc.md` (divergent epithelial cell states — descriptive iCMS/CMS taxonomy, no interventional arm), and `examples/example_gzmk-tcells_hnscc-ici.md` (GZMK+ T-cell ICI-response biomarker — clinical-trial scRNA + bulk with external-cohort validation). Full verbatim abstract text catalogued in each file; "Reference Example Abstracts" section regrouped into surgical/registry vs translational/single-cell registers. Trigger: Bilal supplied the three abstracts as "how I want abstracts written." Catalog now holds **5** reference examples. **Source-repo + lessons-log.json synced 2026-06-29** — replicated all five `examples/` files + this SKILL.md into the source repo at `~/dev/clinical-research-assistant` (note: actual path is `~/dev/`, not `~/Claude/dev/` as the workspace CLAUDE.md states) and added lessons-log entry L055.
+
+### 2026-06-24 — Added canonical reference-example abstracts
+
+Added `examples/example_crpopf_surgical-outcomes.md` (NSQIP surgical-outcomes, ASC 2026) and `examples/example_disparities_genomics-registry.md` (SEER/NCDB/GENIE, mediation-heavy) as author-approved style templates, plus a "Reference Example Abstracts" section distilling six concrete patterns (two-alternative opening + first-person voice; dense covariate-named Methods with only-real rigor signals; prose-dense Results with n (%)/CI/exact-P; the "Despite ... " pivot; driver-naming Conclusions ending on the highest-leverage clinical lever; no em dashes). Trigger: Bilal supplied the CR-POPF and esophageal-disparities abstracts as "how I like my abstracts." **Source-repo + lessons-log.json synced 2026-06-29** (alongside the 2026-06-29 translational batch) — both example files replicated into the source repo at `~/dev/clinical-research-assistant`; lessons-log entry L055 covers the full reference-example catalog.
 
 ### 2026-04-26 — Created from Bilal Mirza editorial philosophy
 
