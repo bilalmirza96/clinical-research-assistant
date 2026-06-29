@@ -240,7 +240,7 @@ Run the 12-point gate:
 
 ## Reference Example Abstracts — Bilal's preferred style (canonical templates)
 
-Five author-approved abstracts in `examples/` define the target voice. **Read the one matching the venue and study type before drafting**, and replicate its register:
+Five author-approved abstracts in `examples/` define the target voice. **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and read the other four to re-absorb the common voice. The cross-abstract patterns are distilled in `../../references/writing-style.md` → "Collective Abstract Style — Extracted From the Five Reference Abstracts"; apply that section together with the 12 principles. The five examples and their registers:
 
 *Surgical / registry-outcomes register:*
 - **`examples/example_crpopf_surgical-outcomes.md`** — single-registry surgical-outcomes abstract (NSQIP). Template for **surgical-meeting abstracts (SSO / ASC / AATS / WSA)**.
@@ -260,7 +260,7 @@ Distilled patterns to replicate (these are *how Bilal likes abstracts*, on top o
 5. **Conclusions interpret and name the dominant driver/mechanism, then END on the concrete highest-leverage clinical lever** (surveillance target, referral pathway, trial-enrollment priority). Keep causal language hedged ("supporting an access-driven mechanism", "markers predicting", "in this cohort").
 6. **No em dashes** (commas/semicolons/parentheses; en dash only inside compounds like Black-White). Database names allowed; spell out non-standard abbreviations at first use.
 
-When the user asks for an abstract, open the matching example, mirror its architecture and density, then run the 12-point gate.
+When the user asks for an abstract, open all five examples (the matching one most closely), apply the "Collective Abstract Style" section of `writing-style.md`, mirror the architecture and density, then run the 12-point gate.
 
 ## CHANGELOG / Lessons Learned
 
