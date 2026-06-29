@@ -61,8 +61,12 @@ There are **two `Claude`-named folders** on this Mac. They are NOT interchangeab
 **Hard prohibitions:**
 - ❌ Never clone or place a git repo inside iCloud. iCloud Drive evicts files to save space
   and corrupts `.git/index` and refs. Use GitHub as the portable mirror.
-- ❌ Never edit the installed Claude Code plugin copy at `~/.claude/plugins/clinical-research-assistant/`
-  directly. Always edit the source at `~/Claude/dev/clinical-research-assistant/`.
+- ❌ Never edit the installed Claude Code plugin copy directly. The deployed plugin that `Skill`
+  loads lives in the marketplace cache
+  (`~/.claude/plugins/cache/cra-marketplace/clinical-research-assistant/<version>/`). Always edit the
+  source at `~/Claude/dev/clinical-research-assistant/`, then redeploy. If a session did edit the cache,
+  run `tools/cra-cache-drift-check.sh` to surface the divergence and sync it back to the repo before
+  committing.
 - ❌ Never modify raw data in place. Write derived files to `processed/`, `reports/`,
   `analyses/`, `outputs/`, or `archives/`.
 
