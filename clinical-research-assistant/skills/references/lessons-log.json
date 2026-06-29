@@ -2,7 +2,7 @@
   "_meta": {
     "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
     "schema_version": "1.0",
-    "last_updated": "2026-05-30",
+    "last_updated": "2026-06-29",
     "maintainer": "clinical-research-assistant skill, sourced from real sessions",
     "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
     "last_promotion_pass": "2026-05-24",
@@ -1492,6 +1492,36 @@
         }
       ],
       "promoted_date": "2026-05-30"
+    },
+    {
+      "id": "L055-abstract-reference-example-catalog",
+      "date_added": "2026-06-29",
+      "originating_session": "Bilal Mirza supplied author-approved abstracts as canonical style templates ('how I want abstracts written')",
+      "category": "Process: house-style reference assets for abstract writing",
+      "trigger_patterns": [
+        "draft abstract",
+        "revise abstract",
+        "abstract for [conference/journal]",
+        "how Bilal likes abstracts",
+        "write an abstract in my style",
+        "scRNA-seq / single-cell translational abstract",
+        "predictive biomarker abstract",
+        "surgical-outcomes registry abstract"
+      ],
+      "lesson": "The 12-principle rubric governs HOW to edit an abstract, but the target VOICE and density are best conveyed by author-approved exemplars. Bilal supplied five abstracts spanning two registers that the rubric alone does not pin down: (1) surgical / registry-outcomes (NSQIP CR-POPF; SEER/NCDB/GENIE disparities) and (2) translational single-cell / immuno-oncology (CPM glutamine antagonism scRNA + in vivo; divergent epithelial cell states taxonomy; GZMK+ T-cell ICI-response biomarker). Without a venue/study-type-matched exemplar in hand, drafts drift toward generic structure and under-dense Results.",
+      "action": "Before drafting any abstract, open the matching exemplar in write-abstract/examples/ and replicate its architecture and density, THEN run the 12-point gate. Match by register: surgical/registry-outcomes -> example_crpopf_surgical-outcomes.md or example_disparities_genomics-registry.md; translational single-cell -> example_glutamine-cpm_scrna-invivo.md (mechanism-to-therapy w/ in vivo arm), example_epithelial-states_scrna-mcrc.md (descriptive cell-state taxonomy), or example_gzmk-tcells_hnscc-ici.md (predictive biomarker, pre/post-treatment contrast). Full verbatim abstract text is catalogued in each file. Catalog holds 5 examples as of 2026-06-29; append new author-approved abstracts as additional exemplars rather than rewriting existing ones.",
+      "deprecated": false,
+      "promoted_to": [
+        {
+          "file": "skills/internal/write-abstract/SKILL.md",
+          "note": "Reference Example Abstracts section + CHANGELOG 2026-06-24 & 2026-06-29"
+        },
+        {
+          "file": "skills/internal/write-abstract/examples/",
+          "note": "5 author-approved exemplar abstracts (verbatim text)"
+        }
+      ],
+      "promoted_date": "2026-06-29"
     }
   ]
 }
