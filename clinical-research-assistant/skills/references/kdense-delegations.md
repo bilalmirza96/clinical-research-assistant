@@ -359,5 +359,10 @@ sequential IDs, `json.dump indent=2`, never overwrite fields you are not updatin
 
 If any K-Dense skill updates change its interface, update this file's section for
 the affected skill. Track changes in the file header `last_updated` if needed.
-The vendored copy under `skills/external/` is the canonical reference — refresh
-it by re-running `tools/update_skill_registry.py` after pulling upstream.
+
+**Authoritative copy (per L058):** the **natively-installed** `claude-scientific-skills`
+skill (bare name `<name>`) is the authoritative reference — see the "Namespace resolution"
+section in `internal/analyze/references/delegation-matrix.md`. The vendored copy under
+`skills/external/` is a **version-pinned offline/Codex fallback only**; it drifts from
+upstream, so prefer the native skill whenever it is installed. Refresh the vendored fallback
+by re-running `tools/update_skill_registry.py` after pulling upstream.
