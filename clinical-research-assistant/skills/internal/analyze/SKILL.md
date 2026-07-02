@@ -37,6 +37,31 @@ Five halts (Phase 0, HALT 1, HALT 2, HALT 2A, HALT 3). Phase 0 is a HARD GATE �
 
 ---
 
+## `/analyze --quick` — exploratory tier (per L058)
+
+**Purpose.** A deliberately lightweight path for exploratory looks (a single 2×2, one KM curve, a quick descriptive contrast) and for the moment you would otherwise abandon the plugin and hand-run Python. It keeps the load-bearing rigor — a reproducible seeded run, inline verification, and SCAR registration — while dropping the full halt ladder. It exists so that "quick" never means "outside the plugin" (the manual-execution reliability gap).
+
+**Invoke:** `/analyze --quick "<one pre-named contrast>"`. What runs:
+
+```
+resource check (light)
+→ single analysis with random_state=42 (appropriate test by outcome class, per Phase 4.1)
+→ ✓ INLINE verify (science-superpowers:verifying-results-before-claiming): fresh re-run, read estimate + 95% CI + p, confirm reproduction
+→ SCAR register the result as Tier 4 (HYPOTHESIS-GENERATING), tagged mode=quick
+→ one concise result card → STOP
+```
+
+**Dropped vs. full `/analyze`:** Phase 0 lit-recon hard gate, HALT 0/1/2/2A/2B/3, Master Excel scaffolding + shell sign-off, pre-registration, the red-team subagent, the 16-section report. **Never dropped:** the random seed, the inline verification re-run, and SCAR registration.
+
+**Hard guardrails — this is what keeps `--quick` from becoming a rigor bypass:**
+
+- Every `--quick` result is **Tier 4 (hypothesis-generating)** by classification (per L035) and is **forbidden from any abstract or from a manuscript primary/secondary result.** The result card carries the banner: *"Exploratory (`--quick`) — not literature-vetted, not pre-registered, not eligible for the abstract. Promote via a full `/analyze` run before any confirmatory claim."*
+- **No adjusted / matched / weighted models** in `--quick` — those require the HALT 2A variable-approval gate. If the question needs adjustment, `--quick` refuses and points to full `/analyze`.
+- **One contrast only.** `--quick` runs a single pre-named comparison — no multiple-testing family. Needing several is the signal to switch to full `/analyze`.
+- To turn a `--quick` finding into a manuscript result, re-run the full pipeline; the SCAR entry links the quick result to its confirmatory re-run.
+
+---
+
 ## PREREQUISITE — read before anything else
 
 Read `lessons-log.json` up front. Read each policy reference below **on demand, at the phase that needs it** — do not bulk-load (token-lean):

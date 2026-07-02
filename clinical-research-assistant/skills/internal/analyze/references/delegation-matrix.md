@@ -10,6 +10,15 @@ Maps each analysis task type in `analysis_plan.json` to the K-Dense scientific s
 
 If a task type isn't in this matrix → fall back to BioMedAgent. If a task requires a resource class the host environment doesn't have → halt per Phase 4.0 resource check.
 
+## Namespace resolution — how `scientific-skills:<name>` resolves at runtime (per L058)
+
+Every `scientific-skills:<name>` string in this matrix (and everywhere else in CRA) is a **delegation label, not an invokable skill name**. Resolve it in this order:
+
+1. **Native skill `<name>` (authoritative).** The `claude-scientific-skills` plugin installs the full K-Dense library (173 skills) natively; each surfaces under its **bare** name — `scikit-survival`, `statsmodels`, `scanpy`, `citation-management`, etc. That bare name is the form to load or invoke: **strip the `scientific-skills:` prefix.** (Fully-qualified `claude-scientific-skills:<name>` is the fallback only if a bare name ever collides with another plugin's skill.)
+2. **Vendored copy (offline / Codex fallback only).** `skills/external/scientific-agent-skills/scientific-skills/<name>/SKILL.md` is a **version-pinned** copy for environments where the native plugin is absent (Codex packaging, offline). Read it only when the native skill is unavailable; it drifts from upstream, so never prefer it when the native skill exists.
+
+**Coverage.** The native library is a superset of the 138 vendored skills — every vendored skill has a native namesake **except** these 10 CRA-local skills, which have no native equivalent and must be retained on any de-vendoring: `autoskill, bids, database-lookup, exa-search, hugging-science, optimize-for-gpu, paper-lookup, paperzilla, polars-bio, primekg`. Staged migration: `tools/cra-devendor.sh` (dry-run by default).
+
 ---
 
 ## Tabular clinical analysis (the bulk of CRA work)

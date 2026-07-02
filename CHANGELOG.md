@@ -2,6 +2,22 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [3.9.3] - 2026-07-02
+
+### Fixed — delegation namespace resolution + deploy-version discipline (L058)
+
+- **Namespace resolver.** Added a "Namespace resolution" section to `skills/internal/analyze/references/delegation-matrix.md` documenting that every `scientific-skills:<name>` reference is a delegation *label* that resolves to the **natively-installed** `claude-scientific-skills` skill `<name>` (bare invokable name; 173-skill superset), with the vendored `skills/external/scientific-agent-skills/` copy as an offline/Codex fallback only. One authoritative table resolves all ~141 `scientific-skills:` occurrences across 18 files without touching each one. Fixes the latent fragility that the prefixed label was never `Skill()`-invokable as written.
+- **Version-bump discipline.** Bumped `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` (both `metadata.version` and the plugin-entry version) 3.9.2 → 3.9.3. Content had been shipping under a frozen 3.9.2 label, so the version-keyed install cache never pulled it. Policy going forward: bump the patch version on every content change, however small.
+- **Drift-check hook.** Wired `tools/cra-cache-drift-check.sh` into a non-blocking `SessionStart` hook (`~/.claude/settings.json`) so cache-vs-repo drift is surfaced automatically each session (extends L056).
+
+### Added — `/analyze --quick` exploratory tier (L058)
+
+- New lightweight `/analyze --quick` path for exploratory analyses: keeps the seeded run, inline `verifying-results-before-claiming` verification, and SCAR registration, but drops the halt ladder, Master Excel scaffolding, pre-registration, red-team, and 16-section report. Hard-guarded so quick results are Tier 4 (hypothesis-generating), forbidden from abstracts, single-contrast only, and adjustment requests refuse and redirect to full `/analyze`. Purpose: remove the incentive to hand-run analyses outside the plugin (the manual-execution reliability gap surfaced in the 2026-07-02 audit).
+
+### Staged — de-vendoring migration (NOT executed)
+
+- Added `tools/cra-devendor.sh` (dry-run by default): would drop the 128 vendored scientific-skills that have a native namesake and retain the 10 CRA-local ones that do not (`autoskill, bids, database-lookup, exa-search, hugging-science, optimize-for-gpu, paper-lookup, paperzilla, polars-bio, primekg`). Not run — still requires rewiring the vendored-path references in `skills/references/kdense-delegations.md` to native before execution.
+
 ## [3.9.2] - 2026-05-30
 
 ### Fixed — Codex skill loader compatibility

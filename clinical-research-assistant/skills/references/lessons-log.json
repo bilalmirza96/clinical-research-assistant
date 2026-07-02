@@ -1572,6 +1572,44 @@
    "deprecated": false,
    "promoted_to": null,
    "promoted_date": null
+  },
+  {
+   "id": "L058-native-skill-authority-and-version-bump-discipline",
+   "date_added": "2026-07-02",
+   "originating_session": "Bilal Mirza — expert audit of the CRA plugin. Found: (1) every scientific-skills: reference resolves to nothing invokable — only to a vendored file; (2) the vendored science library duplicates the natively-installed claude-scientific-skills plugin (173 skills, superset of the 138 vendored); (3) content had been shipping under a frozen 3.9.2 version so the version-keyed install cache never pulled it; (4) many analyses were being hand-run in direct Python instead of through /analyze, bypassing the runtime rigor gates.",
+   "category": "Process: delegation namespace resolution / deploy hygiene",
+   "trigger_patterns": [
+    "delegate to a scientific-skills: skill",
+    "reference scientific-skills:",
+    "edit a CRA skill or reference",
+    "bump plugin version",
+    "release a CRA change",
+    "de-vendor scientific-agent-skills",
+    "cache still on old version after edit",
+    "hand-run analysis outside /analyze"
+   ],
+   "lesson": "Two coupled facts plus one habit. (1) NAMESPACE: every `scientific-skills:<name>` reference in CRA is a documentation LABEL, not an invokable skill name. At runtime it resolves to the natively-installed skill `<name>` from the claude-scientific-skills plugin (173 skills, a superset of the 138 vendored under skills/external/scientific-agent-skills/). The bare name `<name>` is the invokable form; the vendored SKILL.md is a version-pinned offline/Codex fallback only. Ten vendored skills have NO native namesake and must be kept on any de-vendoring: autoskill, bids, database-lookup, exa-search, hugging-science, optimize-for-gpu, paper-lookup, paperzilla, polars-bio, primekg. (2) VERSION: the deployed cache is keyed by version string; shipping content changes without bumping the version (as happened repeatedly under 3.9.2) means installs never pull the new content and the cache silently runs stale. (3) HABIT: hand-running an analysis in direct Python keeps the workflow's structure but loses its enforcement (inline verification, EPV/VIF/PH gates, red-team, SCAR); this is the origin of the manuscript numeric-reconciliation churn.",
+   "action": "Delegation: treat the bare native skill name as authoritative — see the 'Namespace resolution' table in analyze/references/delegation-matrix.md. Never assume `scientific-skills:X` is Skill()-invokable as written. Release: bump BOTH .claude-plugin/plugin.json AND .claude-plugin/marketplace.json (metadata.version + plugin-entry version) on every content change; add a CHANGELOG entry; then reinstall/redeploy so the cache picks it up — the source repo edit alone does not change runtime. A SessionStart hook running tools/cra-cache-drift-check.sh flags cache-vs-repo drift automatically (extends L056). Execution: invoke /analyze (or the new /analyze --quick exploratory tier) rather than hand-running Python, so the runtime rigor gates fire. De-vendoring the 128 native-covered skills is staged in tools/cra-devendor.sh (dry-run by default; keeps the 10 no-native skills; still needs the vendored-path references in kdense-delegations.md rewired to native before execution).",
+   "deprecated": false,
+   "promoted_to": [
+    {
+     "file": ".claude-plugin/plugin.json + .claude-plugin/marketplace.json",
+     "note": "version 3.9.2 -> 3.9.3 (bump-on-content-change discipline)"
+    },
+    {
+     "file": "skills/internal/analyze/references/delegation-matrix.md",
+     "note": "Namespace resolution table added"
+    },
+    {
+     "file": "skills/internal/analyze/SKILL.md",
+     "note": "/analyze --quick exploratory tier added (non-bypassing)"
+    },
+    {
+     "file": "tools/cra-devendor.sh",
+     "note": "staged de-vendor migration (dry-run default)"
+    }
+   ],
+   "promoted_date": "2026-07-02"
   }
  ]
 }
