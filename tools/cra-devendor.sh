@@ -16,16 +16,20 @@
 # │ Pass --apply to actually delete. Even then it refuses unless the native plugin is    │
 # │ present and covers every skill being dropped.                                        │
 # │                                                                                       │
-# │ PRECONDITION NOT YET MET: the vendored FILE-PATH references in                        │
-# │   clinical-research-assistant/skills/references/kdense-delegations.md                 │
-# │ (e.g. "Skill path: skills/external/.../<name>/SKILL.md") must first be rewired to the │
-# │ native skill name, or they will 404 after deletion. This script warns if they remain.│
+# │ PRECONDITIONS NOT YET MET (script refuses --apply until both are cleared):             │
+# │  1. Vendored FILE-PATH references in                                                    │
+# │       clinical-research-assistant/skills/references/kdense-delegations.md              │
+# │     (e.g. "Skill path: skills/external/.../<name>/SKILL.md") must be rewired to the    │
+# │     native skill name, or they will 404 after deletion.                                │
+# │  2. tools/cra-sanity-check.sh hardcodes EXPECTED_KDENSE_COUNT=138 and check_file's on   │
+# │     five vendored delegation-target paths — set the count to the retained total (10)    │
+# │     and repoint those checks to native, else the sanity check hard-fails post-devendor. │
 # └───────────────────────────────────────────────────────────────────────────────────────┘
 
 set -uo pipefail
 
 APPLY=0
-[[ "${1:-}" == "--apply" ]] && APPLY=1
+for a in "$@"; do [[ "$a" == "--apply" ]] && APPLY=1; done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -44,11 +48,12 @@ KEEP=(autoskill bids database-lookup exa-search hugging-science optimize-for-gpu
 is_keep() { local n="$1"; for k in "${KEEP[@]}"; do [[ "$k" == "$n" ]] && return 0; done; return 1; }
 
 drop=(); keep=(); orphan=()
-while IFS= read -r name; do
-  [[ -z "$name" ]] && continue
+for d in "$VEND"/*/; do
+  [[ -d "$d" ]] || continue
+  name="$(basename "$d")"
   if is_keep "$name"; then keep+=("$name"); continue; fi
   if [[ -d "$NATIVE/$name" ]]; then drop+=("$name"); else orphan+=("$name"); fi
-done < <(ls "$VEND" 2>/dev/null | sort)
+done
 
 printf "vendored : %s\n" "$VEND"
 printf "native   : %s (%s skills)\n\n" "$NATIVE" "$(ls "$NATIVE" | wc -l | tr -d ' ')"
@@ -60,12 +65,21 @@ if (( ${#orphan[@]} )); then
   exit 1
 fi
 
-# Warn if the file-path references haven't been rewired yet.
-if grep -q "skills/external/scientific-agent-skills" "$KDENSE_REF" 2>/dev/null; then
-  printf "\n${YELLOW}⚠ %s still contains vendored file-path references (skills/external/...).\n  Rewire these to native skill names BEFORE --apply, or they will 404.${RESET}\n" "${KDENSE_REF##*$REPO_ROOT/}"
+# Preconditions that must be cleared before --apply. Each sets REWIRE_PENDING.
+REWIRE_PENDING=0
+
+# (1) kdense-delegations.md must not reference any vendored file path.
+if grep -qE "skills/external/" "$KDENSE_REF" 2>/dev/null; then
+  printf "\n${YELLOW}⚠ %s still contains vendored file-path references (skills/external/...).\n  Rewire these to native skill names BEFORE --apply, or they will 404.${RESET}\n" "${KDENSE_REF##*/}"
   REWIRE_PENDING=1
-else
-  REWIRE_PENDING=0
+fi
+
+# (2) cra-sanity-check.sh hardcodes the vendored count + vendored delegation-target paths;
+#     both go stale the moment de-vendor runs (count warns; the 5 delegation check_file calls hard-FAIL).
+SANITY="$REPO_ROOT/tools/cra-sanity-check.sh"
+if grep -qE "EXPECTED_KDENSE_COUNT=138|external/scientific-agent-skills" "$SANITY" 2>/dev/null; then
+  printf "\n${YELLOW}⚠ %s still expects 138 vendored skills and/or check_file's vendored delegation-target paths.\n  Set EXPECTED_KDENSE_COUNT to %s and repoint the KDENSE delegation checks to native BEFORE --apply, or the sanity check will fail post-devendor.${RESET}\n" "${SANITY##*/}" "${#keep[@]}"
+  REWIRE_PENDING=1
 fi
 
 if (( APPLY == 0 )); then
