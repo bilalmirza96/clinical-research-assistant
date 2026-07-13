@@ -4,13 +4,60 @@ Read at PREREQUISITE by `/visualize`. These standards layer on top of whatever K
 
 ---
 
+## House Figure Style v1 (default) — use `scripts/fig_style.py`
+
+The default look for every clinical / genomic figure is the **Bilal Mirza house style**
+(adopted 2026-07-13, first proven on the GENIE-BPC-CRC SSO organotropism deck; author
+directive: *"I want all my figures to look like these."*). It is a reusable module —
+**import it, do not hand-roll styling:**
+
+- `skills/internal/visualize/scripts/fig_style.py` (canonical)
+- workspace mirror: `~/Library/.../Claude_Projects/templates/figure-style/fig_style.py` (+ README)
+
+**Structural language (non-negotiable):**
+
+- **Semantic palette** — swap the hexes, keep the roles: `TEAL` = primary / direct /
+  internal (development) · `CORAL` = secondary / mediated / molecular · `PLUM` = external /
+  replication cohort · `GREEN` = FDR-significant · `AMBER` = nominal · `SLATE` =
+  non-significant / neutral / reference lines. Colorblind-safe; never red+green for two
+  groups (consistent with the Color palette section below).
+- **Rounded corners** on every bar and every forest CI capsule (`fig_style.rbar`, rounded
+  capstyle). Pixel-radius and DPI-relative, so roundness is constant across DPI settings.
+- **Clean sans typography** — Helvetica Neue → Arial → DejaVu Sans. This is the *default*
+  and supersedes the Poppins/Lora brand track below; Poppins/Lora remain acceptable when a
+  venue or co-author explicitly wants the brand look.
+- **Short, left-aligned title + light subtitle** via `fig_style.titles()`; detailed stats
+  live in the subtitle/caption, never in a shouty ALL-CAPS title.
+- **Subtle rounded "card" frame** per panel (`fig_style.finish`). For strict journals that
+  demand pure white, drop the card.
+- Despined (top/right off), faint gridlines, rounded legend, white marker halos, value
+  labels, **300 DPI** module default (use 600 for final journal upload), **ASCII
+  punctuation only** (portal/manuscript-safe — no em dashes, no smart quotes; per L057).
+
+**Two context toggles (everything else is fixed):**
+
+1. **Titles.** `titles()` puts a short title on the figure — right for **abstracts, slides,
+   and review copies**. **Omit it for journal submission**; the title belongs in the caption
+   (see "No figure titles — HARD RULE" below). The house style adds an abstract/slide mode;
+   it does not repeal that rule.
+2. **Palette hexes.** Swap `TEAL`/`CORAL`/`PLUM` for a venue's scheme; never repurpose
+   `GREEN`/`AMBER`/`SLATE`, which encode significance tiers.
+
+Everything below — exact P-values (L013), comparator declaration (L038), the
+overlap-prevention HARD RULE and its mandatory visual-inspection gate, journal dimensions,
+and PDF output — remains fully in force; the house style is the visual skin, not a licence
+to skip them. Figures are **restyle-only replots of locked registry values** — never
+recompute or guess a number inside a figure script.
+
+---
+
 ## General style
 
 - Clean, minimalist design — no chartjunk, no unnecessary gridlines, no 3D effects
-- White background only
+- White or very-light background (the house-style card frame is a subtle off-white; use pure white for strict journals)
 - High resolution: 300 DPI minimum, 600 DPI preferred
-- Consistent color palette across all figures in the manuscript
-- Anthropic brand typography (see Typography section below)
+- Consistent color palette across all figures in the manuscript — use the House Figure Style semantic palette by default
+- Clean sans typography by default (House Figure Style); Anthropic Poppins/Lora is an alternate brand track (see Typography section below)
 
 ## Typography — Anthropic brand fonts
 

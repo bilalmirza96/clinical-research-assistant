@@ -31,9 +31,10 @@ Two halts. Plan first, then rendered-deck review. Figures are visceral — the p
 Before any phase executes, read these files **in this order**:
 
 1. `../../references/lessons-log.json` — relevant figure lessons (L013 P-value format, L020 race terminology, L038 comparator declaration, L042 manuscript formatting)
-2. `references/aesthetic-standards.md` — non-negotiable visual standards (typography, color, dimensions, annotations)
-3. `references/delegation-by-figure-type.md` — which K-Dense skill executes which figure type
-4. `references/figure-specs-schema.md` — JSON schema for `figure_specs.json`
+2. `references/aesthetic-standards.md` — non-negotiable visual standards, led by **House Figure Style v1** (the default look)
+3. `scripts/fig_style.py` — the House Figure Style implementation. **Import it; do not hand-roll matplotlib styling.** Semantic palette (swappable hexes, fixed roles), rounded bars/CI capsules, clean sans typography, subtle card frame, 300 DPI, ASCII-safe. On-figure titles for abstracts/slides; omit for journal submission (title goes in the caption).
+4. `references/delegation-by-figure-type.md` — which K-Dense skill executes which figure type
+5. `references/figure-specs-schema.md` — JSON schema for `figure_specs.json`
 
 If `figure_intent.md` does NOT exist in the project's `specs/` folder, halt: **"No figure intent declared. Run `/analyze` first — Phase 1 produces `figure_intent.md`."**
 
@@ -193,6 +194,7 @@ Lesson enforcement directly relevant to figures:
 | L020 (race terminology = source labels) | Caption labels match `variable_spec.json` source labels |
 | L038 (comparator declaration) | Every grouped/stratified figure caption names the reference category |
 | L042 (Georgia 12pt 1.5-spacing for documents) | Applies to caption text in the consolidated captions doc |
+| L060 (House Figure Style v1) | Import `scripts/fig_style.py`: semantic palette, rounded bars/CI capsules, clean sans, subtle card, 300 DPI, ASCII-safe |
 
 ---
 
@@ -208,4 +210,4 @@ Lesson enforcement directly relevant to figures:
 
 ## Delegated helper (scientific-skills execution layer — see DELEGATION_RULES.md §F)
 
-- `scientific-skills:scientific-schematics` — conceptual / mechanism diagrams + graphical abstracts (Nano-Banana). Use ONLY for non-data conceptual figures. Data figures stay in CRA's matplotlib/seaborn house pipeline (Poppins/Lora, five-color palette, no figure titles).
+- `scientific-skills:scientific-schematics` — conceptual / mechanism diagrams + graphical abstracts (Nano-Banana). Use ONLY for non-data conceptual figures. Data figures stay in CRA's matplotlib house pipeline (**House Figure Style v1 via `scripts/fig_style.py`** — semantic palette, rounded bars/capsules, clean sans, 300 DPI; on-figure titles for abstracts/slides, in-caption for journals).
