@@ -17,6 +17,11 @@ Soft findings (context-dependent words) are reported but never fail the run.
 
 Section parsing expects the CRA structured-abstract convention, e.g. lines or bold runs
 beginning `Introduction:`, `Objective:`, `Methods:`, `Results:`, `Conclusions:`.
+
+Deliverables usually carry trailing metadata (compliance notes, alternative titles) that is
+not submission body text. Mark where the body ends with a sentinel line — the CRA convention
+is `[END OF ABSTRACT BODY]` — and everything after it is ignored. Without a sentinel that
+metadata is silently counted into the final section and inflates the character count.
 """
 
 from __future__ import annotations
@@ -70,6 +75,8 @@ VENUES = {
 ABSTRACT_HEADS = ["Introduction", "Objective", "Background", "Methods", "Results",
                   "Findings", "Conclusions", "Conclusion", "Interpretation"]
 
+BODY_END_SENTINEL = "[END OF ABSTRACT BODY]"
+
 
 # --------------------------------------------------------------------------------------
 
@@ -84,11 +91,20 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def strip_scaffold(text: str) -> str:
-    """Drop markdown scaffolding that is not prose: code fences, tables, bracketed notes."""
+def strip_scaffold(text: str, stop_at: str | None = None) -> str:
+    """Drop everything that is not submission body prose.
+
+    Truncates at the body-end sentinel if present, then removes code fences, markdown
+    tables, and standalone bracketed notes.
+    """
+    if stop_at:
+        cut = text.find(stop_at)
+        if cut != -1:
+            text = text[:cut]
     text = re.sub(r"```.*?```", "", text, flags=re.S)
     text = "\n".join(ln for ln in text.splitlines() if not ln.lstrip().startswith("|"))
     text = re.sub(r"^\s*\[.*?\]\s*$", "", text, flags=re.M)   # [compliance note] lines
+    text = text.replace("**", "")                             # markdown bold is not body text
     return text
 
 
@@ -106,10 +122,16 @@ def split_sections(text: str) -> dict[str, str]:
 
 
 def find_all(text: str, needle: str) -> list[int]:
-    """Case-insensitive whole-ish-word offsets of needle in text."""
+    """Case-insensitive offsets of needle in text.
+
+    Word boundaries are applied only on the sides that start/end with an alphanumeric
+    character. Anchoring `\\b` against punctuation such as an em dash never matches, since
+    two non-word characters have no boundary between them.
+    """
     esc = re.escape(needle)
-    boundary = r"\b" if needle[-1].isalnum() else ""
-    return [m.start() for m in re.finditer(rf"\b{esc}{boundary}", text, re.I)]
+    lead = r"\b" if needle[0].isalnum() else ""
+    trail = r"\b" if needle[-1].isalnum() else ""
+    return [m.start() for m in re.finditer(rf"{lead}{esc}{trail}", text, re.I)]
 
 
 def context(text: str, idx: int, width: int = 46) -> str:
@@ -131,13 +153,19 @@ def main() -> int:
     ap.add_argument("--sections", action="store_true",
                     help="check structured-abstract section weight (Results >= 2x Methods and Conclusions)")
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    ap.add_argument("--stop-at", default=BODY_END_SENTINEL,
+                    help=f"ignore everything from this marker onward (default: {BODY_END_SENTINEL!r}); "
+                         "pass '' to disable")
     args = ap.parse_args()
 
     if not args.path.exists():
         sys.exit(f"no such file: {args.path}")
 
     raw = read_text(args.path)
-    prose = strip_scaffold(raw)
+    if args.stop_at and args.stop_at not in raw:
+        print(f"note: body-end sentinel {args.stop_at!r} not found — counting the whole file. "
+              f"Add the sentinel after the last body section so trailing notes are excluded.\n")
+    prose = strip_scaffold(raw, args.stop_at or None)
     hard: list[str] = []
     soft: list[str] = []
 
@@ -161,15 +189,19 @@ def main() -> int:
             if not excused(prose, i, exceptions):
                 soft.append(f"vague-praise word '{w}' (clear it or cut it): {context(prose, i)}")
 
-    # --- SOFT: overclaiming verbs ------------------------------------------------------
-    for v in OVERCLAIM_VERBS:
-        for i in find_all(prose, v):
-            soft.append(f"overclaim verb '{v.strip()}' (principle 3/9 — earn it or downgrade): "
-                        f"{context(prose, i)}")
-
-    # --- Sections ----------------------------------------------------------------------
     secs = split_sections(prose)
     sec_chars = {k: len(v) for k, v in secs.items()}
+
+    # --- SOFT: overclaiming verbs ------------------------------------------------------
+    # Scan only the body sections when they exist, so commentary *about* flagged verbs in a
+    # surrounding rationale document does not report as a violation of the draft itself.
+    claim_scope = "\n".join(secs.values()) if secs else prose
+    for v in OVERCLAIM_VERBS:
+        for i in find_all(claim_scope, v):
+            soft.append(f"overclaim verb '{v.strip()}' (principle 3/9 — earn it or downgrade): "
+                        f"{context(claim_scope, i)}")
+
+    # --- Sections ----------------------------------------------------------------------
     if args.sections:
         if not secs:
             hard.append("--sections requested but no structured-abstract headings were found")
