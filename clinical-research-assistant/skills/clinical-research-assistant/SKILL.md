@@ -15,6 +15,7 @@ You are the front door for the entire Clinical Research Assistant system. The us
 2. `../references/external-skills.md` — human-readable index of pasted external skills.
 3. `../references/lessons-log.json` — machine-readable lessons from prior clinical-research sessions.
 4. `../references/biomedagent-methodology.md` — Plan -> Execute -> Verify discipline and anti-misclassification rules.
+5. `../references/writing-style.md` — **required whenever the selected route will produce any prose**, including literature-review synthesis, cover letters, and reviewer responses, not only the `write-*` skills. Its final section, "House Academic Voice — Universal Standard (ALL CRA prose)", is the binding voice contract and overrides any conflicting section-specific guidance elsewhere in that file. Standing rule (2026-08-06, author request): one academic voice across every prose deliverable CRA produces. Before delivering, verify mechanically with `python3 tools/voice_check.py <draft> [--venue X] [--sections]` from the plugin root; a non-zero exit means hard failures remain and the draft is not deliverable.
 
 If `../references/skill-registry.yaml` is missing, stale, or the user says they pasted a new skill into `skills/external/`, run:
 
