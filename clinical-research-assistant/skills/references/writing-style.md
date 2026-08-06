@@ -1,5 +1,8 @@
 # Author Writing Style Reference
 
+> **START HERE — the binding contract is the last section of this file: "House Academic Voice — Universal Standard (ALL CRA prose)".** It governs every prose deliverable produced through CRA and overrides any section-specific guidance below that conflicts with it. Verify mechanically with `python3 tools/voice_check.py <draft>`.
+
+
 This file defines the author's unique writing voice. All writing skills (`/write-introduction`, `/write-methods-results`, `/write-discussion`, `/write-manuscript`) MUST read and apply these patterns when drafting manuscript text. The goal is prose that reads as human-written, matches the author's published style, and avoids generic AI phrasing.
 
 ---
@@ -377,3 +380,95 @@ Every abstract opens on the **clinical or biological stake**, then narrows to th
 ## How to use this section
 
 Before drafting any abstract: (1) read the venue/study-type-matched example in `examples/` for architecture, (2) read the other four quickly to re-absorb the common voice, (3) draft against the five-part shape above, (4) run the 12-point gate. When auditing, check the submitted draft against both the 12-point gate and the five points here, and quote the matching reference pattern when proposing a fix.
+
+---
+
+# House Academic Voice — Universal Standard (ALL CRA prose)
+
+> **Standing rule (2026-08-06, author request): "always use the same writing style for academic
+> writing using the CRA."** This section is the single canonical voice contract. It governs every
+> prose deliverable produced through this plugin, not only abstracts: introductions, methods,
+> results, discussion, full manuscripts, literature-review synthesis, cover letters, responses to
+> reviewers, and grant text. Where a section-specific rule earlier in this file conflicts with this
+> section, **this section wins.**
+
+## How to apply it (every writing task, no exceptions)
+
+1. Read this section.
+2. Read all five canonical abstracts in `write-abstract/examples/` — the venue/register-matched one
+   closely for architecture, the other four quickly to re-absorb the voice. Do this even when the
+   deliverable is not an abstract; they are the only author-approved samples of the target voice.
+3. Draft.
+4. Run the mechanical gate: `python3 tools/voice_check.py <draft> [--venue X] [--sections]`.
+   It exits non-zero on any hard failure. A draft with hard failures is not deliverable.
+5. For abstracts, additionally run the 12-point editorial gate in `write-abstract/SKILL.md`.
+
+## A. Hard mechanical rules (enforced by `tools/voice_check.py`)
+
+| Rule | Detail |
+|---|---|
+| **No em dashes, ever** | Use commas, semicolons, colons, parentheses. En dash only inside compounds and ranges (Black-White, pre-/post-treatment, 1.04-1.63). This is absolute and is the most frequently violated rule. |
+| **Banned transitions** | Never "Furthermore", "Moreover", "Additionally", "Interestingly". Use "Indeed", "Notably", "Nevertheless", "As such", "Together with", "Consistent with these reports". |
+| **Banned AI-tell phrases** | "delve into", "shed light on", "pave the way", "in the realm of", "a myriad of", "it's important to note", "plays a crucial role", "underscores the importance", "a testament to", "leveraging", "utilizing" (write "using"). |
+| **Vague self-praise** | "robust", "comprehensive", "significant" as standalone praise. Permitted only as fixed technical terms (robust standard errors, comprehensive genomic profiling, statistically significant). |
+| **Structured-abstract section weight** | Results is the largest section, at least twice Methods and at least twice Conclusions. |
+| **No bullets in any abstract or manuscript body** | Prose only. One analytic move per sentence, accumulating into an arc. |
+
+## B. Architecture (register-independent)
+
+- **Opening move, three beats: stake → gap → objective.** Open on the clinical or biological stake,
+  narrow to the specific unaddressed gap signposted with a "remains" construction ("remains
+  unknown", "remains underexplored", "remain poorly defined"), then close on an explicit objective
+  in first-person active voice ("We assessed", "We aimed to", "This study aims to").
+- **Two-alternative framing is the signature for outcomes, registry, and determinant questions.**
+  Pose the objective as a fork: "whether X reflects A or B". Bench-translational openers are
+  declarative instead. Match the register.
+- **The "Despite [A], [B]" pivot appears exactly once**, marking the single key tension. Using it
+  twice spends its force.
+- **Report honest nulls in line with the positives.** They strengthen rather than dilute.
+- **Conclusions interpret; they never recap.** Name the dominant driver, carry the key contrast
+  forward from Results, and land on the single highest-leverage concrete lever: a surveillance
+  target, a referral pathway, a trial-enrollment priority, a therapeutic strategy. The closing
+  construction "… are the highest-leverage modifiable targets" is house-preferred.
+- **Never close on "further research is warranted."**
+- **Literature comparison, in order:** studies that align, then studies that differ, then the
+  explanation for the discrepancy. Preserve this especially in Discussion.
+
+## C. Quantification discipline
+
+- **Name the data source and N in the first clause of Methods.**
+- **Enumerate covariates by name.** Never "adjusted for confounders" alone.
+- **Name only the rigor actually performed.** Never advertise a correction, sensitivity analysis,
+  or validation that was not run. This outranks any impulse toward completeness.
+- **Full statistical triplet:** count as n (%) with explicit numerator, effect size with 95% CI,
+  and exact P. No bare proportion without its n/N; no bare effect size without its CI.
+- **Where a quantity is not in the project's registry, it is `UNSOURCED`, not derived.** Do not
+  multiply a percentage by a denominator to manufacture a numerator, and do not back-calculate P
+  from a confidence interval. Report the denominator you have and flag the gap.
+
+## D. Calibration (principles 3, 7, 9)
+
+Verbs that assert more than most designs earn, and must be justified or downgraded: *refutes,
+characterizes, independent of, predicts, drives, establishes, demonstrates, proves, confirms.*
+Cross-sectional and registry associations support a **rationale for testing**, never **prediction
+of treatment benefit**. Add the cohort qualifier ("in this cohort", "among adults 65 or older")
+rather than deleting the claim. When honesty and impact conflict, honesty wins.
+
+## E. Voice mechanics
+
+- **First-person active is welcome and expected**: "We conducted", "We identified", "We assessed".
+- **Register-conditional header**: surgical, registry, and descriptive single-cell work is
+  **Introduction**-led; bench-translational mechanism-to-therapy work is **Objective**-led.
+- **Database names are permitted** in the body (NSQIP, SEER, NCDB, AACR Project GENIE, TCGA).
+  Spell out non-standard abbreviations at first use.
+- **Naming specificity throughout**: databases with version, software with version, FDR method,
+  generic drug names, classification systems defined inline.
+- **Sentence architecture varies by section** — short and single-purpose in Results, long and
+  compound in Discussion — but the em-dash prohibition holds in every section.
+
+## Resolved conflict (2026-08-06)
+
+`write-discussion/SKILL.md` previously instructed "chain ideas with dashes and commas", which
+contradicted the absolute em-dash prohibition extracted from the five author-approved abstracts.
+The prohibition wins; that line now reads "commas, semicolons, and colons". Recorded as lesson
+**L062**.
