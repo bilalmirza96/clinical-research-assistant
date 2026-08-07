@@ -38,6 +38,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.patches import PathPatch, FancyBboxPatch
+from matplotlib.lines import Line2D
 
 # ---------------------------------------------------------------- palette
 INK    = "#22333F"   # primary text / axes
@@ -49,10 +50,28 @@ CARD_FC = "#FCFDFE"  # card fill (barely off-white)
 CARD_EC = "#E1E7ED"  # card border
 PAGE_FC = "#FFFFFF"  # figure background outside card
 
-TEAL   = "#2E7C86"   # primary / direct / development
-TEAL_D = "#1F5A62"
-CORAL  = "#E19056"   # mediated / molecular
-CORAL_D = "#C7743B"
+# Palette swap 2026-08-06 (author directive: red/blue contrast pair).
+# The SEMANTIC ROLES are unchanged, per the House Figure Style Standard: hexes are
+# swappable, roles are not. TEAL still means primary/direct, CORAL still means
+# mediated/molecular; only the hues moved. Names kept so existing scripts import
+# unchanged; use the BLUE/RED or PRIMARY/MEDIATED aliases below in new code.
+#
+# The blue is a deep navy rather than the original medium blue (#2F6FB0) because
+# grayscale luminance separation is a hard constraint for print venues: medium blue
+# and this red both land near gray 96-99 of 255, a separation of 3, which makes the
+# two series indistinguishable when a journal or meeting prints in grayscale.
+# Navy #123E66 sits at gray 53 against the red at 96, a separation of 43.
+# If you change these hexes, re-check that separation before shipping.
+TEAL   = "#123E66"   # primary / direct / internal   (navy;  grayscale 53)
+TEAL_D = "#0B2A45"
+CORAL  = "#C0392B"   # mediated / molecular          (red;   grayscale 96)
+CORAL_D = "#96271C"
+
+# Role-named aliases: prefer these over the colour names, which are now historical.
+BLUE = PRIMARY = TEAL
+BLUE_D = PRIMARY_D = TEAL_D
+RED = MEDIATED = CORAL
+RED_D = MEDIATED_D = CORAL_D
 PLUM   = "#6C5B9E"   # external / replication
 PLUM_D = "#4E4276"
 GREEN  = "#3C9A73"   # FDR-significant
@@ -73,7 +92,12 @@ def setup():
         "figure.facecolor": PAGE_FC,
         "savefig.facecolor": PAGE_FC,
         "font.family": "sans-serif",
-        "font.sans-serif": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"],
+        # Arial leads deliberately. Helvetica Neue ships on macOS as a .ttc that
+        # matplotlib registers at weight 400 ONLY, so every fontweight="bold"
+        # request silently resolved to the regular face and nothing in any house
+        # figure ever rendered bold. Arial carries real 400 and 700 faces and is
+        # metrically close to Helvetica. Verified 2026-08-06.
+        "font.sans-serif": ["Arial", "Helvetica Neue", "Helvetica", "DejaVu Sans"],
         "font.size": 11,
         "text.color": INK,
         "axes.edgecolor": SPINE,
@@ -116,6 +140,42 @@ def titles(fig, title, subtitle=None, x=0.035, y=0.945):
     if subtitle:
         fig.text(x, y - 0.075, subtitle, ha="left", va="top", color=MUTE,
                  fontsize=10.2)
+
+
+def badge(fig, text, x=0.035, y=0.945, fontsize=9.5, fc=None, tc="white"):
+    """Dark rounded pill in the top-left, e.g. badge(fig, "FIGURE 1").
+
+    Sits above titles(); call titles() with a lower y (0.86 works) when using it."""
+    return fig.text(x, y, text.upper(), ha="left", va="center", color=tc,
+                    fontsize=fontsize, fontweight="bold",
+                    bbox=dict(boxstyle="round,pad=0.55", facecolor=fc or INK,
+                              edgecolor="none"))
+
+
+def footnote(fig, text, x=0.035, y=0.045, rule=True, fontsize=8.6, width=0.93):
+    """Small faint source/method note, optionally over a dashed hairline rule."""
+    if rule:
+        fig.add_artist(Line2D([x, x + width], [y + 0.055, y + 0.055],
+                              transform=fig.transFigure, color=CARD_EC,
+                              linewidth=1.0, linestyle=(0, (4, 4)), zorder=1))
+    return fig.text(x, y, text, ha="left", va="bottom", color=FAINT,
+                    fontsize=fontsize)
+
+
+def swatch_legend(fig, items, x=0.035, y=0.125, fontsize=10.2, gap=0.30,
+                  size=0.016):
+    """Frameless inline legend: [(color, label), ...] laid out left to right.
+
+    Matches the house reference figures, which carry square swatches under the
+    axes rather than a boxed legend."""
+    for i, (color, label) in enumerate(items):
+        cx = x + i * gap
+        fig.add_artist(FancyBboxPatch((cx, y - size / 2), size, size,
+                                      transform=fig.transFigure,
+                                      boxstyle="round,pad=0,rounding_size=0.004",
+                                      facecolor=color, edgecolor="none", zorder=4))
+        fig.text(cx + size * 1.75, y, label, ha="left", va="center",
+                 color=INK, fontsize=fontsize)
 
 
 def despine(ax, keep=("left", "bottom")):
