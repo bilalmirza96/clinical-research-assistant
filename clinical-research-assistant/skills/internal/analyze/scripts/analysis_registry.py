@@ -141,10 +141,18 @@ def upsert(reg, qid, domain, label, value, ci, p, n, analysis_id, script,
     return "confirmed"
 
 
-def flag(reg, qid, note):
+def flag(reg, qid, note, status="UNSOURCED"):
+    """Attach a note to a quantity.
+
+    status="UNSOURCED" means no analysis file computes this quantity, so it must never
+    be guessed. status="ANNOTATION" means the quantity IS computed and the note is a
+    qualification that must travel with it (a caveat, a superseding sensitivity, a
+    disagreement between two tests). Conflating the two lets a reader treat a fully
+    sourced primary estimate as unsourced, which is the opposite of what a flag is for.
+    """
     reg.setdefault("flags", [])
     reg["flags"] = [f for f in reg["flags"] if f.get("quantity_id") != qid]
-    reg["flags"].append({"quantity_id": qid, "status": "UNSOURCED",
+    reg["flags"].append({"quantity_id": qid, "status": status,
                          "note": note, "flagged_on": _now()})
 
 
@@ -213,10 +221,25 @@ def render_md(reg, md_path):
                 f"{h.get('superseded_by','')} | {h.get('superseded_on','')} "
                 f"| {h.get('reason','')} |")
     flags = reg.get("flags", [])
-    if flags:
-        lines += ["", "## UNSOURCED / FLAGGED (no analysis file computes "
-                  "this — never guessed)", ""]
-        for f in flags:
+    # Grouped by status so a sourced value carrying a caveat is never displayed under
+    # the "no analysis computes this" heading. Any status not named here still renders,
+    # under its own heading, so adding a status can never silently drop a flag.
+    HEADINGS = [
+        ("UNSOURCED", "## UNSOURCED (no analysis file computes this — never guessed)"),
+        ("ANNOTATION", "## ANNOTATED (value is sourced; the note travels with it)"),
+        ("RESOLVED", "## RESOLVED (flag raised and closed)"),
+    ]
+    named = {s for s, _ in HEADINGS}
+    groups = [(h, [f for f in flags if f.get("status", "UNSOURCED") == s])
+              for s, h in HEADINGS]
+    other = [f for f in flags if f.get("status", "UNSOURCED") not in named]
+    if other:
+        groups.append(("## OTHER FLAGS", other))
+    for heading, items in groups:
+        if not items:
+            continue
+        lines += ["", heading, ""]
+        for f in items:
             lines.append(f"- `{f.get('quantity_id')}` — {f.get('note')}")
     arch = reg.get("archived_sources", [])
     if arch:
@@ -264,6 +287,8 @@ def main():
     pf.add_argument("--registry", required=True)
     pf.add_argument("--id", required=True)
     pf.add_argument("--note", required=True)
+    pf.add_argument("--status", default="UNSOURCED",
+                    choices=["UNSOURCED", "ANNOTATION"])
 
     pl = sub.add_parser("log")
     pl.add_argument("--registry", required=True)
@@ -293,7 +318,7 @@ def main():
         render_md(reg, _md_path(args.registry))
         print(f"[upsert:{r}] {args.id}")
     elif args.cmd == "flag":
-        flag(reg, args.id, args.note)
+        flag(reg, args.id, args.note, args.status)
         save(args.registry, reg)
         render_md(reg, _md_path(args.registry))
         print(f"[flag] {args.id}")
