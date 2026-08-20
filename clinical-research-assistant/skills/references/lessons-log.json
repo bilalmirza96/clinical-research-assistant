@@ -1800,6 +1800,40 @@
         "skills/internal/analyze/scripts/analysis_registry.py (flag + render_md)",
         "projects/Research/Clinical/Thoracic/Esophageal-Organ-Preservation/Reports/MASTER_ANALYSIS_REGISTRY.md"
       ]
+    },
+    {
+      "id": "L069-inherited-cohort-carried-an-incompatible-time-origin",
+      "date_added": "2026-08-19",
+      "originating_session": "Esophageal-Organ-Preservation, target trial emulation build",
+      "category": "study-design",
+      "trigger_patterns": [
+        "target trial emulation",
+        "clone censor weight",
+        "grace period",
+        "immortal time",
+        "landmark analysis",
+        "time zero",
+        "time-to-event design on an existing cohort",
+        "reuse analytic cohort",
+        "derived cohort",
+        "cohort.parquet",
+        "design matrix reuse",
+        "competing risk",
+        "survival analysis new estimand"
+      ],
+      "lesson": "A target trial emulation with a 90-day grace period was built on the project's analytic cohort without first checking that cohort's time-origin properties. The cohort was POST-LANDMARK: a 6-month landmark had already deleted 7,668 early deaths, minimum follow-up was 6.01 months, and zero patients had under 6 months of follow-up. The entire purpose of a grace period is to correctly attribute deaths occurring BEFORE the treatment decision is made. Those deaths were not in the data. The analysis therefore could not do the one thing it existed to do, and its auto-generated verdict asserted the opposite: that the estimate had fallen because it recovered immortal time the landmark missed. The flaw was found only on self-review after the analysis had run, been debugged through three separate failures, and produced a headline number. Every one of those debugging cycles was spent on a design that was invalid from the first line.",
+      "rule": "COHORT PROVENANCE CHECK, mandatory before building any time-to-event analysis on a cohort you did not construct in the same script. A derived cohort carries its builder's design decisions, and those decisions may be silently incompatible with a new estimand. Before writing analysis code, interrogate and PRINT: (1) minimum and median follow-up, which exposes an applied landmark instantly; (2) whether any landmark, minimum-survival, or immortal-time filter was applied, by reading the filter cascade and not by assuming; (3) whether the frame is complete-case and on which variables; (4) what the time origin actually is and whether it matches the estimand's time zero; (5) whether the row index aligns with any companion design matrix. Assert each expectation as a hard gate that exits non-zero. If the new design's time zero differs from the cohort's, the cohort must be rebuilt, not reused. State the cohort's provenance in the script docstring so the mismatch is visible to a reader before the code is.",
+      "applies_to": [
+        "analyze",
+        "data-analysis",
+        "biomedagent",
+        "write-methods-results"
+      ],
+      "artifacts": [
+        "projects/Research/Clinical/Thoracic/Esophageal-Organ-Preservation/Reports/target_trial_prespecification_2026-08-19.md",
+        "projects/Research/Clinical/Thoracic/Esophageal-Organ-Preservation/analysis/target_trial_ccw_2026-08-19.py",
+        "projects/Research/Clinical/Thoracic/Esophageal-Organ-Preservation/Reports/target_trial_ccw_2026-08-19.json"
+      ]
     }
   ]
 }

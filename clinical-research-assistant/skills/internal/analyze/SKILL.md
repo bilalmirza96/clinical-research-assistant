@@ -302,6 +302,39 @@ Plan figure **intent** (design lives in `/visualize`): figure number, type, what
 
 Follow the data provenance protocol in `references/clinical-analysis-policy.md` ("Data Provenance" section): raw source files are read-only (never modified, never copied). Read from the source location, apply filters in memory, write the filtered cohort to `data/working/cohort.csv` with `filter_operations.json` (replayable) + `filter_log.md` (human-readable). The folder structure (`data/working/`, `specs/`, `plans/`, `Reports/`) is created by `/project-init`. If `data/working/` does not exist, halt and prompt user to run `/project-init` first.
 
+### 1.6 Cohort provenance check — HARD GATE (per L069)
+
+**Before writing any analysis code on a cohort you did not build in the same script**,
+interrogate that cohort's construction and PRINT the answers. A derived cohort carries
+its builder's design decisions, and those decisions are silently incompatible with a new
+estimand more often than not.
+
+Check and assert, each as a gate that exits non-zero on failure:
+
+1. **Minimum and median follow-up.** A minimum well above zero exposes an applied
+   landmark instantly. This single check is the cheapest and catches the most.
+2. **Landmark / minimum-survival / immortal-time filters.** Read `filter_operations.json`
+   or the assembly script. Never assume; the cohort file name will not tell you.
+3. **Complete-case status** and on which variables, since a design matrix is usually a
+   strict subset of the cohort it came from.
+4. **Time origin**, and whether it matches the new analysis's time zero. If it does not,
+   the cohort must be REBUILT, not reused.
+5. **Row-index alignment** with any companion design matrix or weight file, verified on a
+   patient identifier rather than on row order.
+
+State the cohort's provenance in the script docstring, so a reader meets the mismatch
+before they meet the code.
+
+**Why this is a gate and not advice.** A target trial emulation with a grace period was
+once built on a post-landmark cohort whose early deaths had already been deleted. The
+grace period existed solely to attribute those deaths correctly, so the analysis could
+not do the one thing it was written for, and it produced a confident headline number and
+a verdict asserting the opposite of the truth. Three rounds of debugging were spent on a
+design that was invalid from its first line. Minimum follow-up was 6.01 months, and one
+print statement at the start would have shown it.
+
+---
+
 ---
 
 ## PHASE 2 — PLAN (`analysis_plan.json`)
