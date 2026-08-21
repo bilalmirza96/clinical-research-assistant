@@ -472,3 +472,68 @@ rather than deleting the claim. When honesty and impact conflict, honesty wins.
 contradicted the absolute em-dash prohibition extracted from the five author-approved abstracts.
 The prohibition wins; that line now reads "commas, semicolons, and colons". Recorded as lesson
 **L062**.
+
+---
+
+# House Document Formatting — Universal Standard (ALL CRA deliverables)
+
+*Added 2026-08-20 per author instruction. Binding, same status as the House Academic Voice section
+above. Recorded as lesson **L070**.*
+
+## Tables are black and white. Always.
+
+No cell fills, no coloured text, no coloured borders, in any output format — `.docx`, `.xlsx`,
+LaTeX, or Markdown destined for print. Structure is carried by **rules and whitespace**; emphasis is
+carried by **bold weight only**.
+
+This is a submission requirement, not a preference: most surgical journals typeset tables in
+monochrome and bill for colour, and a coloured fill that survives into a submission is a copy-edit
+defect the author must strip by hand from every tab and every table.
+
+**L051 bolding is unaffected and still required** — bold cells where p<0.05 in `Table_1`, and where
+BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*`. Bold is monochrome emphasis and
+remains the correct significance flag.
+
+## The default font is Times New Roman. Always.
+
+Every document deliverable and every table. Fallback chain: Times New Roman → Liberation Serif →
+generic serif.
+
+## Implementation notes
+
+| Output | Requirement |
+|---|---|
+| **Word** (`python-docx`) | Set `styles['Normal'].font.name = 'Times New Roman'` **and** the `w:eastAsia`/`w:hAnsi` run properties, since python-docx does not propagate the name to all script slots. Use table style `Table Grid` (monochrome). Set the font on every run explicitly; do not rely on style inheritance. |
+| **Excel** (`openpyxl` / `xlsxwriter`) | `Font(name='Times New Roman')` on **every written cell**. **No `PatternFill`.** Mark the header with a thin black bottom border and bold, never a fill. |
+| **pandoc** | Pass `--reference-doc` pointing at a reference `.docx` whose `Normal` and `Table` styles are already Times New Roman with a monochrome table grid. |
+| **Figures** | May retain colour **only** where colour encodes a variable. Must still set Times New Roman, and must remain legible in greyscale per the luminance-separation constraint already in `fig_style.py`. |
+
+## Failure mode this prevents
+
+Library defaults are not choices. `openpyxl`, `xlsxwriter`, and `python-docx` will silently produce
+Calibri with an accent-coloured header fill if you let them. Set both properties explicitly on every
+deliverable.
+
+## Figures use Times New Roman too
+
+Set `font.family='serif'` with `font.serif=['Times New Roman','Liberation Serif','Nimbus Roman','DejaVu Serif']`
+and `mathtext.fontset='dejavuserif'`. Colour is still permitted in figures **only** where it encodes a
+variable, and must stay greyscale-separable.
+
+Two traps, both of which produced a silent no-op the first time:
+
+1. **A project-local `fig_style.py` shadows the plugin copy.** `sys.path.insert(0, <script dir>)` means
+   `analysis/fig_style.py` wins over `skills/internal/visualize/scripts/fig_style.py`. Check for the
+   shadow before assuming a plugin edit took effect.
+2. **`setup()` applies rcParams when called, not at import.** A house-font call placed after the import
+   but before `setup()` is overwritten. Apply it *after* `setup()`, or put the house font inside `setup()`.
+
+**Verify a font change by opening the rendered image.** The first failed attempt regenerated all three
+figures, updated every timestamp, and produced byte sizes close enough to the originals to look plausible
+— while still rendering in Arial.
+
+## Mechanical enforcement
+
+`python3 tools/house_style.py FILE...` fixes `.docx` and `.xlsx` in place; `--check` audits and exits 1 on
+any violation; `--reference-doc OUT` emits a Times New Roman reference doc for pandoc. In matplotlib call
+`house_style.apply_matplotlib()`. This is the format counterpart to `tools/voice_check.py`.

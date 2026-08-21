@@ -91,13 +91,15 @@ def setup():
         "savefig.dpi": DPI,
         "figure.facecolor": PAGE_FC,
         "savefig.facecolor": PAGE_FC,
-        "font.family": "sans-serif",
+        "font.family": "serif",   # L070: house font is Times New Roman
         # Arial leads deliberately. Helvetica Neue ships on macOS as a .ttc that
         # matplotlib registers at weight 400 ONLY, so every fontweight="bold"
         # request silently resolved to the regular face and nothing in any house
         # figure ever rendered bold. Arial carries real 400 and 700 faces and is
         # metrically close to Helvetica. Verified 2026-08-06.
-        "font.sans-serif": ["Arial", "Helvetica Neue", "Helvetica", "DejaVu Sans"],
+        "font.serif": ["Times New Roman", "Liberation Serif", "Nimbus Roman", "DejaVu Serif"],
+        "font.sans-serif": ["Times New Roman", "Liberation Serif", "DejaVu Serif"],
+        "mathtext.fontset": "dejavuserif",
         "font.size": 11,
         "text.color": INK,
         "axes.edgecolor": SPINE,
