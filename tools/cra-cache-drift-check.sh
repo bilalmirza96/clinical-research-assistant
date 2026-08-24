@@ -56,7 +56,10 @@ fi
 
 printf "${RED}✗ DRIFT DETECTED${RESET} — deployed cache differs from the source repo:\n"
 printf "%s\n\n" "$DRIFT"
-printf "Reconcile before committing:\n"
-printf "  • cache has the newer edits → copy them into %s and commit (this is the usual case).\n" "$PLUGIN_SRC"
-printf "  • repo is newer            → reinstall the plugin, or copy repo→cache to redeploy.\n"
+printf "Reconcile before committing — direction matters, check mtimes rather than assuming:\n"
+printf "  • cache newer → a session edited the DEPLOYED plugin. Diff it, copy into the repo, commit.\n"
+printf "  • repo newer  → source is committed but never deployed. Redeploy.\n\n"
+printf "Both directions are handled, with backups, by:\n"
+printf "  bash %s/tools/cra-redeploy.sh --dry-run   # show what it would do\n" "$REPO_ROOT"
+printf "  bash %s/tools/cra-redeploy.sh             # fix the safe direction only\n" "$REPO_ROOT"
 exit 1
