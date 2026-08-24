@@ -75,24 +75,52 @@ def main() -> int:
                     "one way is reported as its own finding (H9).")
     ap.add_argument("--results-dir", type=Path)
     ap.add_argument("--deliverable", type=Path, action="append", default=[])
+    ap.add_argument("--ignore-file", type=Path,
+                    help="JSON file of documented exceptions: "
+                         "{\"H5\": [{\"pattern\": \"...\", \"reason\": \"...\"}], ...}. "
+                         "Every exception MUST carry a reason; an entry without one is "
+                         "itself a hard failure.")
     ap.add_argument("--warn-only", action="store_true")
     a = ap.parse_args()
 
     R = load(a.registry)
     hard: list[str] = []
     soft: list[str] = []
+
+    ignores: dict[str, list[dict]] = {}
+    if a.ignore_file and a.ignore_file.exists():
+        ignores = json.loads(a.ignore_file.read_text())
+        for chk, entries in ignores.items():
+            if chk.startswith("_"):
+                continue
+            for ent in entries:
+                if not ent.get("reason"):
+                    hard.append(f"IGNORE-FILE {chk} entry has no reason: "
+                                f"{ent.get('pattern')}")
+        n = sum(len(v) for k, v in ignores.items() if not k.startswith("_"))
+        print(f"ignore-file: {a.ignore_file.name}, {n} documented exceptions\n")
+
+    def ignored(check: str, text: str) -> bool:
+        for ent in ignores.get(check, []):
+            if ent.get("reason") and re.search(ent["pattern"], text):
+                return True
+        return False
+
+    def add(bucket: list[str], check: str, msg: str) -> None:
+        if not ignored(check, msg):
+            bucket.append(f"{check} {msg}")
     print(f"registry_lint - {a.registry.name}: {len(R)} keys\n")
 
     # ---- H1 label present
     for k, e in R.items():
         if not (e.get("label") or "").strip():
-            hard.append(f"H1 no label: {k}")
+            add(hard, "H1", f"no label: {k}")
 
     # ---- H2 effect keys carry a CI
     for k, e in R.items():
         if any(h in k for h in EFFECT_HINTS) and not any(o in k for o in NO_CI_OK):
             if not (e.get("current", {}).get("ci")):
-                soft.append(f"H2 effect key without CI: {k}")
+                add(soft, "H2", f"effect key without CI: {k}")
 
     # ---- H3 margin mentioned -> verdict stated
     for k, e in R.items():
@@ -104,17 +132,17 @@ def main() -> int:
         if any(w in val for w in VERDICT_WORDS) or "verdict" in k.lower():
             continue
         if not any(w in lab.upper() for w in VERDICT_WORDS):
-            hard.append(f"H3 label cites a margin but states no verdict: {k}")
+            add(hard, "H3", f"label cites a margin but states no verdict: {k}")
 
     # ---- H4 specification in the key, not only the label
     for k, e in R.items():
         lab = (e.get("label") or "").lower()
         if re.search(r"\b1:\d\b|\bmatched\b", lab):
             if not any(t in k.lower() for t in ("matched", "psm", "match")):
-                hard.append(f"H4 label says matched but the KEY does not: {k}")
+                add(hard, "H4", f"label says matched but the KEY does not: {k}")
         if ("cancer-specific" in lab and "cancerspecific" not in k.lower()
                 and "all-cause" not in lab and "allcause" not in k.lower()):
-            hard.append(f"H4 label says cancer-specific but the KEY does not: {k}")
+            add(hard, "H4", f"label says cancer-specific but the KEY does not: {k}")
 
     # ---- H5 parallel-arm parity, and H9 alias consistency
     if a.arms:
@@ -144,21 +172,21 @@ def main() -> int:
         for generic, present in sorted(buckets.items()):
             missing = set(arms) - present
             if missing:
-                hard.append(f"H5 arm parity: {generic} present for {sorted(present)}, "
-                            f"MISSING {sorted(missing)}")
+                add(hard, "H5", f"arm parity: {generic} present for {sorted(present)}, "
+                                f"MISSING {sorted(missing)}")
         for canon, seen_sp in spellings.items():
             if len(seen_sp) > 1:
-                hard.append(f"H9 arm '{canon}' is spelled {len(seen_sp)} different ways in "
-                            f"key names: {sorted(seen_sp)}. One arm, one token. Divergent "
-                            f"spellings are how a reader ends up comparing two different "
-                            f"populations.")
+                add(hard, "H9", f"arm '{canon}' is spelled {len(seen_sp)} different ways in "
+                                f"key names: {sorted(seen_sp)}. One arm, one token. "
+                                f"Divergent spellings are how a reader ends up comparing "
+                                f"two different populations.")
 
     # ---- H6 pooled keys carry a scope annotation
     for k, e in R.items():
         if any(h in k.lower() for h in POOLED_HINTS):
             blob = (ann_text(e) + " " + (e.get("label") or "")).upper()
             if "POOLED" not in blob and "SCOPE" not in blob:
-                soft.append(f"H6 possibly-pooled key without a SCOPE/POOLED note: {k}")
+                add(soft, "H6", f"possibly-pooled key without a SCOPE/POOLED note: {k}")
 
     # ---- H7 orphan results in result JSONs
     if a.results_dir and a.results_dir.exists():
@@ -173,12 +201,12 @@ def main() -> int:
                     continue
                 seen.add(jf.name)
         for n in sorted(seen):
-            soft.append(f"H7 result file with no registered key pointing at it: {n}")
+            add(soft, "H7", f"result file with no registered key pointing at it: {n}")
 
     # ---- H8 deliverable numbers trace to the registry
     for d in a.deliverable:
         if not d.exists():
-            soft.append(f"H8 deliverable not found: {d}")
+            add(soft, "H8", f"deliverable not found: {d}")
             continue
         text = d.read_text()
         body = text.split("[END OF ABSTRACT BODY]")[0]
@@ -207,8 +235,8 @@ def main() -> int:
                 pass
             untraced.append(m)
         if untraced:
-            soft.append(f"H8 {d.name}: decimals with no matching registry value: "
-                        f"{sorted(set(untraced))[:12]}")
+            add(soft, "H8", f"{d.name}: decimals with no matching registry value: "
+                            f"{sorted(set(untraced))[:12]}")
 
     for label, items in (("HARD FAILURES", hard), ("REVIEW", soft)):
         if items:
