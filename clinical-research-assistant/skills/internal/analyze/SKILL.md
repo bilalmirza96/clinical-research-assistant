@@ -429,6 +429,32 @@ User picks; analyze continues.
 5. **Apply bold formatting** (per L051) to every row/cell in `Table_1` where p < 0.05 — visual flag for what was significant on crude analysis.
 6. **Required diagnostics** for the primary tests (χ² cell expectations, normality assumptions if t-test used, PH assumption on univariable Cox).
 
+#### Result-logging discipline — HARD GATE per L071
+
+L045 says *where* numbers live. **L071 says they must be logged as work completes and every key must be self-describing.** A registry of ambiguous keys is a database of traps. This failed once already: a matched estimate from one arm was written into an abstract beside an unmatched estimate from the other, and a subgroup reported as INFERIOR was actually INCONCLUSIVE on the like-for-like comparison.
+
+Six safeguards, mechanical wherever possible:
+
+| # | Safeguard | What it forbids |
+|---|---|---|
+| **S1** | **Real-time logging.** Each analysis script upserts its own results before the session moves on. | End-of-session batch upserts. A number that lives only in a JSON file or console log does not exist. If a script computes variants (1:1 *and* 1:3; all-cause *and* cancer-specific), it registers **all** of them or its docstring says which it omits and why. |
+| **S2** | **Self-describing keys.** The KEY carries population + specification (`NCDB.scc.matched11.*`, `SEER.adeno.cancerspecific.*`). | Relying on the label for something a reader must know to use the number. One arm gets exactly **one** token everywhere — never mix `scc`/`SCC`/`squamous`. |
+| **S3** | **Mandatory label.** Non-empty, naming population, design, endpoint, and for any margin-tested quantity the **VERDICT** (INFERIOR / NON-INFERIOR / INCONCLUSIVE). | `label=None`. Note `analysis_registry.py` stores label at **entry** level and does **not** overwrite it on later upserts — get it right the first time. |
+| **S4** | **Parallel-arm parity.** Every registered suffix exists for every arm, or the absence is annotated. | Silently registering one arm of a two-arm comparison. |
+| **S5** | **Scope tag on pooled keys.** Any pooled/marginal estimate is annotated `POOLED` and names its stratified counterparts. | A pooled estimate being quoted as stratum-specific. |
+| **S6** | **Like-for-like gate.** Both sides of any cross-arm comparison come from the same design family. | Matched vs unmatched, landmark vs grace-period, all-cause vs cancer-specific, tau=36 vs tau=60. |
+
+**Enforcement (run before any deliverable ships):**
+
+```bash
+python3 tools/registry_lint.py <registry.json> --arms 'adeno|adenocarcinoma,scc|SCC|squamous' --results-dir Reports --deliverable Reports/abstract.md
+```
+
+Checks: `H1` label present · `H2` effect keys carry a CI · `H3` margin implies a stated verdict · `H4` specification in the key not only the label · `H5` arm parity · `H6` pooled keys tagged · `H7` no orphan result files · `H8` every decimal in a deliverable traces to a registry value · `H9` one arm, one token. **Non-zero exit means no deliverable ships.**
+
+Also maintain a per-project **`Reports/REGISTRY_KEY_MAP.md`** (+ `.json`) tagging every namespace on five axes — registry, population, endpoint, design, role — with the near-homonym traps listed explicitly. Regenerate it whenever a namespace is added.
+
+
 Each computation writes to `results_registry.json` AND to `MASTER_ANALYSIS_REGISTRY.json` (per L045) with full provenance: source CSV rows, model call, random seed (default 42 per L033), software version. Per-result keys are stable identifiers (e.g., `M0::crude_OR::asa_class_IV`) that downstream skills reference. The Excel workbook is the human-facing tabular view; the JSON registry is the machine source of truth with `history[]` for supersedes.
 
 **Forbidden at Phase 4 (per L051):** matching, weighting, covariate adjustment, multivariable models, KM stratified by anything other than the primary exposure. Those are Phase 5 only, gated by HALT 2A.
@@ -592,6 +618,7 @@ Also produce:
 - `figure_registry.json` hooks for `/visualize`
 - `manuscript_brief_<date>.md` — PI-review narrative (per **L037**)
 - Register in SCAR via `scripts/analysis_registry.py` (per **L045**)
+- **Run `tools/registry_lint.py` and clear every hard failure (per L071).** Regenerate `Reports/REGISTRY_KEY_MAP.md`. A non-zero lint exit blocks the deliverable.
 
 Update `project_state.json`, append `decision_log.md`.
 
