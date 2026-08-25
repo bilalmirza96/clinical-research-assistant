@@ -1907,6 +1907,32 @@
         "Esophageal-Organ-Preservation/analysis/registry_scope_annotations_2026-08-23.py",
         "Esophageal-Organ-Preservation/analysis/register_scc_era_full_2026-08-23.py"
       ]
+    },
+    {
+      "id": "L072-cra-subskills-are-not-directly-invocable-use-the-router",
+      "date_added": "2026-08-25",
+      "originating_session": "ITSOS 2026 esophageal disparities deck. Skill(skill='clinical-research-assistant:analyze') returned 'Unknown skill'. Three durable instruction files (global CLAUDE.md guidance, project CLAUDE.md, working-rules.md) all told the agent to invoke subskills by name; that name has never existed. The Skill-First Rule was therefore silently unfollowable for every CRA subskill, and analyses were being run by hand while the rule appeared satisfied.",
+      "category": "Plugin packaging / skill discovery: nested skill directories are invisible to Claude Code; only the router is invocable",
+      "trigger_patterns": [
+        "Skill() returns 'Unknown skill' for a plugin skill that demonstrably exists on disk",
+        "about to invoke any clinical-research-assistant subskill by name",
+        "a Skill-First rule names subskills as colon-suffixed plugin skills",
+        "adding a new skill to the CRA plugin",
+        "ListSkills returns empty but the plugin is present in installed_plugins.json"
+      ],
+      "lesson": "Claude Code discovers plugin skills at exactly <plugin>/skills/<name>/SKILL.md. CRA organizes its skills one level deeper, at skills/internal/<name>/SKILL.md and skills/external/<name>/SKILL.md, so only skills/clinical-research-assistant/SKILL.md (the router) is discovered. Every subskill is real, loadable, and correct on disk but unreachable by name. The plugin was installed and enabled the whole time and the deployed cache was in sync with the source repo, so both the install check and the drift check passed while the skill remained uninvocable -- neither check tests reachability.",
+      "rule": "Invoke CRA as Skill(skill='clinical-research-assistant:clinical-research-assistant', args='<task, naming the subskill>'). The router is the only invocable CRA skill name. Never write clinical-research-assistant:<subskill>. When adding a skill to CRA, either place it at skills/<name>/SKILL.md or accept that it is router-only. A skill that exists on disk is not necessarily reachable; test reachability by actually invoking it, not by confirming the file is present or the cache is in sync.",
+      "applies_to": [
+        "clinical-research-assistant",
+        "all internal subskills",
+        "skills/external/biomedagent",
+        "plugin authoring"
+      ],
+      "artifacts": [
+        "00_Context/working-rules.md -> Skill-First Rule for Research Tasks",
+        "Claude_Projects/CLAUDE.md -> Skill-First Rule for Research Tasks",
+        "skills/clinical-research-assistant/SKILL.md -> Directory Model"
+      ]
     }
   ]
 }

@@ -25,6 +25,26 @@ python3 tools/update_skill_registry.py
 
 Run it from the plugin root (`clinical-research-assistant/`, the directory that contains `tools/` and `skills/`).
 
+## Invocation (READ THIS FIRST)
+
+**This router is the only invocable skill name in the plugin:**
+
+```
+Skill(skill="clinical-research-assistant:clinical-research-assistant", args="<task>")
+```
+
+Claude Code discovers plugin skills at exactly `<plugin>/skills/<name>/SKILL.md`. Every CRA
+subskill lives one level deeper — `skills/internal/<name>/SKILL.md` or
+`skills/external/<name>/SKILL.md` — so **`clinical-research-assistant:analyze` (and every other
+subskill name) returns `Unknown skill`.** The subskills are real and correct on disk; they are
+simply not reachable by name. Callers name the subskill they want in this router's `args`, and
+this router reads and executes it.
+
+Note for maintainers: the plugin being present in `installed_plugins.json`, and the deployed
+cache being in sync with the source repo, are both true while a subskill remains uninvocable.
+Neither check tests reachability. If a new skill must be directly invocable, place it at
+`skills/<name>/SKILL.md`. See lessons-log **L072**.
+
 ## Directory Model
 
 - `skills/clinical-research-assistant/SKILL.md` — this router.
