@@ -1972,6 +1972,25 @@
     "Esophageal-Organ-Preservation/Reports/abstract_STS2027_v12_SANOaligned_2026-08-25.md (the defect: line 13)",
     "Esophageal-Organ-Preservation/Reports/histology_interaction_2026-08-23.json (the contradicting evidence)"
    ]
+  },
+  {
+   "id": "L074-figure-chrome-off-title-only-and-set-limits-before-capsules",
+   "date": "2026-08-26",
+   "trigger_patterns": [
+    "figure has a grey line",
+    "remove the border",
+    "single title",
+    "no subtitle",
+    "footer like a scientific figure",
+    "capsule renders flat",
+    "bar looks thin"
+   ],
+   "lesson": "House Figure Style v1 revised by author directive 2026-08-26: (a) NO card frame or border and no dashed hairline above the footer, both of which read as stray grey lines inside the figure; fig_style._card() now defaults edgecolor='none' and footnote() defaults rule=False. (b) A SINGLE left-aligned title, no subtitle block; every explanatory sentence moves to the footer legend, as on a conventional scientific figure. Separately, two drift defects were found the same day: the iCloud mirror templates/figure-style/fig_style.py was stale at 2026-08-06 and still specified the Arial sans stack, so figures built from it silently violated L070's Times New Roman standard, and working-rules.md carried the same stale font stack. Canonical is the plugin repo copy; sync the mirror and re-read the font stack before trusting either. TECHNICAL GOTCHA: fig_style.capsule() and rbar() convert a pixel thickness through the axes transform at call time, so set_xlim/set_ylim/set_xscale MUST run BEFORE they are called; limits set afterwards rescale the patches and silently flatten them, which presents as one series rendering pale and thin while another looks correct.",
+   "severity": "medium",
+   "applies_to": [
+    "visualize",
+    "any figure built on fig_style"
+   ]
   }
  ]
 }

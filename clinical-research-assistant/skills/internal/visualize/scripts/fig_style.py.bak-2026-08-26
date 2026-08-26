@@ -154,7 +154,7 @@ def badge(fig, text, x=0.035, y=0.945, fontsize=9.5, fc=None, tc="white"):
                               edgecolor="none"))
 
 
-def footnote(fig, text, x=0.035, y=0.045, rule=False, fontsize=8.6, width=0.93):
+def footnote(fig, text, x=0.035, y=0.045, rule=True, fontsize=8.6, width=0.93):
     """Small faint source/method note, optionally over a dashed hairline rule."""
     if rule:
         fig.add_artist(Line2D([x, x + width], [y + 0.055, y + 0.055],
@@ -273,23 +273,18 @@ def capsule(ax, x0, x1, y, thick_px, color, z=3, alpha=1.0):
 
 
 # ---------------------------------------------------------------- card + save
-# Author directive 2026-08-26: no visible frame. The rounded card border read as a
-# stray grey line inside the figure margin and does not belong on a scientific figure.
-# The fill is kept (it is all but white) so the geometry is unchanged; only the edge is
-# gone. Pass frame=True to finish() if a bordered card is ever wanted again.
-def _card(fig, frame=False):
+def _card(fig):
     ar = fig.get_figwidth() / fig.get_figheight()
     card = FancyBboxPatch(
         (0.012, 0.012), 0.976, 0.976, transform=fig.transFigure,
         boxstyle="round,pad=0,rounding_size=0.022",
-        mutation_aspect=ar, facecolor=CARD_FC,
-        edgecolor=CARD_EC if frame else "none",
-        linewidth=1.2 if frame else 0.0, zorder=-100, clip_on=False)
+        mutation_aspect=ar, facecolor=CARD_FC, edgecolor=CARD_EC,
+        linewidth=1.2, zorder=-100, clip_on=False)
     fig.patches.insert(0, card)
 
 
-def finish(fig, path, frame=False):
-    _card(fig, frame=frame)
+def finish(fig, path):
+    _card(fig)
     fig.savefig(path, dpi=DPI, facecolor=PAGE_FC)
     plt.close(fig)
     return path
