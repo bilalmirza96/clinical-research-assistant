@@ -95,6 +95,34 @@ Before starting, read the full native checklist:
 view references/checks.md
 ```
 
+### Check 17 — Claims of absence (CRA-native, added 2026-08-25 per L073)
+
+Run from the plugin root:
+
+```
+python3 tools/claim_audit.py <deliverable> --registry <MASTER_ANALYSIS_REGISTRY.json>
+```
+
+Flags every sentence asserting that something was **not** tested, **not** compared, or is
+**not** recorded, where a registered result contradicts it. Check 16 and `registry_lint` H8
+both reconcile numbers that are PRESENT in a deliverable; neither can see a claim whose whole
+content is that a number is ABSENT, because there is no decimal to trace.
+
+This check exists because an abstract carried the hedge "the two histologies were not formally
+compared on this endpoint" while the registry held
+`NCDB.sano_tte.histology_interaction_E1_diff_pp` = 7.23 pp (1.77 to 13.38), bootstrap P = 0.013
+on that exact endpoint, plus an FDR-surviving, cluster-robust NCDB interaction and an
+independent SEER replication. The hedge was written as caution, then read back later as
+evidence, and a real finding was nearly cut on the strength of it.
+
+**Severity: CRITICAL.** A false claim of absence deletes a real finding, which is the most
+damaging class of error a QC pass can miss. Non-zero exit blocks sign-off.
+
+**Adjudication.** The tool is a lexical screen tuned to over-report. Open every candidate key
+it names. If the claim survives, rewrite it as a POSITIVE statement of what was done, naming
+the key ("the interaction was tested on the pooled cohort, not on this endpoint"), so the next
+reader can check it. A bare negative names nothing and rots into a false fact.
+
 ## Output Format
 
 For each issue found, report:
