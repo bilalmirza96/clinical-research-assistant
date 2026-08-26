@@ -619,6 +619,7 @@ Also produce:
 - `manuscript_brief_<date>.md` — PI-review narrative (per **L037**)
 - Register in SCAR via `scripts/analysis_registry.py` (per **L045**)
 - **Run `tools/registry_lint.py` and clear every hard failure (per L071).** Regenerate `Reports/REGISTRY_KEY_MAP.md`. A non-zero lint exit blocks the deliverable.
+- **Run `tools/claim_audit.py <deliverable> --registry <registry.json>` and clear every hard failure (per L073).** It flags assertions that something was not tested, not compared, or is not recorded, where a registered result says otherwise. `registry_lint` H8 checks numbers that are present; this checks claims that a number is absent. Never assert a negative about the analysis state from memory - query the registry. Never cite generated prose (a draft, a report, a prior turn) as evidence of what an analysis found.
 
 Update `project_state.json`, append `decision_log.md`.
 
