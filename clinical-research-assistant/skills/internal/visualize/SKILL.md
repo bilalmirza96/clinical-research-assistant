@@ -211,3 +211,14 @@ Lesson enforcement directly relevant to figures:
 ## Delegated helper (scientific-skills execution layer — see DELEGATION_RULES.md §F)
 
 - `scientific-skills:scientific-schematics` — conceptual / mechanism diagrams + graphical abstracts (Nano-Banana). Use ONLY for non-data conceptual figures. Data figures stay in CRA's matplotlib house pipeline (**House Figure Style v1 via `scripts/fig_style.py`** — semantic palette, rounded bars/capsules, clean sans, 300 DPI; on-figure titles for abstracts/slides, in-caption for journals).
+
+## CHANGELOG / Lessons Learned
+
+- **2026-09-06 (v1.2 exemplar devices).** Author adopted a two-panel JAMA-style exemplar as the
+  target look (declarative panel headers that state the finding, on-data value labels, effect
+  brackets, at-risk tables, dense sourced footnotes). `scripts/fig_style.py` gained
+  `panel_header`, `effect_bracket`, `at_risk_table`, `dist_strip`, `endpoint_label`. First deck:
+  ITSOS 2026 REPEAT DISPARITIES (21 figures). Gotchas: anchor forest right-hand labels in axes x,
+  not data x (they clip otherwise); serif is the house default (L070), not sans as older text
+  here says; external national statistics are declared as sourced constants in the figure
+  script and never written to the registry. Lessons-log L074.

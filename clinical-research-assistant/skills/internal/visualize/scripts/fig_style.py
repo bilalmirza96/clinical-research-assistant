@@ -23,6 +23,8 @@ capsule(ax, x0, x1, y, thick_px, color, ...) -> rounded CI capsule (forest plots
 despine(ax) / grid(ax)           -> consistent spines + gridlines
 legend(ax, ...)                  -> rounded, frameless-ish legend
 finish(fig, path)                -> add card, save at 200 dpi
+panel_header / effect_bracket / at_risk_table / dist_strip / endpoint_label
+                                 -> exemplar devices (v1.2, 2026-09-06)
 
 Colors are semantic and reused everywhere:
   TEAL  = primary / DIRECT (anatomic) effect / development (internal) cohort
@@ -270,6 +272,102 @@ def capsule(ax, x0, x1, y, thick_px, color, z=3, alpha=1.0):
                       {"tl", "tr", "br", "bl"})
     ax.add_patch(PathPatch(p, facecolor=color, edgecolor="none",
                            zorder=z, alpha=alpha, antialiased=True))
+
+
+# ---------------------------------------------------------------- exemplar devices (v1.2, 2026-09-06)
+# Added from the two-panel JAMA-style exemplar the author adopted as the target look
+# (memory: house-figure-exemplar-two-panel). Four devices that define it and had no
+# helper: declarative panel header, effect bracket, at-risk table, distribution strip.
+import textwrap as _tw
+from matplotlib.transforms import blended_transform_factory as _blend
+
+
+def panel_header(ax, letter, sentence, x=0.0, y=1.02, fontsize=11.2, wrap=58,
+                 letter_size=None, gap=0.012):
+    """Declarative panel header: bold letter + a SENTENCE stating the finding.
+
+    The exemplar heads each panel "A  Among all ypT0 patients (n=3,010), nodal
+    positivity increases with the number of nodes examined" -- never a bare letter or a
+    noun-phrase label. Anchored top-left above the axes so the letter sits on the
+    first line when the sentence wraps."""
+    txt = sentence if not wrap else "\n".join(_tw.wrap(sentence, wrap))
+    nlines = txt.count("\n") + 1
+    t = ax.text(x, y, letter, transform=ax.transAxes, ha="left", va="bottom",
+                fontsize=letter_size or fontsize + 1.5, fontweight="bold", color=INK)
+    ax.figure.canvas.draw()
+    off = t.get_window_extent().width / ax.get_window_extent().width
+    # va="bottom" on the letter aligns with the LAST line; shift it up so it sits on the first
+    if nlines > 1:
+        lh = (fontsize * 1.32) / 72.0 * ax.figure.dpi / ax.get_window_extent().height
+        t.set_y(y + lh * (nlines - 1))
+    ax.text(x + off + gap, y, txt, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=fontsize, color=INK, linespacing=1.32)
+    return t
+
+
+def effect_bracket(ax, x, y0, y1, label, color=INK, cap_px=7, lw=1.3, dx_px=9,
+                   fontsize=9.6, text_color=None, bold_first_line=False):
+    """Vertical capped rule at data-x spanning y0..y1 with the effect printed beside it.
+
+    The exemplar's headline device: "21.3 percentage points / P<.001" hung off the
+    two curve endpoints. Draws in data coords, unclipped, so it can sit past xlim."""
+    ppx, ppy = _px_per_data(ax)
+    cap = cap_px / ppx
+    ax.plot([x, x], [y0, y1], color=color, lw=lw, clip_on=False, zorder=6,
+            solid_capstyle="butt")
+    for yy in (y0, y1):
+        ax.plot([x - cap, x + cap], [yy, yy], color=color, lw=lw, clip_on=False, zorder=6)
+    ax.text(x + dx_px / ppx, (y0 + y1) / 2, label, ha="left", va="center",
+            fontsize=fontsize, color=text_color or color, clip_on=False, zorder=6,
+            linespacing=1.35)
+
+
+def at_risk_table(ax, times, rows, y0=-0.22, dy=0.075, label_x=-0.02, fontsize=8.8,
+                  header="At risk", suppress_below=None):
+    """Number-at-risk table beneath a KM axes, row labels colour-matched to their curves.
+
+    rows: [(label, color, [n at each time]), ...]. Positions use data-x / axes-y so the
+    counts line up under the tick marks. `suppress_below` prints "<n" for small cells
+    (NCDB PUF DUA)."""
+    tx = _blend(ax.transData, ax.transAxes)
+    ta = ax.transAxes
+    ax.text(label_x, y0, header, transform=ta, ha="right", va="center",
+            fontsize=fontsize, color=MUTE, clip_on=False)
+    for i, (lab, col, counts) in enumerate(rows):
+        yy = y0 - dy * (i + 1)
+        ax.text(label_x, yy, lab, transform=ta, ha="right", va="center",
+                fontsize=fontsize, color=col, clip_on=False)
+        for t, n in zip(times, counts):
+            s = (f"<{suppress_below}" if (suppress_below and 0 < n < suppress_below)
+                 else f"{int(n):,}")
+            ax.text(t, yy, s, transform=tx, ha="center", va="center",
+                    fontsize=fontsize, color=col, clip_on=False)
+
+
+def dist_strip(ax, centers, heights, label=None, width=None, color="#C9D1D9",
+               fontsize=8.2):
+    """Light-grey distribution strip on a thin axes under the main panel.
+
+    The exemplar shows the density of the x variable ("Distribution of nodes examined")
+    in a strip with its own box, no y ticks, and a faint inline label."""
+    centers = np.asarray(centers, dtype=float); heights = np.asarray(heights, dtype=float)
+    if width is None:
+        width = (np.diff(centers).min() if len(centers) > 1 else 1.0) * 0.82
+    ax.bar(centers, heights, width=width, color=color, edgecolor="none", zorder=3)
+    ax.set_yticks([]); ax.set_ylim(0, heights.max() * 1.9 if heights.max() > 0 else 1)
+    for s in ("top", "right", "left", "bottom"):
+        ax.spines[s].set_visible(True); ax.spines[s].set_color(SPINE)
+    ax.tick_params(length=3, width=1.0, color=SPINE)
+    if label:
+        ax.text(0.012, 0.93, label, transform=ax.transAxes, ha="left", va="top",
+                fontsize=fontsize, color=FAINT)
+
+
+def endpoint_label(ax, x, y, text, color, dx_px=6, fontsize=10.5, va="center"):
+    """Bold value label in the series colour at a curve terminus (exemplar: 66.5%)."""
+    ppx, _ = _px_per_data(ax)
+    ax.text(x + dx_px / ppx, y, text, ha="left", va=va, fontsize=fontsize,
+            color=color, fontweight="bold", clip_on=False, zorder=7)
 
 
 # ---------------------------------------------------------------- card + save
