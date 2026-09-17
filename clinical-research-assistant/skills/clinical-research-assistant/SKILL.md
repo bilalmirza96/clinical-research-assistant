@@ -79,6 +79,7 @@ Classify every request before acting:
 | Abstract drafting or audit | `skills/internal/write-abstract/SKILL.md` |
 | Full manuscript orchestration | `skills/internal/write-manuscript/SKILL.md` |
 | Manuscript quality-control audit | `skills/internal/manuscript-qc/SKILL.md` |
+| Conference presentation, abstract talk, slide deck, redesigning slides | `skills/internal/present/SKILL.md` |
 
 ### Step 2 — Select the Best Skill
 
