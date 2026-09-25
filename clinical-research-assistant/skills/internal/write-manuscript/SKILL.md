@@ -393,7 +393,7 @@ Select the appropriate framework (STROBE, CONSORT, STARD, TRIPOD, STROCSS, PRISM
 
 ### Part D — Generate Final Documents
 
-Generate the following Word documents (.docx) using python-docx. **All documents use Georgia 12pt, 1.5 line spacing, black text (RGB 0,0,0), no coloured shading, 1-inch margins** — per the global Manuscript Formatting Standard in `~/Claude/00_Context/working-rules.md` (lesson **L042**). Pandoc-rendered docx files retain per-run font overrides; the Normal style alone is NOT sufficient. Walk every paragraph + every table cell and force run.font.name = "Georgia", run.font.color.rgb = RGBColor(0,0,0), w:rFonts → Georgia for ascii/hAnsi/cs/eastAsia. Worked formatter: `Esophageal-IO/Active_2026-05-06/Scripts/V8_apply_georgia_formatting_2026-05-11.py`. Tables may use 11pt for fit. Required documents:
+Generate the following Word documents (.docx) using python-docx. **All documents use Georgia 12pt, 1.5 line spacing, black text (RGB 0,0,0), no coloured shading, 1-inch margins** — per the global Manuscript Formatting Standard in `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/working-rules.md` (lesson **L042**). Pandoc-rendered docx files retain per-run font overrides; the Normal style alone is NOT sufficient. Walk every paragraph + every table cell and force run.font.name = "Georgia", run.font.color.rgb = RGBColor(0,0,0), w:rFonts → Georgia for ascii/hAnsi/cs/eastAsia. Worked formatter: `Esophageal-IO/Active_2026-05-06/Scripts/V8_apply_georgia_formatting_2026-05-11.py`. Tables may use 11pt for fit. Required documents:
 
 1. **`manuscript_complete_[date].docx`** — Full manuscript with all sections in order:
    - Title page (title, author placeholders, corresponding author, word count)
