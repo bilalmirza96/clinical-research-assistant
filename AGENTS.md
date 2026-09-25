@@ -7,7 +7,7 @@
 >
 > **Counterpart files:**
 > - Claude Code reads `CLAUDE.md` (this repo's root) + `~/.claude/CLAUDE.md` (global)
-> - Cowork reads `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/CLAUDE.md`
+> - Cowork reads the `CLAUDE.md` of the folder it is pointed at: `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/CLAUDE.md` for research (apps and tooling: `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/CLAUDE.md`)
 > - **Codex reads THIS file** + `~/Claude/AGENTS.md` (if present) + any nested `AGENTS.md` files
 >
 > The substantive operating rules are the same across all three agents. Only the invocation
@@ -22,9 +22,9 @@ Arizona. Research focus: thoracic surgical oncology (esophageal, lung) and trans
 immuno-oncology (HNSCC, single-cell transcriptomics). Email: `bilalmirza96@outlook.com`.
 
 Standing identity, mentors, working style, and active projects live in three context files:
-- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/00_Context/about-me.md`
-- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/00_Context/active-projects.md`
-- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/00_Context/working-rules.md`
+- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/about-me.md`
+- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/active-projects.md` (research; apps and tooling status: `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/00_Context/active-projects.md`)
+- `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/working-rules.md`
 
 **Read all three at the start of every session before doing anything else.** They are
 prerequisite context, not optional reading. The same files are the session-start ritual for
@@ -52,10 +52,12 @@ There are **two `Claude`-named folders** on this Mac. They are NOT interchangeab
 | Path | Purpose | What lives here |
 |------|---------|-----------------|
 | `~/Claude/` (local filesystem) | "Hot" workspace — git repos, plugin dev, sandbox | CRA repo (`~/Claude/dev/clinical-research-assistant/`), claude-scientific-skills, engineering scratch |
-| `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/` (iCloud) | "Cool" workspace — deliverables, manuscripts, clinical projects | All clinical/translational research projects, manuscripts, grants, session logs |
+| `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/` (iCloud) | "Cool" research workspace — projects, manuscripts, datasets | All clinical/translational/health-policy research projects, manuscripts, research grants, working rules, research session logs |
+| `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/` (iCloud) | Apps, CRA tooling, admin (split from research 2026-09-25) | CaseLog/Opraksis/LifeOS companions, CRA workflow docs, sync scripts |
 
 **Routing rule:**
-- Clinical / translational research / manuscripts / grants → **iCloud `Claude_Projects/`**
+- Clinical / translational research / manuscripts / grants → **iCloud `Claude_Research/`**
+- Apps, CRA tooling docs, admin → **iCloud `Claude_Projects/`**
 - Plugin dev, engineering scratch, sandbox → **local `~/Claude/`**
 
 **Hard prohibitions:**
@@ -179,7 +181,7 @@ biomedical-data-analysis task:
   1. Skill source SKILL.md at
      `~/Claude/dev/clinical-research-assistant/clinical-research-assistant/skills/<skill-name>/SKILL.md`
   2. The corresponding rule in
-     `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/00_Context/working-rules.md`
+     `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/working-rules.md`
   3. `lessons-log.json` at
      `~/Claude/dev/clinical-research-assistant/clinical-research-assistant/skills/references/lessons-log.json`
      — add a structured entry with `promoted_to` audit trail.
@@ -272,8 +274,8 @@ and lessons-log entries **L011, L023, L025**.
 
 ## 10. End-of-Session Protocol
 
-Follow `SESSION-END PROTOCOL.md` at the root of the iCloud workspace:
-`~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/SESSION-END PROTOCOL.md`.
+Follow `SESSION-END PROTOCOL.md` at the root of the iCloud research workspace:
+`~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/SESSION-END PROTOCOL.md` (identical copy in `Claude_Projects/`).
 
 Run it automatically — do not ask whether to run it.
 
