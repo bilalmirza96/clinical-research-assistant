@@ -68,7 +68,7 @@ def init(path, project):
             "standard": ("Single Consolidated Analysis Registry (SCAR). "
                          "One file per project; update in place; prior valid "
                          "results carried forward in each entry's history[]. "
-                         "Rule: ~/Claude/00_Context/working-rules.md."),
+                         "Rule: ~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/working-rules.md."),
             "created": _now(),
             "last_updated": _now(),
             "current_analysis_vintages": {},
