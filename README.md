@@ -1,7 +1,7 @@
 # Clinical Research Assistant — Plugin for Claude Code
 
 > **Canonical location: `~/Claude/dev/clinical-research-assistant/` (local filesystem only).**
-> Do not clone this repo into iCloud (anywhere under `~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/`).
+> Do not clone this repo into iCloud (anywhere under `~/Library/Mobile Documents/com~apple~CloudDocs/`, including the `Claude_Research/` and `Claude_Projects/` workspaces).
 > iCloud Drive evicts files to save space and can corrupt `.git/index` and refs. GitHub is the
 > portable backup — on any new machine, clone fresh:
 >
