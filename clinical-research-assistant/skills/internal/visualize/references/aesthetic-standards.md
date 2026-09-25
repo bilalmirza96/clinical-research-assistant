@@ -12,7 +12,7 @@ directive: *"I want all my figures to look like these."*). It is a reusable modu
 **import it, do not hand-roll styling:**
 
 - `skills/internal/visualize/scripts/fig_style.py` (canonical)
-- workspace mirror: `~/Library/.../Claude_Projects/templates/figure-style/fig_style.py` (+ README)
+- workspace mirror: `~/Library/.../Claude_Research/templates/figure-style/fig_style.py` (+ README)
 
 **Structural language (non-negotiable):**
 
