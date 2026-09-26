@@ -40,23 +40,27 @@ rather than as a second thing to parse.
 
 ## Typography
 
-Times New Roman throughout, matching the manuscript. Titles black and bold; body
-ink `#22333F`; secondary text muted; footnotes at footer grey.
+Times New Roman throughout, matching the manuscript. **Gold standard (2026-09-25): every body run is
+28 pt or larger** (titles 43.5 pt bold, footer legends 32 pt, conclusions 32 pt); see
+`gold-standard-spec.md` for the full scale. `deck_lint.py` fails anything below 28 pt.
 
-One title per figure, left-aligned, no subtitle block competing with it. A short
-subtitle naming the cohort and years is fine; a second declarative sentence is not.
+**Text is black.** No grey text anywhere: the author had every grey label, tick and footnote
+recoloured black. Grey survives only as *lines* (gridlines, rules, axis baselines, arrow shafts).
+White appears only on a dark fill.
 
-Type scale is coarse on purpose: a hero number can be 40–64 pt while its label sits
-at 13–15 pt. Timid contrast reads as indecision.
+**No bold in the body.** Titles are bold. Structural labels (table headers, analytic-step headings,
+forest group headings) may be bold and navy `1A3255`. Values, estimates, P values, axis text and
+legend labels are never bold.
 
----
+One title per slide, left-aligned, no subtitle block. The slide carries as little text as possible:
+plots in the centre, one statistic per comparison, the explanation in the notes.
 
 ## Colour
 
 Semantic, never decorative. Every hue means one thing in the whole deck.
 
-- Race series follow the project convention (navy = non-Hispanic White,
-  red = non-Hispanic Black). **Red is reserved for the disadvantaged group** and may
+- Race series follow the project convention (navy `123057` = non-Hispanic White,
+  dark red `801819` = non-Hispanic Black). **Red is reserved for the disadvantaged group** and may
   not be reused for a registry or category series anywhere a race series appears.
 - Registry series: NCDB blue `#007AD1`, SEER orange `#D15600`.
 - Sequential emphasis (eras, estimator ladders) uses a tint ramp of one hue that
@@ -113,6 +117,24 @@ two-year survival endpoint".
 ## Rejected patterns
 
 Each of these was built, shown, and turned down. Do not re-propose them.
+
+**Slide numbers and source lines.** Removed from every slide of the gold deck. Provenance lives in
+the notes archive and backup slides.
+
+**Grey or coloured text; bold values.** Every grey label was recoloured black; bold was removed from
+everything but titles and structural labels.
+
+**Coloured forest markers.** Light-blue markers were replaced by black on request; the dotted null
+line stays dotted (a solid y "spine" was rejected).
+
+**Per-bar value labels plus a P value.** One statistic per comparison, above the pair.
+
+**Legends inside plots, or legend swatches that differ between slides.** One footer legend, 0.41 in
+rounded squares, 32 pt labels, identical position on every slide.
+
+**A forest axis line under the ticks.** Built as a sample, declined.
+
+**Text below 28 pt**, including "All P<.001"-style annotations.
 
 **Box-and-arrow hub diagrams.** A central contrast with explanatory boxes feeding
 in reads as a consulting slide. Rejected on sight. For objectives, prefer one
