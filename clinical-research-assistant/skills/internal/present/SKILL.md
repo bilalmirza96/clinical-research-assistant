@@ -1,147 +1,99 @@
 ---
 name: present
-description: Builds and edits conference presentation decks for abstract presentations — podium talks, oral abstracts, invited sessions. Produces native PowerPoint slides in a consistent academic design system, sources every number from the project's MASTER_ANALYSIS_REGISTRY.json, renders figures that fill a slide, and verifies each edit by exporting the deck to PDF and looking at it. Use whenever the user asks for a presentation, a deck, slides, a talk, or wants existing slides redesigned, simplified, or re-figured.
+description: Use when the user asks for a presentation, podium or oral-abstract talk, slide deck, slides, invited session, discussant or audience Q&A preparation, or presenter notes for a study, or wants existing slides redesigned, restyled, decluttered, recoloured or re-figured.
 argument-hint: "[abstract/project path, slide numbers, or the slide change requested]"
 allowed-tools: Read Write Edit Bash Task
 ---
 
-# /present — Conference Presentation Builder
+# /present: Study Presentation Builder
 
-## Role
+## Overview
 
-You build and edit the slide deck for an abstract presentation. The deck is a
-*deliverable*, not a scratch artifact: it goes on a projector in front of an
-audience that can do arithmetic, and every number on it must trace to the
-project's registry.
+Build and edit conference decks that look like the author's **gold-standard ITSOS 2026 deck**:
+native PowerPoint geometry, Times New Roman, 28 pt minimum, black text, one statistic per
+comparison, an identical footer legend on every slide, and a story told slide by slide in the
+presenter notes. Every number traces to the project's `MASTER_ANALYSIS_REGISTRY.json`.
 
-Two distinct modes, and you must know which you are in before writing anything:
+The design is measured, not remembered. `scripts/deck_style.py` draws it, `scripts/deck_lint.py`
+fails anything that drifts from it, and `tests/test_gold_standard.py` proves both still agree.
 
 | Mode | When | Rule |
 |---|---|---|
-| **BUILD** | No deck exists yet | Generate the full deck from the abstract + registry |
+| **BUILD** | No deck exists yet | Story first, then build every slide with `deck_style` |
 | **EDIT** | A deck exists | Change only the slides named. The author edits the same file in parallel. |
 
 **EDIT is the common case and the dangerous one.** See "Editing a live deck".
 
----
+## Read first
 
-## PREREQUISITE — read before anything else
+1. The project's `Reports/MASTER_ANALYSIS_REGISTRY.json`, the **only** source of numbers (L045).
+2. The project's `CLAUDE.md`: palette conventions, DUA limits, standing rules.
+3. `references/gold-standard-spec.md`: every size, colour and position, and the 20 slide archetypes.
+4. `references/story-and-notes.md`: the arc, the notes contract, modest conclusions, the Q&A pack.
+5. `references/content-lessons.md`: claims a slide can and cannot make (denominators, registry
+   codes, measures). Read it before writing a single conclusion.
+6. `references/pptx-gotchas.md`: every entry is a bug that shipped. Read before the first write.
+7. `references/aesthetic-principles.md` and `references/slide-patterns.md`: the taste behind it,
+   and the catalogue of figure ideas.
 
-1. The project's `Reports/MASTER_ANALYSIS_REGISTRY.json` — the **only** authoritative
-   numbers surface (L045). Re-derive, never transcribe.
-2. The project's `CLAUDE.md` — palette conventions, DUA restrictions, standing rules.
-3. `references/aesthetic-principles.md` — the house look for national surgical and
-   oncology meetings, and the patterns the author has already rejected.
-4. `references/slide-patterns.md` — the layouts that work, with measured geometry.
-5. `references/pptx-gotchas.md` — read this before your first python-pptx write.
-   It is not optional; each entry is a bug that shipped.
+## The house standard on one screen
 
----
+| | Rule |
+|---|---|
+| Canvas | 20 × 11.25 in; title at (0.938, 0.729); rules at y 1.623 and 10.286, x 0.938, w 18.125 |
+| Type | Times New Roman only. Body **28 pt minimum**; legend 32; title 43.5 bold; conclusions 32 |
+| Colour of text | Black. White only on dark fills. Navy `1A3255` only for structural labels |
+| Bold | Titles and structural labels (table heads, step headings, forest group headings) only |
+| Grey | Lines only: grid `E9ECF0`, rules `E1E6ED`, axis/arrows `6B7280`. Never text |
+| Race colours | NHW `123057`, NHB `801819` (red reserved; never a category colour) |
+| Legend | Footer only: 0.41 in rounded squares at x 0.92, y 10.47; 32 pt labels; identical on every slide |
+| Bars | Top-rounded; one statistic per pair above it (P or HR); no per-bar values alongside it |
+| Forest | Black 0.20 in markers, 0.035 in CI, **dotted** null, log ticks, estimate + P at right, arrow label below |
+| KM | Native step polylines, 24-month landmark line + dots, statistic top-right, legend in footer |
+| Furniture | No slide numbers. No source line. No in-plot legends. Pictures only for branding |
+| Density | Plots centred, as little text as possible; detail goes in notes and hidden backup slides |
 
 ## Hard rules
 
-**Numbers.** Every value on a slide comes from the registry or is re-derived from
-the locked cohort by a script you wrote in this session. Never copy a number off
-an earlier slide, an earlier draft, or your own previous message.
+**Numbers.** Every value comes from the registry or is re-derived by a script written in this
+session. Never copy a number off an earlier slide, draft, or message. When a slide shows two values
+and their difference, check the subtraction (40.0 − 30.2 = 9.8, not a registry 9.9).
 
-**Registry arithmetic must survive the audience.** If a slide shows 40.0%, 30.2%
-and "9.9-point difference", someone will subtract. Before shipping any slide that
-displays both components and their difference, check that they agree. When they
-do not, find out why before changing either — a registry value computed as
-`round(a,1) - round(b,1)` differs from `round(a-b,1)`, and the registry is locked,
-so you report the discrepancy and let the author decide. Do not silently "fix" a
-locked value, and do not silently display one that contradicts the slide.
+**Claims.** Follow `references/content-lessons.md`. Compare groups on the all-patient denominator,
+never on within-subgroup shares. Name registry codes by their dictionary definition. Never assign
+a decision to clinicians or patients when the registry cannot. NCDB is hospital-based.
 
-**Suppression.** NCDB PUF DUA: suppress any cell with 0 < n < 11. Never describe
-NCDB as "population-based" (it is hospital-based). Carry the verbatim disclaimer.
+**Suppression.** NCDB PUF: suppress 0 < n < 11, and suppress a second cell when a single suppressed
+cell could be recovered by subtraction.
 
-**Native shapes are the deliverable. A finished deck contains zero images.**
-Every slide the author will present — data slides included — is real PowerPoint
-geometry: rectangles, rounded rectangles, ovals, lines, textboxes. The author
-edits decks between your runs, and a rendered PNG is a dead end for them: they
-cannot fix a typo, renumber a value, or recolour a series without coming back to
-you. Render matplotlib **only** for marks a plotting engine genuinely owns —
-survival curves, densities, gradient fills, kernel estimates — and say in the
-manifest why that slide is an exception. Assert it at build time:
+**Native shapes.** Data slides contain zero pictures (curves are open custGeom polylines via
+`deck_style.polyline` / `km_panel`). Pictures are allowed only for branding: title-slide art,
+logos, the conclusions watermark.
 
-```python
-n_pic = sum(1 for sl in prs.slides for sh in sl.shapes if sh.shape_type == 13)
-assert n_pic == 0, "a slide still contains a rendered image"
-```
+**Colour binds to one meaning, once.** Declare tokens before drawing; recolour by label and
+region, never by hex. When the author supplies a palette, sample the exact hexes, drop a shade that
+cannot be told apart from its neighbour, and say which one you dropped.
 
-Matplotlib still earns its place in **Phase 3**: a mockup PNG is the cheapest way
-to settle a design before you build it. Mockups are for the decision; the deck is
-built natively afterwards. Keep the mockup scripts, and record in the manifest
-that they no longer feed the deck.
+**Uniformity.** Draw through `deck_style` tokens only (`frame`, `legend`, `grouped_bars`, `forest`,
+`stacked_rows`, `km_panel`, `steps`, `numbered_list`, `note`). Never hand-place furniture.
 
-**Bind every colour to one meaning, once, before drawing anything.** Declare the
-deck's semantic tokens in the drawing module and draw *through the token names*,
-never through a raw `NAVY`/`RED`:
-
-```python
-OPEN_C = NAVY    # the open/reference arm, everywhere
-MIS_C  = RED     # the minimally invasive arm, everywhere
-NS_C   = SLATE   # not statistically significant
-```
-
-The failure this prevents is specific and easy to walk into: a cohort slide binds
-navy to the reference arm, then a forest two slides later colours "favours the
-other arm" navy because navy reads as the primary hue. Now navy means two things
-in one deck and the audience is silently misled. **Colour a forest marker by
-which arm the effect favours**, so the arm colours established on the cohort and
-unadjusted slides carry straight through. Where a race series is present, red is
-reserved for the disadvantaged group named in the project CLAUDE.md and may not
-be reused for a registry or category series. Recolour by *label and region*,
-never by hex — the same hex often carries two meanings in one deck.
-
-**Uniformity is a hard requirement, not a preference.** Pin the furniture as
-module constants and use them on every content slide, so nothing drifts by a
-tenth of an inch between slides:
-
-| Constant | What it fixes |
-|---|---|
-| `TITLE_Y`, `MARGIN_L/R` | title origin and side margins |
-| `BODY_TOP`, `BODY_BOTTOM` | the band content may occupy |
-| `FOOT_Y` | footnote origin |
-| `SZ_*` | the type scale, one size per role |
-
-One P-value format, one en-dash convention, one footnote size, one eyebrow size
-across the whole deck. A registry that stores `"<0.001"` as a string will print
-`P <0.001` beside `P = .432` unless the formatter normalises it.
-
-**Audit before you ship.** Walk every run on every slide and fail on anything off
--contract — it catches what a render does not:
-
-```python
-# 0 pictures, 0 off-palette runs, 0 off-font runs, identical title/footnote origins
-```
-
-**No editorial voice.** Slide text states findings; it does not characterise them.
-"The largest modifiable step identified here is receipt of curative-intent surgery"
-is a finding. "The highest-leverage intervention in this disease" is an editorial.
-Strip the second kind on sight.
-
----
+**No editorial voice** on slides. State the finding, not its importance.
 
 ## Workflow
 
 ```
-Phase 1 INTAKE     read abstract, registry, project CLAUDE.md, existing deck
-Phase 2 OUTLINE    slide-by-slide plan: title, claim, evidence, source key
-   HALT 1          author approves the outline (BUILD mode only)
-Phase 3 MOCKUP     render candidate layouts as PNG, before touching the deck
-   HALT 2          author picks a direction
-Phase 4 BUILD      write slides; back up the deck first
-Phase 5 VERIFY     export PDF, render PNG, LOOK at it
-Phase 6 NOTES      presenter notes, narrative only
+1 INTAKE   abstract, registry, project CLAUDE.md, existing deck, venue time limit
+2 STORY    slide list: the question each slide answers (story-and-notes.md §1)   -> HALT 1 (BUILD)
+3 MOCKUP   any NEW figure type: one preview PNG before touching the deck         -> HALT 2
+4 BUILD    deck_style only; one pinned script per slide; back up first (single rolling backup)
+5 LINT     python3 scripts/deck_lint.py DECK.pptx --minutes N    -> zero FAIL before delivery
+6 VERIFY   render and LOOK (PowerPoint export when idle; preview_deck.py otherwise)
+7 NOTES    notes contract: hand-off sentence, finding, rounded numbers
+8 Q&A      qa_prep_<date>.md: discussant questions in order, adjusted/matched numbers only
 ```
 
-**Phase 3 is not skippable for any new figure or layout.** Rendering a mockup PNG
-costs one tool call; rebuilding a deck the author rejects costs the session. The
-author will routinely reject two or three directions before one lands — that is
-the process working, not failing.
-
----
+The lint gate is not optional: a deck with any FAIL is not delivered. WARN lines are read one by one
+and either fixed or explicitly accepted (e.g. a bold structural label).
 
 ## Editing a live deck
 
@@ -182,7 +134,7 @@ change the deck:
    only the immediately previous state is recoverable — that is the trade, and
    it is the right one, because a visible copy the author might open is more
    dangerous than a lost intermediate. Render intermediates (PDF pages, PNGs) go
-   to a scratch directory, never beside the deck. Author directive 2026-09-16:
+   to a scratch directory, never beside the deck. Author directive 2026-09-16 (re-violated 2026-09-23..25, when ~30 `_pre_<change>` copies piled up beside the ITSOS deck; do not repeat it):
    *"have one working ppt, dont save multiple copies."*
 2. **Re-read the deck at the start of every task.** Slide count, indices, and
    contents all change. During one session a deck went 51 → 52 → 49 → 48 → 47 → 48.
@@ -203,69 +155,65 @@ change the deck:
 
 ---
 
-## Verification — non-negotiable
+## Verification
 
-A deck edit is not done until you have looked at the rendered slide.
+A slide is not done until you have looked at it.
 
-```bash
-python3 scripts/render_deck.py DECK.pptx /tmp/out --match "Slide Title"
-```
+1. `python3 scripts/deck_lint.py DECK.pptx --minutes 7`: zero FAIL.
+2. Render:
+   - **PowerPoint idle and deck closed:** `python3 scripts/render_deck.py DECK.pptx OUT --match "Title"`
+     (copy to scratch first; hidden slides shift PDF pages, so match by title).
+   - **Author working in PowerPoint, or automation blocked:** `python3 scripts/preview_deck.py
+     DECK.pptx OUT --slides 3,5 --sheet`. It draws shapes and text offline, which is enough for
+     collisions, overflow and alignment; do the final PDF check when PowerPoint is free.
+   - Never open your files through the author's live PowerPoint session (gotcha 16).
+3. Read the PNG. Look for clipped text, labels over data, collisions with rules, a legend that
+   moved, numbers that do not add up.
 
-**Quit PowerPoint before exporting.** A running instance serves a cached copy of an
-open file, so you render the previous version. This produces the most confusing
-failure mode available: an edit that is correct on disk and absent from the render.
-If a render disagrees with what you just wrote, quit PowerPoint and re-export
-before concluding anything.
+Dry-run first for any bulk operation (`DRY=1` prints the plan and writes nothing).
 
-Then Read the PNG. Look for: text clipped at the slide edge, labels written over
-data, stray black hairlines, collisions between a label and a rule, numbers that
-do not add up.
+## Presenter notes and Q&A
 
-Dry-run first for any bulk operation. `DRY=1` should print the plan and write
-nothing. Dry runs on one deck caught four destructive mistakes before they landed,
-including a recolour that would have turned 99 person-icons yellow.
+Notes follow `references/story-and-notes.md` §2: 20–100 words, a hand-off first sentence, whole
+percentages, percentage points for differences, ~130 words per talk minute. `deck_lint.py` checks
+banned openers, "population-based" NCDB, decimal percentages and the word budget. Notes attach by
+slide title; inject a notes placeholder where python-pptx returns None.
 
----
-
-## Figures
-
-Text and simple geometry are **native PowerPoint shapes** — editable by the author,
-crisp at projector resolution. Charts that need a plotting engine (Kaplan-Meier,
-distributions, gradient fills) are rendered with matplotlib at the deck's aspect
-ratio (13.33 × 7.5 in = 16:9) and placed full-bleed.
-
-Figure scripts read locked values and restyle them. A figure script never
-recomputes an effect estimate. It may re-derive a display quantity the registry
-does not store (medians, censored counts) — say so in the script docstring and
-print the derived values on every run so they are checkable.
-
-See `references/slide-patterns.md` for the catalogue: estimator ladder, era blocks,
-data-source table, forest plot with a log-symmetric axis, KM hero with a gradient
-gap wedge, survminer-idiom KM, icon array, dumbbell, gap-over-time.
-
----
-
-## Presenter notes
-
-Narrative only — what the presenter says, in order, telling a story across slides.
-No "Reference" blocks, no registry keys, no model specifications in the notes: they
-sit in the speaker's eyeline during the talk. Provenance belongs in an archive file
-beside the deck, not in the notes pane.
-
-Notes attach by slide title, not index. Some programmatically built slides have no
-notes placeholder — inject one into the notes-slide XML rather than crashing.
-
----
+For a discussant, write `qa_prep_<date>.md`: questions in the order received, 2–4 spoken sentences
+each, adjusted or matched numbers labelled as such, one honest limit per answer, plus a tiered
+audience list (basic → complex) and a corrections list if the abstract said something the final
+analysis revised.
 
 ## Deliverables
 
 | File | Contents |
 |---|---|
-| `<deck>.pptx` | the deck — exactly one, no dated copies |
-| `Presentations/<venue>/.<deck>.prev.pptx` | hidden rolling backup, previous state only |
-| `Presentations/<venue>/presenter_notes_<date>.md` | exported notes |
-| `Scripts/build_slide*.py` | one pinned script per slide built |
-| `Scripts/make_*_mockup.py` | mockup generators, kept for re-runs |
+| `<deck>.pptx` | the deck: exactly one, no dated copies |
+| `.<deck>.prev.pptx` | hidden rolling backup, previous state only |
+| `presenter_notes_<date>.md` | notes exported in slide order |
+| `qa_prep_<date>.md` | discussant answers + audience questions |
+| `Scripts/build_slide_*.py` | one pinned script per slide built |
 
-One script per slide, named for the slide. They are the record of how the deck was
-built and the only way to rebuild it after the author edits around you.
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| 18–24 pt axis ticks or "All P<.001" annotations | 28 pt floor; `deck_lint` S2 |
+| Grey labels, bold values, coloured forest markers | black text, bold only structural, black markers |
+| Slide numbers / source line in the footer | remove; the footer holds the legend only |
+| Legend redrawn per slide by hand | `deck_style.legend()`; `deck_lint` S8 |
+| "Black patients refused less" from within-subgroup shares | all-patient denominator + adjusted model |
+| "Not offered" / "not recommended" for NAACCR 1340 code 1 | "not part of the planned first course" |
+| Decimal percentages and "percent" for differences in notes | whole numbers; "percentage points" |
+| Conclusions that assign blame or overstate mediation | `story-and-notes.md` §3 modesty contract |
+| Re-running a full-deck builder after the author edited | fingerprint, then targeted in-place edit |
+| Rendering through the author's open PowerPoint | `preview_deck.py`; export later |
+| `_pre_<change>` copies next to the deck | single hidden rolling backup |
+
+## Changelog / Lessons learned
+
+- **2026-09-25 (L085): gold standard v2.** Measured the author's ITSOS 2026 deck and rebuilt the
+  module on it: 28 pt floor, black text, no slide numbers or source line, footer legend with rounded
+  swatches, black forests with dotted null, native KM helpers, conclusions and notes contracts,
+  content lessons (denominators, NAACCR 1340, time horizons), `deck_lint.py`, `preview_deck.py`,
+  and a red/green test (`tests/test_gold_standard.py`).
