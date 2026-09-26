@@ -410,6 +410,8 @@ Write the Results section following the **exact order of tables and figures in t
 - This is the main finding — give it the most space
 - Report the primary effect estimate with full statistics: adjusted OR/HR (95% CI, p-value)
 - Compare to unadjusted estimate — note attenuation or strengthening
+- When the analysis ran the ladder (L087), walk it in order in one or two sentences: unadjusted, Model A (clinical), Model B (fully adjusted), IPTW, E-value; then mediation. Say how much each adjustment accounted for; never that it "explained away" a disparity
+- Every percentage names its denominator population (L090), and every coded category uses the data dictionary's wording (L089)
 - Report all independently significant predictors from the model
 - Provide clinical interpretation of the magnitude: what does this OR/HR mean in practical terms
 - Reference: "(Table 3)"
