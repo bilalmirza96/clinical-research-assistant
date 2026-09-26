@@ -11,6 +11,10 @@ Confounds & alternative explanations; assumption violations; data leakage; resea
 - **Multiple testing** — BH-FDR within families + Bonferroni for primary (L006/L032). Bolding: p<0.05 in Table_1; q<0.05 in Table_2/Sensitivity/Supplementary.
 - **Registry cautions** (per `registry-cautions.md`) — NCDB no cause-specific survival + facility clustering; SEER no systemic therapy; NSQIP 30-day only; immortal-time bias; missingness not MCAR.
 - **Concordance** — crude (Phase 4) vs adjusted (Phase 5A) direction/magnitude/CI overlap; unexplained flips are findings.
+- **Analysis ladder (L087)** — every rung run in order or skipped with a written reason; exactly two adjusted models (Model A clinical, Model B everything); rungs 1-3 on one N; no mediator adjusted in Model A or B; E-values use the formula for the measure and outcome frequency; mediation is counterfactual (never a difference of HRs); SES attenuation reported as "accounted for", not "explained away".
+- **Cohort (L088)** — one builder; eligibility from baseline information only; differential exclusion by exposure group checked and, where present, a selection sensitivity run; every N in the deliverables equals a registered cohort or sub-cohort N; stratified analyses reproduce the overall estimate first.
+- **Dictionary (L089)** — every coded variable has a dossier entry; recode maps pass `dictionary_audit.py`; every label and sentence about a code stays inside the dossier's claim boundary (NCDB `REASON_FOR_NO_SURGERY` code 1 is never "not recommended" or "not offered").
+- **Denominators (L090)** — each proportion's population is named and consistent for its question; no group comparison made on within-subgroup shares.
 - **Lessons-log L-rules** — scan `../../../references/lessons-log.json` trigger_patterns against this analysis; surface any HIGH/CRITICAL fire.
 - **Observational language** — association not causation; flag causal verbs.
 - **Evidence tiering (L035)** — does each claim sit at the tier its evidence supports (Tier 1 abstract … Tier 4 Discussion-only)?
