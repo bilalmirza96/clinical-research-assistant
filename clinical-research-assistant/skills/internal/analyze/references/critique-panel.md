@@ -26,6 +26,9 @@ Used by `/analyze` Phase 3. Four parallel `Task()` subagents (`subagent_type: ge
 3. Are there **better designs** the user is missing? (e.g., difference-in-differences, instrumental variable, regression discontinuity, target trial emulation)
 4. Are **subgroups** pre-specified or fished?
 5. Are **covariates** justified by a DAG or by causal reasoning, or just kitchen-sink?
+5a. Does `analysis_plan.ladder` carry every rung in order (unadjusted, Model A clinical, Model B fully adjusted, adjusted survival, IPTW/PSM, E-values, mediation, ML/novel), with a written reason for each skipped rung, the Model A and Model B covariate sets, and no mediator in either model? (L087)
+5b. Is every variable backed by a data-dictionary dossier entry, and do the planned category labels stay inside each code's claim boundary? (L089)
+5c. Does `analysis_plan.denominators` name the population for every planned proportion, chosen from the question and consistent across tables? (L090)
 6. Is the **target journal** appropriate for this design? Will reviewers in that venue accept the chosen method?
 7. **Per-paper mode only:** given the evidence_bank, is this plan novel? Does it duplicate published work? Does it cite the right comparators?
 
@@ -72,6 +75,7 @@ Same as Methodologist.
 1. **Bias inventory:** selection, information, confounding, immortal time, collider, ascertainment, lead-time. For each, does the plan address it?
 2. **Reverse causation:** can the outcome cause the exposure (especially in cross-sectional designs)?
 3. **Survivorship bias:** does the cohort exclude people who would have provided counter-evidence?
+3a. **Cohort curation (L088):** is eligibility built from baseline information only, are unknowns in or out by explicit decision, is endpoint eligibility a named sub-cohort, and could any exclusion remove a different share of one exposure group?
 4. **Missing-data mechanism:** is MAR assumed without justification? Is MNAR plausible?
 5. **Multiple testing:** is the family-wise error controlled?
 6. **Adjustment over-fitting:** EPV < 10 anywhere?
