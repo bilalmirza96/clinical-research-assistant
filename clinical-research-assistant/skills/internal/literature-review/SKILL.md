@@ -357,6 +357,12 @@ For each topic, search across multiple query formulations:
 - MeSH terms where available
 
 **Verification gate (mandatory, applies to both backends):** Every paper that reaches `citation_bank.json` with `.verified = true` must pass the `scientific-skills:citation-management` hard gate per `kdense-delegations.md` §1. No silent fallback. No "PMID: pending verification" placeholders.
+
+**Retrieval completeness gate (HARD GATE per L082; applies to both backends and to any scripted pull):** a failed batch must never quietly shrink the corpus. In the LUNG DISPARITIES review, two PubMed efetch batches of 200 still failed after the fetch helper's in-place attempts. The citation-chase script logged them to `api_failures_logged` and carried on, so 400 of 5,589 chase-identified records were never retrieved or screened. The gap surfaced a day later.
+
+1. **Retry late, with backoff.** Keep per-call retries, but re-queue any batch that still fails and retry it in a second pass after the main loop, with exponential backoff (for example 30 s, 60 s, 120 s) and a smaller batch after a truncated read. A short in-place retry window does not outlast a proxy or server outage.
+2. **Reconcile before screening; stop on a mismatch.** Count identified (unique IDs sought, per source) and retrieved (records actually parsed), per batch as well as in total, because a batch can "succeed" with fewer records than requested. Check the level above too (seeds sought vs seeds chased). If the counts still differ after the retry pass, write the missing IDs to `literature/raw/<source>_unretrieved_<date>.json` and STOP for a PI decision: retry again, or proceed and disclose. Screening does not start before that decision.
+3. **PRISMA reports not retrieved.** Identified, not retrieved and retrieved are separate counts in the flow (the PRISMA 2020 "reports not retrieved" convention, applied at the record stage), and the report builder asserts identified = retrieved + not retrieved. Never report the retrieved count as "identified".
 </search_strategy>
 
 ---
@@ -391,6 +397,7 @@ STOP after this step and wait for approval.
 - Focus on last 10 years primarily, but include seminal older papers
 - Prioritize: systematic reviews/meta-analyses > RCTs > large multicenter studies > registry studies > single-institution studies
 - Search for 20–40 relevant papers in this initial sweep
+- Before screening anything from a scripted or batched pull, pass the retrieval completeness gate (Search Strategy, L082): identified equals retrieved, or the PI has decided what to do with the unretrieved IDs
 
 ### Evidence Summary Table
 Build a structured evidence summary table with 10–20 of the most relevant papers:
@@ -447,6 +454,15 @@ Identify specific gaps in the literature:
 
 ### Gap Map
 Rank gaps by combined priority score (novelty × feasibility × impact)
+
+### Absence Statements Are Computed, Never Recalled (L083)
+Every gap is a claim of absence: "none of the 7 perioperative studies examined perioperative immunotherapy", "no abstract reported E-values". These are claims about the coded corpus, and they are answered by the corpus, the same way L073 requires claims about the analysis state to be answered by the registry.
+
+- **Generate, never type.** Render each absence statement, including its N, from the coded extraction data. In conversation, "has anyone studied X?" is answered by querying the coded corpus, not from recall.
+- **Assert at build time.** When a script renders the synthesis, it asserts each statement against the data and fails with the offending PMIDs, so every rebuild re-checks it. The corpus moves: screening changes, adjudication and late-retrieved records (L082) can each break a statement.
+- **Guard beyond the codes.** Coded fields are sparse, so pair the coded-field check with a term screen over title, abstract and key findings. It over-reports by design. Read each hit by hand; if the statement survives, record the PMID, the reason and the read date in a named exemption in the builder. Never loosen the wording or delete the guard to get a build through.
+
+Worked example: LUNG DISPARITIES PROJECT `scripts/lit_07_build_report.py`. The term screen, not the coded immunotherapy field, flagged PMID 37741315. Its abstract names neoadjuvant chemoimmunotherapy only as motivation, and its NCDB 2006–2019 data predate that therapy, so the statement stood and `PERIOP_ICI_READ` records why.
 
 ### Honest Assessment
 - Is the user's original question already answered? If yes, say so clearly.
@@ -553,6 +569,25 @@ ASK: "Deep dive complete. Does the question still feel novel and worth pursuing?
 
 ---
 
+## Deliverable Builders
+
+When the review ends in a scripted deliverable (an Excel workbook, an HTML or markdown report), the builder is part of the method, and its gates re-run on every rebuild.
+
+- **Counts and absence statements are asserted, not typed.** The builder computes every number, asserts identified = retrieved + not retrieved (L082) and asserts each absence statement against the coded data (L083). It fails the build rather than render a sentence the data contradict.
+- **Workbooks meet the house table standard at build time (L084; standard L070).** Black and white: Times New Roman on every written cell, no fills, no coloured text, header in bold with a thin black bottom rule. openpyxl, xlsxwriter and pandas default to Calibri and apply whatever fills the script sets, so every workbook builder ends with the CRA enforcer and fails on any residue:
+
+  ```python
+  sys.path.insert(0, str(Path.home() / "Claude/dev/clinical-research-assistant/clinical-research-assistant/tools"))
+  from house_style import enforce_xlsx
+  enforce_xlsx(str(out))                     # fix pass: Times New Roman, black text, all fills removed, bold/italic/size kept
+  left = enforce_xlsx(str(out), check=True)  # re-check
+  assert not left, left[:10]
+  ```
+
+  Gotchas: run the fix pass first; `check=True` only reports. Font name and font colour are separate violations (`Sheet!A1: font colour #FFC00000`), and only black or automatic text passes, so white text, invisible once fills are stripped, is reported too. Any fill other than none or white is reported and removed, whatever its pattern (`solid`, `gray125`, gradient) and on empty cells as well as written ones; font checks cover written cells only. The enforcer does not add the header rule, and it does not check border colours, Excel table styles, conditional formatting or row and column styles, so the builder keeps those black and white itself.
+
+---
+
 ## Next Steps Reminder
 
 Execute the STEP 5 completion checkpoint writes above. **Then run the Zotero auto-sync check per `kdense-delegations.md` §4:**
@@ -591,3 +626,19 @@ Then always:
 > - `/write-introduction` to write the Introduction using the verified citations from this review
 > - `/write-discussion` to write the Discussion (after analysis is complete)
 > - `/resume-project` in a future session to pick up where you left off
+
+---
+
+## CHANGELOG / Lessons Learned
+
+### 2026-09-25 — L082, L083, L084 — Retrieval reconciliation, computed absence statements, workbook house style
+
+From the LUNG DISPARITIES PROJECT Phase 0 review (search run 2026-09-24; `decision_log.md`, 2026-09-25). Each number below was re-derived from the project's scripts and data before it was written here.
+
+1. **L082 — Retrieval completeness gate** (Search Strategy; pointer in STEP 2). `scripts/lit_02_citation_chase.py` fetched the 5,589 PMIDs that citation chasing identified in PubMed efetch batches of 200. The batches at offsets 800 and 1000 still failed after the fetch helper's 5 in-place attempts; the loop appended them to `api_failures_logged` and continued, so 400 records were never retrieved or screened. One of 115 seed-review reference lists was lost the same way. The gap surfaced a day later. New rule: retry failed batches in a deferred pass with exponential backoff, reconcile identified against retrieved before screening and stop on a mismatch, and report not-retrieved records in PRISMA. The missing PMIDs are in `literature/raw/citation_chase_unretrieved_2026-09-24.json`.
+2. **L083 — Absence statements computed and asserted** (STEP 3; Deliverable Builders). "None of the 7 perioperative studies examined perioperative immunotherapy" and "no abstract reported E-values" are generated from the coded extraction and asserted by `scripts/lit_07_build_report.py`. Its term screen flagged PMID 37741315, which the coded field had missed; a hand read cleared it, and `PERIOP_ICI_READ` records the reason. Extends L073 from analysis registries to literature synthesis.
+3. **L084 — Workbook builders enforce the house table standard** (Deliverable Builders). `scripts/lit_06_build_excel.py` had written navy header fills, colour-filled relevance cells and Calibri: `house_style` counts 75,064 violations on the pre-rebuild workbook and 0 on the rebuilt one, which now ends with `house_style.enforce_xlsx`. Recommended for every CRA workbook builder, starting with the `analyze` L051 Master Excel Workbook. Two enforcer gaps found while verifying: `check=True` misses coloured Times New Roman text, and non-solid pattern fills survive both passes.
+
+Recorded the same day in `00_Context/working-rules.md` and `references/lessons-log.json`.
+
+> **Maintainer note.** Append new lessons here, newest first, dated, with the lesson ID and the originating session. Mark superseded rules deprecated rather than deleting them.
