@@ -17,17 +17,18 @@ You orchestrate end-to-end clinical research analyses at manuscript-rigor by def
 Phase 0 PRE-DESIGN  pre-analysis literature recon — auto-invokes /literature-review
                     produces evidence_bank, citation_bank, novelty_assessment, differentiation_brief
    ✋ HALT 0        PI signs off on differentiation: novel | replication-with-extension | pivot | abandon
-Phase 1 INTAKE      lock dataset_spec, variable_spec, table_layouts, figure_intent
-Phase 2 PLAN        produce analysis_plan.json + manuscript_shopping_list
+Phase 1 INTAKE      data-dictionary dossier (L089) → curated inclusion/exclusion (L050, L088) → lock dataset_spec, variable_spec, table_layouts (denominators named, L090), figure_intent
+Phase 2 PLAN        produce analysis_plan.json (analysis ladder, L087) + manuscript_shopping_list
 Phase 3 CRITIQUE    INLINE plan-sanity (Methodologist/Skeptic/Editor/Lessons run inline, no panel) + LOCK pre-registration (SP preregistering-analysis)
    ✋ HALT 1        user approves intake + plan + critique (bundle or section-by-section)
-Phase 4 PRIMARY     resource check → cohort assembly → build Master Excel shells → PRIMARY (CRUDE / UNADJUSTED) analysis → fills Table_1 (bold p<0.05) → diagnostics
+Phase 4 PRIMARY     resource check → cohort assembly (cohort_flow.py, CONSORT by exposure group) → build Master Excel shells → rung 1 UNADJUSTED → fills Table_1 (bold p<0.05) → diagnostics
    ✓ CHECKPT A     INLINE verify (SP verifying-results-before-claiming): re-run, read estimate+CI, confirm reproduction
    ✋ HALT 2        user reviews Table_1 + crude effect estimates (concise by default; verbose if surprises)
-   ✋ HALT 2A       user APPROVES matching + adjustment variables for Phase 5 (HARD STOP)
-Phase 5A SECONDARY  PSM + multivariable + KM + IPTW with locked variables → fills Table_2 (bold q<0.05) (adjusted only)
-   ✓ CHECKPT B     INLINE verify + crude-vs-adjusted concordance (SP verifying-results) before sensitivity runs
-Phase 5B SENSITIVITY sensitivity battery + subgroups → Sensitivity + Supplementary_* (runs only after Checkpoint B passes)
+   ✋ HALT 2A       user APPROVES matching variables + Model A (clinical) and Model B (everything else) covariate sets + mediators for Phase 5 (HARD STOP)
+Phase 5A SECONDARY  ladder rungs 2-5 in order: Model A clinical → Model B fully adjusted → adjusted survival → IPTW (+PSM) → fills Table_2 (bold q<0.05)
+   ✓ CHECKPT B     INLINE verify + ladder_table.py (one cohort, rung order, attenuation, sign) before sensitivity runs
+Phase 5B SENSITIVITY rung 6 E-values + sensitivity battery + subgroups/effect modification → Sensitivity + Supplementary_* (runs only after Checkpoint B passes)
+Phase 5C EXPLAIN    rung 7 causal mediation → rung 8 ML / novel methods, when they answer a question rungs 1-6 cannot
 Phase 6 AUDIT       ONE clinically-augmented red-team (SP requesting-red-team-review) — replaces the 5-agent panel; verify/repro/completeness already done inline at A/B
    ✋ HALT 3        user reviews audit + 4-tier evidence classification
 Phase 7 DELIVER     master analysis_report.md with reproducibility manifest + SCAR registration
@@ -54,7 +55,7 @@ resource check (light)
 
 **`EXPLORATORY-UNGATED` is not an L035 tier.** The HALT 3 evidence tiers (1–4, per L035) are an *earned, post-audit* partition defined by which multiple-testing correction a result survives across the full family of tests. A `--quick` run has no family, no BH-FDR/Bonferroni, and no red-team audit, so it has **no L035 tier at all**. It carries the orthogonal provenance class `EXPLORATORY-UNGATED` — never "Tier 4" — so a quick result and a genuinely-earned Tier-4 result are never conflated.
 
-**Dropped vs. full `/analyze`:** Phase 0 lit-recon hard gate, HALT 0/1/2/2A/2B/3, Master Excel scaffolding + shell sign-off, pre-registration, the red-team subagent, SCAR registration, and the 16-section report. **Never dropped:** the random seed and the inline verification re-run.
+**Dropped vs. full `/analyze`:** Phase 0 lit-recon hard gate, HALT 0/1/2/2A/2B/3, Master Excel scaffolding + shell sign-off, pre-registration, the red-team subagent, SCAR registration, and the 16-section report. **Never dropped:** the random seed, the inline verification re-run, the dictionary definition of any coded variable the contrast uses (L089), and a named denominator for any proportion (L090).
 
 **Hard guardrails:**
 
@@ -74,7 +75,11 @@ Read `lessons-log.json` up front. Read each policy reference below **on demand, 
 3. `references/diagnostics-checklist.md` — required diagnostics per method
 4. `references/registry-cautions.md` — registry-specific rules
 5. `references/variable-collapse-defaults.md` *(pending Concern #12 decision)* — default category-collapse rules
-6. `../../references/lessons-log.json` — trigger patterns + actions for 45 lessons
+6. `../../references/lessons-log.json` — trigger patterns + actions for every lesson
+7. `references/data-dictionary-dossier.md` — Phase 1.0a, before any filter or recode (L089)
+8. `references/cohort-curation.md` — Phase 1.1 and Phase 4.1 (L088)
+9. `references/denominators.md` — Phase 1.3 table shells, and every proportion anywhere (L090)
+10. `references/analysis-ladder.md` — Phase 2 plan, HALT 2A, Phase 5 (L087)
 
 **All policies in `clinical-analysis-policy.md` OVERRIDE defaults stated here.** Lessons in `lessons-log.json` are enforced via:
 - Phase 3 INLINE plan-sanity (lessons checked inline against `trigger_patterns`; no subagent panel)
@@ -82,6 +87,41 @@ Read `lessons-log.json` up front. Read each policy reference below **on demand, 
 - Phase 6 red-team: one SP requesting-red-team-review subagent verifies multiple-testing, PH, EPV, etc. via `references/red-team-brief.md` (most checks already done inline at Checkpoints A/B)
 
 If any prerequisite file is missing, halt and surface the gap. Do not proceed without the parent contract loaded.
+
+---
+
+## Four standing study-design rules (NON-NEGOTIABLE; L087-L090)
+
+Author directive 2026-09-25, from the REPEAT DISPARITIES project. They bind full `/analyze`,
+`--quick`, and every number another CRA skill reports.
+
+1. **Study the data dictionary before using a variable (L089).** One dossier entry per variable,
+   written from the official dictionary for the exact data vintage; recode maps and raw data
+   checked with `scripts/dictionary_audit.py`. → `references/data-dictionary-dossier.md`
+2. **Curate the inclusion and exclusion criteria (L088).** Designed from the question, reviewed at
+   HALT 1, built once by `scripts/cohort_flow.py`, counted by exposure group, reconciled exactly.
+   → `references/cohort-curation.md`
+3. **One question, one denominator (L090).** Write "Among [population], what share...", name that
+   population on every artifact, and keep it for that question everywhere.
+   → `references/denominators.md`
+4. **Compute and compare in ladder order (L087).** Unadjusted → Model A (clinical only) →
+   Model B (clinical plus everything else) → adjusted survival → IPTW → E-values → causal
+   mediation → ML or other novel methods, on one cohort, side by side (`scripts/ladder_table.py`).
+   Two adjusted models only.
+   → `references/analysis-ladder.md`
+
+**Violating the letter of these rules is violating their spirit.** Each thought below appeared
+in testing or in the project, and each was wrong:
+
+| Thought | Reality |
+|---|---|
+| "The abstract already used this script's recode map" | A script is not a dictionary. Audit the map; if it is wrong, the abstract is wrong too, and the PI is told before the talk. |
+| "0 vs 0: neither group has refusals in this extract" | A zero in every group is a mapping alarm (the map pointed at code 3, which NAACCR 1340 does not have; refusals were code 7). |
+| "Code 1 is the provider-side 'not recommended' category" | Code 1 is "not part of the planned first course", which includes a patient choosing an offered non-operative option. L010 is withdrawn. |
+| "Deadline: one adjusted model, PSM/IPTW deferred" | The ladder is the analysis. Shorten the prose, not the ladder; a skipped rung needs a written reason. |
+| "Don't redo the analysis; just tighten the existing result into a sentence" | A single model that never went through the ladder is not a reportable finding. The fix is running the ladder on the reconciled cohort (same day with `ladder_table.py`), not a caveat on the old number. |
+| "Compare the races on the reason mix among the non-operated" | Shares within a subgroup are compositional. Compare likelihood on all eligible patients; show the mix only within a group. |
+| "119 of 114,000 is close enough" | Two Ns for one cohort is a defect. Rebuild from the cohort artifact and assert the N exactly. |
 
 ---
 
@@ -124,6 +164,8 @@ Read first; resume from the first incomplete phase if any exist.
 - `references/sp-integration.md` — which science-superpowers skill fires at which phase (rigor layer contract)
 - `references/delegation-matrix.md` — K-Dense + BioMedAgent routing by task type, with `resource_class` per task
 - `references/analysis-report-template.md` — 16-section + reproducibility manifest
+- `references/analysis-ladder.md`, `references/cohort-curation.md`, `references/data-dictionary-dossier.md`, `references/denominators.md` — the four study-design standards (L087-L090)
+- `scripts/ladder_table.py` (ladder table, attenuation, E-values), `scripts/cohort_flow.py` (cohort builder, CONSORT by group, exact reconciliation), `scripts/dictionary_audit.py` (data and recode-map audit against the dossier); tests: `python3 tests/test_study_design_tools.py`
 
 ---
 
@@ -243,6 +285,23 @@ Before any other spec is touched, lock the study objectives:
 
 Rationale: locking objectives separately from the analysis plan prevents post-hoc objective drift. Under the new primary/secondary terminology (primary = crude/unadjusted, secondary = PSM/multivariable/KM/IPTW per L051), the objectives define WHAT is being tested; Phase 4 and Phase 5 define HOW.
 
+### 1.0a Data-dictionary dossier — HARD GATE (per L089)
+
+Before any filter is written or any variable is recoded, read the official dictionary for the
+exact data vintage (for NCDB: the PUF Data Dictionary for that PUF year plus the NAACCR item
+definitions) and write `specs/data_dictionary_dossier.md` + `.json` with one entry per variable
+the study touches: item and number, source page, storage type, every allowable code with its
+definition, years populated, what a derived field folds in, individual vs area level,
+cross-field consistency rules, and the claim boundary (the words prose may use for each code).
+Then:
+
+- Run `scripts/dictionary_audit.py` on the raw frame (D1-D6) and on every recode map (M1-M3).
+  Hard failures stop Phase 1.
+- Labels in tables, figures, slides and prose come from the dossier's claim boundary, never from
+  an existing script or the PI's phrasing.
+- Present the dossier at HALT 1 with the specs. Procedure, fields and alarms:
+  `references/data-dictionary-dossier.md`.
+
 ### 1.1 `dataset_spec.json`
 
 Every dataset touched (primary + merged + external):
@@ -264,11 +323,21 @@ Every dataset touched (primary + merged + external):
 
 The completed checklist (including filters considered AND rejected) is appended to `Reports/phase1_consort_<date>.md` as a permanent record.
 
+#### 1.1.b Curate the criteria, not just the checklist (per L088)
+
+The checklist says which filters to consider; curation decides them well. Per
+`references/cohort-curation.md`, every criterion carries its dictionary reference, rationale,
+and an explicit in/out decision for unknowns. Eligibility uses only baseline information (never a
+field that folds in post-treatment data, such as NCDB `ANALYTIC_STAGE_GROUP`). Missing covariates
+are handled in the analysis, not by exclusion. Endpoint eligibility (for survival: follow-up > 0
+and a year with vital status) is a named sub-cohort of the one analytic cohort, never a second
+filter chain.
+
 **Failure mode this gate prevents (per L050 worked example):** Esophageal Organ-Preservation HTE — NCDB Phase 1 silently defaulted "all primaries" (no sequence-number filter); SEER Phase 1 silently defaulted "first primary only." The two cohorts were not methodologically comparable until the PI caught it. The root cause was that no structured checklist forced explicit review of each conventional filter at design lock.
 
 ### 1.2 `variable_spec.json`
 
-Every variable in any analysis (primary, secondary, sensitivity, subgroup). Categories: `outcomes` (primary + secondaries), `exposure(s)`, `covariates`, `effect_modifiers`, `subgroup_vars`, `sensitivity_only_vars`. Each entry: `name`, `label`, `type`, `source_columns`, `derivation`, `missing_handling`, plus `levels` + `reference` for categorical.
+Every variable in any analysis (primary, secondary, sensitivity, subgroup). Categories: `outcomes` (primary + secondaries), `exposure(s)`, `covariates`, `effect_modifiers`, `subgroup_vars`, `sensitivity_only_vars`. Each entry: `name`, `label`, `type`, `source_columns`, `derivation`, `missing_handling`, plus `levels` + `reference` for categorical, `dossier_ref` (its data-dictionary dossier entry, L089) and, for covariates, `ladder_role` (`clinical` = in Model A and B / `model_b` = added in Model B / `mediator` / `effect_modifier`, L087).
 
 **Variable collapse defaults** *(pending Concern #12 decision):* For multi-category variables without user-specified collapse rules, apply the defaults in `references/variable-collapse-defaults.md` and surface every auto-collapse decision in the Phase 3 critique. User overrides via section-by-section revise at HALT 1.
 
@@ -279,7 +348,8 @@ Pre-design every manuscript table as **a single Excel workbook with named tabs**
 **Mandatory tabs:**
 
 - `Table_1` — cohort characteristics by exposure (rows = variables from `variable_spec.json`, columns = exposure groups defined by `objectives_locked.json` primary contrast)
-- `Table_2` — adjusted estimates (rows = variables, columns = crude / PSM / multivariable / IPTW)
+- `Table_2` — the analysis ladder per objective (columns in rung order: unadjusted / Model A clinical / Model B fully adjusted / adjusted survival / IPTW / PSM / E-value, L087)
+- **Denominators (L090):** every cell holding a percentage names its denominator population in the column header or a footnote, and prints n/N.
 - `Table_3`, `Table_4`, … — additional main tables per locked secondary objective
 - `Sensitivity` — sensitivity analyses (caliper variants, MI, competing risks, stratum-specific, E-value)
 - `Supplementary_1`, `Supplementary_2`, … — supplementary tables (subgroups, extended results)
@@ -343,12 +413,15 @@ Generate a complete plan from locked specs:
 
 | Section | Content |
 |---|---|
-| `estimand` | "Among [population], the effect of [exposure] on [outcome]; primary = crude/unadjusted, secondary = adjusted for [adjustment_covariates] / matched on [matching_variables]." |
+| `estimand` | "Among [population], the effect of [exposure] on [outcome]; primary = crude/unadjusted, secondary = the analysis ladder (Model A clinical adjustment, Model B full adjustment, adjusted survival, IPTW / matching on [matching_variables])." |
+| `ladder` | Per objective, the rungs of `references/analysis-ladder.md` in order (1 unadjusted, 2 Model A clinical, 3 Model B fully adjusted, 4 adjusted survival, 5 IPTW + PSM, 6 E-values, 7 causal mediation, 8 ML / novel), each with its method and delegation, and `skipped{rung: reason}` for any rung not run. A rung is never dropped silently. **(per L087)** |
+| `denominators` | Per proportion the plan will report: the question in words, the denominator population, whether Unknown is in it, and the registered cohort or sub-cohort it equals. **(per L090)** |
 | `primary` | **Crude / unadjusted** per locked objective (per L051 terminology). Appropriate statistical test by outcome class: χ² (or Fisher exact) for categorical, t-test (or Wilcoxon rank-sum) for continuous, log-rank + univariable Cox for time-to-event, χ² + crude OR for cross-sectional binary. **Delegation pointer** + populates `Table_1` tab in Master Excel Workbook. |
 | `matching_variables[]` (proposed) | Candidate variables for PSM matching. Each entry: `name`, `rationale` (DAG, clinical relevance, comparator paper precedent, missingness profile), `proposed_for_match` boolean. **Locked at HALT 2A** before Phase 5 fires. |
-| `adjustment_covariates[]` (proposed) | Candidate covariates for multivariable adjustment (Cox / logistic / linear). Each entry: same fields as `matching_variables[]` with `proposed_for_adjust` boolean. **Locked at HALT 2A**. Distinct from `matching_variables[]` — overlap allowed but not required; a variable may be matched-but-not-adjusted (and vice versa). |
-| `secondary[]` | **Adjusted, matched, weighted, survival** per locked objective (per L051 terminology): PSM (with HALT 2A-approved `matching_variables`) + multivariable (with HALT 2A-approved `adjustment_covariates`) + KM + IPTW + method variants (GBT-IPTW / AIPW / frailty Cox). **Delegation pointer** + populates `Table_2` tab. |
-| `sensitivity[]` | missing-data, E-value (per L005), caliper sensitivity (per L040), alternative specs, alternative cohort definitions. Populates `Sensitivity` tab in Master Excel Workbook. |
+| `adjustment_covariates[]` (proposed) | Candidate covariates for multivariable adjustment (Cox / logistic / linear), each tagged with its `ladder_role`: `clinical` (Model A, carried into Model B), `model_b` (added in Model B: socioeconomic, access, facility and any other non-clinical confounder), or `mediator` (rung 7 only, never adjusted in Model A or B). Each entry: same fields as `matching_variables[]` with `proposed_for_adjust` boolean. **Locked at HALT 2A**. Distinct from `matching_variables[]` — overlap allowed but not required; a variable may be matched-but-not-adjusted (and vice versa). |
+| `secondary[]` | **Ladder rungs 2-5** per locked objective (per L051 terminology, ordered per L087): Model A clinical and Model B fully adjusted (HALT 2A-approved covariate sets), adjusted survival for time-to-event outcomes, IPTW, and PSM (HALT 2A-approved `matching_variables`). All fit on one cohort. **Delegation pointer** + populates `Table_2` tab. |
+| `sensitivity[]` | E-values for every adjusted estimate (rung 6; per L005, formula by measure and outcome frequency per L087), missing-data, caliper sensitivity (per L040), selection sensitivity for any differential exclusion (per L088), alternative specs, alternative cohort definitions. Populates `Sensitivity` tab in Master Excel Workbook. |
+| `explanatory[]` | Rung 7 causal mediation (pre-specified mediators, counterfactual method, scale) and rung 8 ML / novel methods (the question each answers that rungs 1-6 cannot; exploratory unless pre-registered). **(per L087)** |
 | `subgroups[]` | pre-specified subgroups + power justification (per L009). Populates `Supplementary_*` tabs. |
 | `diagnostics` | required per method (per `references/diagnostics-checklist.md`) |
 | `multiple_testing` | BH-FDR within families; Bonferroni for primary (per L006, L032). **Bolding rule (per L051):** bold cells where p<0.05 in `Table_1`; bold cells where BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*` tabs. |
@@ -416,7 +489,7 @@ User picks; analyze continues.
 
 ### 4.1 Execution order
 
-1. **Cohort assembly** per `dataset_spec` (apply filters; produce CONSORT flow values; write `data/working/cohort.csv` + filter logs)
+1. **Cohort assembly** per `dataset_spec`, in ONE builder script: `dictionary_audit.audit_frame` on the raw frame first (L089), then `scripts/cohort_flow.py` for every inclusion/exclusion step and endpoint sub-cohort (L088). It writes `data/working/cohort.csv` + `filter_operations.json` + `filter_log.md` with CONSORT counts by exposure group and differential-exclusion flags. Register the cohort N and each endpoint sub-cohort N; every later script loads these artifacts and never re-filters raw data. Any differential-exclusion flag goes to HALT 2 with a proposed selection-sensitivity analysis.
 2. **Build Master Excel Workbook shells** (per L051) — instantiate `Reports/MASTER_TABLES_<project>_<date>.xlsx` with the tab structure defined in Phase 1.3 (`Table_1`, `Table_2`, `Table_3`, `Sensitivity`, `Supplementary_*`). Variables, row labels, and column headers defined from `variable_spec.json` + `objectives_locked.json`. **All cells empty.**
    - **SHELL SIGN-OFF GATE:** Show the empty workbook to the PI for shell sign-off BEFORE populating any cell. PI confirms tab structure, row/column labels, and variable assignments match intent. This gate is non-skippable.
 3. **Primary (crude / unadjusted) analysis** per `analysis_plan.primary` — for each locked objective in `objectives_locked.json`, run the appropriate test by outcome class:
@@ -501,18 +574,18 @@ Phase 4 complete — Table_1 populated.
 
 At this halt, propose to the PI two distinct variable lists, each with per-variable rationale:
 
-1. **`matching_variables[]`** — variables for PSM matching (the design dimension)
-2. **`adjustment_covariates[]`** — covariates for multivariable adjustment in Cox / logistic / linear models (the estimation dimension)
+1. **`matching_variables[]`** — variables for PSM matching and the IPTW propensity model (the design dimension)
+2. **`adjustment_covariates[]`** — covariates for multivariable adjustment in Cox / logistic / linear models (the estimation dimension), grouped by ladder role (per L087): **Model A** = the clinically relevant variables and confounders; **Model B** = Model A plus everything else pre-specified (socioeconomic, access, facility and other non-clinical confounders). No other adjusted models. Candidate **mediators** (treatment received, anything measured after the exposure on the path to the outcome) are listed separately for rung 7 and are never adjusted in Model A or B. In a disparities study, say for each socioeconomic or access variable whether it is treated as a confounder or a possible mediator.
 
 Overlap between the two lists is allowed but not required — a variable may be matched-but-not-adjusted (e.g., demographics where match handles confounding) or adjusted-but-not-matched (e.g., a clinical severity score with high missingness that excludes it from the match but supports it as a covariate).
 
 Present as a structured table per locked objective:
 
 ```
-Variable | Match? | Adjust? | Rationale (DAG / clinical / comparator / missingness) | PMID
----------|--------|---------|------------------------------------------------------|------
-[var 1]  | [ ]    | [ ]     | [text]                                               | [PMID]
-[var 2]  | [ ]    | [ ]     | [text]                                               | [PMID]
+Variable | Match? | Adjust? | Ladder role (clinical/model_b/mediator)  | Rationale (DAG / clinical / comparator / missingness) | PMID
+---------|--------|---------|------------------------------------------|------------------------------------------------------|------
+[var 1]  | [ ]    | [ ]     | [role]                                   | [text]                                               | [PMID]
+[var 2]  | [ ]    | [ ]     | [role]                                   | [text]                                               | [PMID]
 ```
 
 PI selects yes / no per variable per role (match, adjust, both, neither). Custom additions require free-text rationale. PI must explicitly tick `[ ] I have reviewed every variable; no variable is silently included or excluded` before sign-off is accepted.
@@ -532,11 +605,18 @@ PI selects yes / no per variable per role (match, adjust, both, neither). Custom
 
 **Variable load gate:** Read `specs/variables_locked.json` at the start of Phase 5. If absent or unsigned → HALT immediately with error: "Phase 5 cannot fire; HALT 2A not signed. Return to Phase 4 review." No exceptions.
 
-Execute `analysis_plan.secondary` (adjusted models ONLY — PSM, multivariable, KM, IPTW) using the HALT 2A-approved variables. **Sensitivity and subgroup analyses do NOT run here — they are Phase 5B, gated on Checkpoint B.** For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json` AND `MASTER_ANALYSIS_REGISTRY.json` (per L045), and populate `Table_2`.
+Execute `analysis_plan.secondary` as **ladder rungs 2-5, in this order** (per L087, `references/analysis-ladder.md`), using the HALT 2A-approved covariate sets:
+
+1. **Model A — clinical** (the clinically relevant variables and confounders)
+2. **Model B — fully adjusted** (Model A plus everything else: socioeconomic, access, facility and any other pre-specified confounder)
+3. **Adjusted survival** for time-to-event outcomes (standardized survival from Model B, or IPTW-weighted Kaplan-Meier; adjusted difference at the project's time horizon with a bootstrap CI)
+4. **IPTW** (stabilized, truncation stated, SMD < 0.1 after weighting, robust SEs) and **PSM** as the matched design variant
+
+No other adjusted models. Rungs 1-3 run on one cohort (same N). Registry keys carry the rung suffix (`.crude`, `.modelA`, `.modelB`, `.adjsurv`, `.iptw`, `.psm`). A rung not run is recorded in `analysis_plan.ladder.skipped` with its reason, never dropped silently, and a deadline is not a reason. **Sensitivity and subgroup analyses do NOT run here — they are Phase 5B, gated on Checkpoint B.** For each: delegate per pointer, run diagnostics, apply gate remediation, append to `results_registry.json` AND `MASTER_ANALYSIS_REGISTRY.json` (per L045), and populate `Table_2` in rung order.
 
 **Bolding rule (per L051):** every cell in `Table_2`, `Sensitivity`, or `Supplementary_*` where BH-FDR q < 0.05 is bolded — the rigor-gate threshold for secondary (adjusted) analyses. Cells where p<0.05 but q≥0.05 are NOT bolded; this distinguishes raw-significance from FDR-significance for the reader.
 
-**Concordance check vs. Phase 4 crude (per L051):** for every primary objective, compare the Phase 5 adjusted estimate to the Phase 4 crude estimate. Direction agreement, magnitude within ~30%, CI overlap = concordant. Disagreement is itself a finding and gets logged in `decision_log.md` for Limitations section drafting.
+**Ladder comparison vs. Phase 4 crude (per L051, L087):** for every objective, build the ladder table with `scripts/ladder_table.py` (estimate, 95% CI, N, change from unadjusted on the log scale, E-value). Direction agreement, magnitude within ~30%, CI overlap = concordant. Disagreement or a sign flip is itself a finding and gets logged in `decision_log.md` for Limitations section drafting.
 
 **Special-case enforcement:**
 - PSM → caliper-sensitivity table per **L040**
@@ -549,7 +629,7 @@ Execute `analysis_plan.secondary` (adjusted models ONLY — PSM, multivariable, 
 
 ## ✓ CHECKPOINT B — verify secondary before sensitivity (INLINE, no subagent)
 
-Apply `science-superpowers:verifying-results-before-claiming` to the adjusted results, inline: re-run each adjusted model fresh, read estimate + 95% CI (+ q), confirm `Table_2` matches the registry, confirm diagnostics (PH / EPV / VIF / PS-overlap) passed, and run the **crude-vs-adjusted concordance check** for every primary objective. If a result is irreproducible, a diagnostic fails, or a direction flips unexpectedly → `science-superpowers:investigating-anomalous-results` (root-cause) before continuing. **Phase 5B does not start until Checkpoint B passes** — never run the sensitivity battery on an unverified adjusted result.
+Apply `science-superpowers:verifying-results-before-claiming` to the adjusted results, inline: re-run each adjusted model fresh, read estimate + 95% CI (+ q), confirm `Table_2` matches the registry, confirm diagnostics (PH / EPV / VIF / PS-overlap) passed, and run `scripts/ladder_table.py` for every objective with **zero unresolved flags** (rungs in order, no rung missing without a recorded reason, the same N across rungs 1-3, no unexplained sign flip). If a result is irreproducible, a diagnostic fails, or a direction flips unexpectedly → `science-superpowers:investigating-anomalous-results` (root-cause) before continuing. **Phase 5B does not start until Checkpoint B passes** — never run the sensitivity battery on an unverified adjusted result.
 
 ---
 
@@ -561,7 +641,30 @@ Concise by default: per objective — adjusted effect + 95% CI + q (bold if q<0.
 
 ## PHASE 5B — SENSITIVITY & SUBGROUPS → fills Sensitivity + Supplementary_* (autonomous; only after Checkpoint B)
 
-Execute `analysis_plan.sensitivity[]` (missing-data / multiple imputation, E-value per L005, caliper sensitivity per L040, alternative specifications, alternative cohort definitions) and `analysis_plan.subgroups[]` (pre-specified subgroups + power justification per L009) using the HALT 2A-locked variables. Populate `Sensitivity` and `Supplementary_*`; bold cells where BH-FDR q<0.05. Verify each result per `verifying-results-before-claiming` before recording. Sensitivity findings that contradict the primary/secondary result are themselves findings — log to `decision_log.md` for Limitations.
+Execute **rung 6 first: E-values** for every adjusted estimate reported as a finding (point and CI limit), with the formula for the measure and the outcome frequency: `ladder_table.evalue(est, lo, hi, measure=, common=)`, which refuses an OR or HR without `common=` (per L005, L087). Then `analysis_plan.sensitivity[]` (missing-data / multiple imputation, caliper sensitivity per L040, selection sensitivity for any differential-exclusion flag per L088, alternative specifications, alternative cohort definitions) and `analysis_plan.subgroups[]` (pre-specified subgroups + power justification per L009; effect modification by a formal interaction test on the full cohort, LRT, before any stratum-specific claim) using the HALT 2A-locked variables. A stratified analysis first reproduces the registered overall estimate on the same cohort object, exactly (L088). Populate `Sensitivity` and `Supplementary_*`; bold cells where BH-FDR q<0.05. Verify each result per `verifying-results-before-claiming` before recording. Sensitivity findings that contradict the primary/secondary result are themselves findings — log to `decision_log.md` for Limitations.
+
+---
+
+## PHASE 5C — EXPLAIN: causal mediation → ML / novel methods (autonomous; after Phase 5B)
+
+Execute `analysis_plan.explanatory[]` (per L087, `references/analysis-ladder.md` rungs 7-8). For
+every objective, each of these rungs is either run or recorded in `ladder.skipped` with its reason
+("no why-question for this objective" is a reason; silence is not):
+
+- **Rung 7, causal mediation**, when the question asks why or through what and a pre-specified
+  mediator is measured after the exposure and before the outcome (treatment received, stage at
+  diagnosis). Counterfactual methods only: regression-based or g-formula natural direct and
+  indirect effects with the exposure-mediator interaction tested, or interventional effects when
+  the exposure cannot be manipulated (race). Survival on an additive, AFT or g-formula scale, never
+  a difference of hazard ratios. Proportion mediated with a bootstrap CI, the E-value of the
+  residual direct effect, and a joint share when several mediators are asked about together.
+- **Rung 8, ML or other novel methods**, only for a question rungs 1-7 cannot answer
+  (heterogeneity, non-linearity, gap decomposition, doubly robust estimation, target-trial
+  emulation, competing risks, quantitative bias analysis). Seed 42, honest validation, own registry
+  keys, labelled exploratory unless pre-registered. They never replace the ladder.
+
+Both are reported in calibrated language ("mediation analysis suggests about half...", never
+"explains"), and both are tiered at HALT 3 like every other result (L035).
 
 ---
 
@@ -658,6 +761,10 @@ The critique panel and execution gates auto-enforce relevant lessons. Lessons mo
 | L038 | OR/HR/RR reported | Comparator-aligned reporting; audit tagging |
 | L039 | among-treated subgroup | Effectiveness estimand declaration |
 | L040 | any PSM | Caliper-sensitivity table |
+| L087 | any adjusted comparison | Analysis ladder in order on one cohort; `ladder_table.py` zero flags at Checkpoint B |
+| L088 | any cohort | Curated criteria; one builder (`cohort_flow.py`); CONSORT by group; exact N reconciliation |
+| L089 | any coded registry variable | Dictionary dossier; `dictionary_audit.py` D1-D6 + M1-M3 clean before Phase 2 |
+| L090 | any proportion or rate | Denominator from the question, named on every artifact, consistent across the project |
 
 Full machine-readable list in `../../references/lessons-log.json` (with `promoted_to` field).
 
@@ -675,6 +782,43 @@ Mandatory at end of every `/analyze` run:
 ---
 
 ## CHANGELOG / Lessons Learned
+
+### 2026-09-25 — L087-L090 — Analysis ladder, cohort curation, data-dictionary dossier, denominators
+
+Author directive after the REPEAT DISPARITIES project (esophageal cancer, NCDB + SEER; ITSOS 2026
+podium): "compute and compare in this order... always care about inclusion and exclusion
+criteria... study the data dictionaries in detail... use consistent and most appropriate
+denominators for the question being asked."
+
+1. **Analysis ladder (L087).** Phase 5 now runs fixed rungs in order on one cohort: unadjusted,
+   Model A (clinical only), Model B (clinical plus everything else), adjusted survival, IPTW
+   (+PSM), E-values, causal mediation (new Phase 5C), ML / novel methods. Two adjusted models only
+   (author: "A only clinical, B includes everything else too"). `Table_2` columns follow the
+   rungs; HALT 2A approves covariate sets by ladder role; `scripts/ladder_table.py` (table,
+   attenuation, E-values, flags) gates Checkpoint B. `evalue()` refuses an OR or HR without a
+   stated outcome frequency (the project's circulating surgery E-value of 3.41 was the RR formula
+   on a common-outcome OR; the correct value was 2.17).
+2. **Cohort curation (L088).** New §1.1.b and `references/cohort-curation.md`: baseline-only
+   eligibility, explicit unknowns, endpoint sub-cohorts, CONSORT by exposure group with
+   differential-exclusion flags, one builder (`scripts/cohort_flow.py`), exact N reconciliation
+   (the project's KM export and Cox model differed by 119 zero-follow-up patients).
+3. **Data-dictionary dossier (L089).** New HARD GATE §1.0a, `references/data-dictionary-dossier.md`,
+   `scripts/dictionary_audit.py`. Five project defects it catches: "Refused" mapped to a code that
+   NAACCR 1340 does not have; code 1 labelled "not recommended"; the 2023 alphanumeric surgery
+   field parsed as numeric (a false era-narrowing claim, P=.0011 → .35); a coding break by year;
+   surgery flag vs reason code 0.
+4. **Denominators (L090).** `references/denominators.md`; Phase 2 `denominators` plan section;
+   Master Excel percentage cells name their denominator. The project's "Black patients refused
+   less" came from comparing shares among non-operated patients.
+5. **L010 withdrawn** (provider-side "not recommended" reading of the reason field).
+
+Tested RED/GREEN: three pressure scenarios run against the pre-change skill failed (a single adjusted
+model with no clinical-only comparison and IPTW/PSM "descoped" under deadline; reason shares
+compared across races among the non-operated; the old recode map reused with refusals reported
+as 0 vs 0) and passed when re-run against this version. A transfer test on an unrelated SEER
+study exposed a "don't redo the analysis, just tighten the sentence" loophole, which was closed
+and re-tested. Tool tests:
+`python3 tests/test_study_design_tools.py`.
 
 ### 2026-05-28 — L051 — Analysis-skill internal workflow + Master Excel Workbook + bolding + HALT 2A
 
