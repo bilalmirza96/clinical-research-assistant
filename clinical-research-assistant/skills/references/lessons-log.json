@@ -2,12 +2,12 @@
  "_meta": {
   "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
   "schema_version": "1.0",
-  "last_updated": "2026-08-29",
+  "last_updated": "2026-09-25",
   "maintainer": "clinical-research-assistant skill, sourced from real sessions",
   "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
   "last_promotion_pass": "2026-05-24",
   "promotion_summary": "50/50 lessons now have promoted_to audit trail; L050 added 2026-05-24 (registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 — discovered via NCDB vs SEER first-primary filter mismatch in Esophageal Organ-Preservation HTE); L049 added 2026-05-24 (synthesis-prose claim verification); L048 added 2026-05-24 (Phase 0 pre-design literature recon hard gate); L047 added 2026-05-18; L046 added 2026-05-17; L041 expanded 2026-05-20",
-  "count": 73
+  "count": 91
  },
  "lessons": [
   {
@@ -248,14 +248,20 @@
    ],
    "lesson": "Registry data often distinguishes 'Not recommended' (provider) from 'Patient refused' (patient). When the disparity is concentrated in 'Not recommended' with identical 'Patient refused' rates, this is strong evidence for clinician-driven mechanism.",
    "action": "When studying treatment-receipt disparities, analyze the reason-for-no-treatment field by race. Provider-side excess + identical patient-side refusal = evidence for clinician-driven mechanism. Caveat that registrar-coded reasons are not audited clinical decisions.",
-   "deprecated": false,
+   "deprecated": true,
    "promoted_to": [
     {
      "file": "skills/internal/analyze/SKILL.md",
      "note": "Provider vs patient-side gating rule"
     }
    ],
-   "promoted_date": "2026-05-20"
+   "promoted_date": "2026-05-20",
+   "deprecated_date": "2026-09-25",
+   "superseded_by": [
+    "L089-data-dictionary-dossier-before-any-variable",
+    "L090-denominator-follows-the-question"
+   ],
+   "deprecation_note": "Withdrawn 2026-09-25. For NCDB and SEER (NAACCR 1340) the premise is wrong: code 1, 'not part of the planned first course of treatment', is not a provider-side 'not recommended' category; it also covers a patient choosing an offered non-operative option, so a code-1 excess is not evidence of a clinician-driven mechanism. The 'identical refusal' comparison was made on shares among non-operated patients, which are compositional. Use L089 (dictionary claim boundary) and L090 (all-patient denominator)."
   },
   {
    "id": "L011-cohort-harmonization-before-cross-cohort-comparison",
@@ -2199,6 +2205,458 @@
    ],
    "severity": "standing-rule",
    "supersedes": "backup-per-change copies in skills/internal/present SKILL.md 'Editing a live deck' step 1"
+  },
+  {
+   "id": "L082-failed-fetch-batches-drop-records-reconcile-before-screening",
+   "date": "2026-09-25",
+   "originating_session": "LUNG DISPARITIES PROJECT, Phase 0 literature review. Search and citation chase run 2026-09-24; the dropped batches were found on 2026-09-25 (decision_log.md, 2026-09-25).",
+   "trigger_patterns": [
+    "citation chasing",
+    "snowballing",
+    "forward citation search",
+    "backward reference search",
+    "OpenAlex",
+    "PubMed efetch",
+    "E-utilities batch download",
+    "batch fetch from an API",
+    "api_failures_logged",
+    "except Exception: continue",
+    "retry with backoff",
+    "records identified vs retrieved",
+    "records not retrieved",
+    "PRISMA flow",
+    "search completeness",
+    "about to screen records pulled by a script"
+   ],
+   "lesson": "THE FAILURE. scripts/lit_02_citation_chase.py identified 5,589 PMIDs by OpenAlex citation chasing that were not already in the 5,617-record PubMed pull, and fetched them from PubMed in efetch batches of 200. Each call went through lit_01's get(), which makes 5 in-place attempts over about 40 s. When those were exhausted, the batch loop appended the error to api_failures_logged and continued. Two batches failed this way (offset 800: IncompleteRead after 1,646,329 bytes; offset 1000: proxy 502 Bad Gateway), so 400 records were never retrieved and never screened. One OpenAlex reference-list lookup failed the same way, so 114 of 115 seed reviews were chased. The run recorded new_records_added = 5,189, and the project brief described the 10,806 retrieved records as 'identified' (identified was 11,206). The gap surfaced a day later.\nWHY NOTHING CAUGHT IT. The failure was logged, and the script's docstring promised that a failed call is retried, then logged and skipped, 'never silently'. A log entry that no gate reads is silent in practice. The in-place retries could not help: a proxy outage and a response cut off after 1.6 MB outlasted a 40 s window. The identified and retrieved counts sat side by side in the pipeline and nothing compared them. This is the L077 failure class (except: continue quietly shrinking a result set) moved from bootstrap replicates to search retrieval.\nIN THE PROJECT. The 400 PMIDs were saved to literature/raw/citation_chase_unretrieved_2026-09-24.json. The PRISMA flow now shows identified 11,206 (5,617 PubMed + 5,589 chasing), not retrieved 400 and retrieved 10,806, and lit_07_build_report.py asserts that arithmetic. Whether to retrieve and screen the 400 is a pending author decision.",
+   "action": "R1 RETRY LATE, WITH BACKOFF. Keep per-call retries, but re-queue every batch that still fails and retry it in a second pass after the main loop, with exponential backoff (for example 30 s, 60 s, 120 s) and a smaller batch after a truncated read.\nR2 RECONCILE BEFORE SCREENING; STOP ON A MISMATCH. Count identified (unique IDs sought, per source) and retrieved (records actually parsed), per batch as well as in total, because a batch can succeed with fewer records than requested. Check the level above as well (seeds sought vs seeds chased). If the counts still differ after the retry pass, write the missing IDs to literature/raw/<source>_unretrieved_<date>.json and stop for a PI decision: retry again, or proceed and disclose. Screening does not start before that decision.\nR3 PRISMA REPORTS NOT RETRIEVED. Identified, not retrieved and retrieved are separate counts in the flow (the PRISMA 2020 'reports not retrieved' convention, applied at the record stage), and the report builder asserts identified = retrieved + not retrieved. Never report the retrieved count as 'identified'.\nThe same rule holds for any batched pull (dataset downloads, API extracts): count what was requested against what arrived before anything downstream runs.",
+   "severity": "high",
+   "applies_to": [
+    "literature-review"
+   ],
+   "artifacts": [
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/scripts/lit_02_citation_chase.py (the defect: the efetch loop logs the exception and continues)",
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/literature/search_log_2026-09-24.json (citation_chase.api_failures_logged)",
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/literature/raw/citation_chase_unretrieved_2026-09-24.json (the 400 PMIDs)",
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/scripts/lit_07_build_report.py (PRISMA reconciliation asserts)",
+    "skills/internal/literature-review/SKILL.md -> Search Strategy, 'Retrieval completeness gate'",
+    "00_Context/working-rules.md -> 'Reconcile Retrieval Before Screening'"
+   ]
+  },
+  {
+   "id": "L083-literature-absence-statements-are-computed-and-asserted",
+   "date": "2026-09-25",
+   "originating_session": "LUNG DISPARITIES PROJECT, interactive literature-review report built by scripts/lit_07_build_report.py, 2026-09-25",
+   "trigger_patterns": [
+    "none of the studies",
+    "no study has examined",
+    "no abstract reported",
+    "has anyone studied",
+    "gap analysis",
+    "evidence map",
+    "literature gap statement",
+    "writing the gap paragraph of an Introduction",
+    "literature synthesis prose",
+    "building a literature report from extraction data",
+    "about to state that a topic has not been studied"
+   ],
+   "lesson": "The report's synthesis prose makes absence statements about the reviewed literature: 'none of the 7 perioperative studies examined perioperative immunotherapy', 'no abstract reported E-values', and gap G3's statement that no mediation study used two registries. Each is a claim about the coded extraction corpus, the literature-review analogue of the claims about the registry that L073 governs. scripts/lit_07_build_report.py generates each statement from the coded data and asserts it. The perioperative statement fails the build if any perioperative study carries the immunotherapy_ICI domain code or matches an immunotherapy term screen (immunotherapy, checkpoint, nivolumab, pembrolizumab, atezolizumab, durvalumab, PD-1/PD-L1) in its title, abstract or key findings. The E-value statement asserts its coverage count is 0, and the G3 statement asserts that the mediation and NCDB+SEER study sets do not intersect. The term screen, not the coded field, flagged PMID 37741315. Read by hand, its abstract names neoadjuvant chemoimmunotherapy only as motivation, and its NCDB 2006-2019 data predate that therapy, so the statement stood. The reading is recorded in the builder as PERIOP_ICI_READ = {PMID: reason and read date}, so rebuilds keep it while any new hit still fails the build.\nWHY IT MATTERS. Coded fields are sparse and depend on the coder. Here the code missed a candidate that the term screen caught; it proved harmless on reading, but a code-only check would never have looked. The corpus also moves: screening changes, adjudication and late-retrieved records (L082: 400 not yet screened) can each break a statement, so a one-time check is not enough. This EXTENDS L073 from analysis registries to literature reviews.",
+   "action": "R1 GENERATE, NEVER TYPE. Every absence statement in literature synthesis ('none of the N studies...', 'no study reported...', 'no study has examined X'), including its N, is rendered from the coded extraction data. In conversation, 'has anyone studied X?' is answered by querying the coded corpus, not from recall.\nR2 ASSERT AT BUILD. The script that renders the synthesis asserts each statement against the data and fails with the offending PMIDs, so every rebuild re-checks it.\nR3 GUARD BEYOND THE CODES. Pair the coded-field check with a term screen over title, abstract and key findings. It over-reports by design, like tools/claim_audit.py. Read each hit by hand; if the statement survives, record the PMID with its reason and read date in a named exemption in the builder (the PERIOP_ICI_READ pattern). Never loosen the statement's wording or delete the guard to make a build pass.\nAn Introduction gap sentence ('no study has examined X') is the same kind of claim and follows the same rules when write-introduction drafts it from a review.",
+   "severity": "high",
+   "applies_to": [
+    "literature-review",
+    "write-introduction",
+    "write-discussion"
+   ],
+   "artifacts": [
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/scripts/lit_07_build_report.py (absence asserts and PERIOP_ICI_READ)",
+    "skills/internal/literature-review/SKILL.md -> STEP 3, 'Absence Statements Are Computed, Never Recalled'",
+    "00_Context/working-rules.md -> 'No Unverified Claims of Absence', Extension 2026-09-25 (L083)"
+   ]
+  },
+  {
+   "id": "L084-workbook-builders-enforce-house-table-standard-at-build-time",
+   "date": "2026-09-25",
+   "originating_session": "LUNG DISPARITIES PROJECT, literature-review workbook rebuilt under the house table standard by scripts/lit_06_build_excel.py, 2026-09-25",
+   "trigger_patterns": [
+    "Excel workbook",
+    ".xlsx deliverable",
+    "openpyxl",
+    "xlsxwriter",
+    "to_excel",
+    "build_excel",
+    "PatternFill",
+    "header fill",
+    "Calibri",
+    "Master Excel Workbook",
+    "literature review workbook",
+    "house_style",
+    "enforce_xlsx"
+   ],
+   "lesson": "scripts/lit_06_build_excel.py built the 11-sheet literature-review workbook with navy #123E66 header fills (the house figure palette's primary colour, carried into tables), colour-filled relevance cells and Calibri. Run on the pre-rebuild workbook, tools/house_style.py --check reported 75,064 violations before the enforcer fix below: 74,122 font (61,248 Calibri; 12,874 cells whose Font() set no name, which Excel renders in Calibri) and 942 fills (110 navy header cells; 832 relevance cells, one per included study). L070 had set the black-and-white, Times New Roman standard on 2026-08-20, and tools/house_style.py had existed since the same day; the builder never called it. openpyxl, xlsxwriter and pandas default to Calibri and apply whatever fills a script sets, so a standard held only in prose loses to library defaults each time a new builder is written. The rebuilt builder drops the fills, sets Times New Roman with a bold header and a thin black rule, and ends with enforce_xlsx(out) followed by a check pass; the rebuilt workbook checks clean (0 violations, before and after the enforcer fix).\nENFORCER GAPS found while verifying, fixed the same day (2026-09-25). Check mode missed coloured text in a cell already set to Times New Roman (the fix pass removed it), and because the enforcer skipped empty cells and handled only solid fills, a fill on a blank cell or a pattern fill such as gray125 survived both passes. enforce_xlsx now reports font name and font colour as separate violations ('Sheet!A1: font colour #FFC00000'). Only black or automatic text passes, so white text, invisible once fills are stripped, is reported as well. Any fill other than none or white is reported and removed, whatever its pattern (solid, gray125, gradient), on empty cells as well as written ones; font checks still cover written cells only. Theme and indexed colours are resolved (theme 1, Text 1, counts as black), so default-font cells are not reported twice. On the pre-rebuild workbook the fixed checker reports 88,063: the same 75,064, plus 12,977 coloured-text violations in cells already reported for their font (12,859 blue hyperlink cells, 110 white header cells on the navy fills, 6 navy, 2 grey) and 22 navy fills on empty Evidence map cells, which the old fix pass would have left in place. enforce_docx had the analogous gaps, a coloured heading or title style and patterned cell shading over an auto fill; both are now reported and fixed. The enforcer still does not add the header rule, and it does not check border colours, Excel table styles, conditional formatting or row and column styles.",
+   "action": "Every CRA script that writes an .xlsx deliverable ends with the enforcer and fails on residue: sys.path.insert(0, str(Path.home() / 'Claude/dev/clinical-research-assistant/clinical-research-assistant/tools')); from house_style import enforce_xlsx; enforce_xlsx(str(out)); left = enforce_xlsx(str(out), check=True); assert not left, left[:10]. Run the fix pass first: check mode only reports, and the fix pass clears the residue. Builders set the thin black header rule themselves and keep borders, Excel table styles and conditional formatting black and white, because the enforcer checks none of them. Bold, italic, size and underline survive the enforcer, so L051 significance bolding is safe. RECOMMENDED FOR EVERY CRA WORKBOOK BUILDER, starting with the analyze L051 Master Excel Workbook (Reports/MASTER_TABLES_<project>_<date>.xlsx).",
+   "severity": "medium",
+   "applies_to": [
+    "literature-review",
+    "analyze"
+   ],
+   "artifacts": [
+    "tools/house_style.py (enforce_xlsx)",
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/scripts/lit_06_build_excel.py (final enforcer pass)",
+    "projects/Research/Clinical/Thoracic/LUNG DISPARITIES PROJECT/outputs/archive/Lung_Cancer_Disparities_Literature_Review_2026-09-24_pre-2026-09-25.xlsx (75,064 violations before the enforcer fix, 88,063 after)",
+    "skills/internal/literature-review/SKILL.md -> 'Deliverable Builders'",
+    "00_Context/working-rules.md -> 'Workbook Builders Enforce the House Table Standard at Build Time'"
+   ]
+  },
+  {
+   "id": "L085-gold-standard-deck-measured-and-enforced-by-lint",
+   "date": "2026-09-25",
+   "originating_session": "REPEAT DISPARITIES PROJECT, ITSOS 2026 podium deck (ITSOS_Mirza.pptx), declutter + restyle 2026-09-22..25; author: 'This is my gold standard presentation... use every time I ask you to make a presentation for a study'",
+   "trigger_patterns": [
+    "presentation",
+    "slide deck",
+    "slides",
+    "podium talk",
+    "oral abstract",
+    "conference talk",
+    "ITSOS",
+    "AATS",
+    "presenter notes",
+    "speaker notes",
+    "discussant questions",
+    "Q&A prep",
+    "declutter slides",
+    "font size 28",
+    "legend swatches",
+    "forest plot slide",
+    "python-pptx",
+    "deck_style",
+    "deck_lint"
+   ],
+   "lesson": "The author's accepted deck differs from the pre-2026-09-22 CRA present module in ways prose rules failed to hold: the module drew 18-22 pt grey axis text, bold coloured value labels, slide numbers and a source line, and flat 0.27x0.17 in legend swatches; the author removed all of it by hand (28 pt floor, black text, no bold, no slide numbers, 0.41 in rounded footer swatches at 32 pt, black forest markers with a dotted null). Measuring the gold deck (22 slides, 20x11.25 in) gave exact tokens: title (0.938,0.729) 43.5 pt bold, rules at y 1.623/10.286, legend at (0.92,10.47). A lint pass on the gold deck itself found 5 real defects the eye missed (two 24 pt annotations, an off-slide residue label from a slide clone, 'Furthermore' and 'population database' for NCDB in notes). Content lessons from the same talk: within-subgroup shares are compositional (the 'Black patients refused less' claim reversed on the all-patient denominator); NAACCR 1340 code 1 includes patient choice; relative vs overall survival; one time horizon across slides; decimals out of notes.",
+   "action": "Route every study presentation through present/SKILL.md. Build ONLY through scripts/deck_style.py v2 tokens; run scripts/deck_lint.py DECK --minutes N and deliver only at zero FAIL; render with PowerPoint when idle, else scripts/preview_deck.py (never drive the author's live PowerPoint); write notes and conclusions per references/story-and-notes.md; check every claim against references/content-lessons.md; keep one working deck with a single hidden rolling backup (no _pre_<change> copies). Re-run tests/test_gold_standard.py after any deck_style change.",
+   "severity": "high",
+   "applies_to": [
+    "present"
+   ],
+   "artifacts": [
+    "skills/internal/present/references/gold-standard-spec.md",
+    "skills/internal/present/references/story-and-notes.md",
+    "skills/internal/present/references/content-lessons.md",
+    "skills/internal/present/scripts/deck_style.py",
+    "skills/internal/present/scripts/deck_lint.py",
+    "skills/internal/present/scripts/preview_deck.py",
+    "skills/internal/present/tests/test_gold_standard.py",
+    "projects/Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Presentations/ITSOS_2026/ (gold deck lives at ~/Desktop/ITSOS_Mirza.pptx)"
+   ]
+  },
+  {
+   "id": "L086-research-workspace-split-to-claude-research",
+   "date": "2026-09-25",
+   "originating_session": "Workspace reorganization, Claude Code desktop, 2026-09-25: author asked to separate research from apps, repos and CRA files into a new Claude_Research folder.",
+   "trigger_patterns": [
+    "working-rules.md",
+    "00_Context",
+    "Claude_Projects",
+    "Claude_Research",
+    "workspace layout",
+    "templates/figure-style",
+    "templates/tam-taxonomy",
+    "update three places",
+    "new research project",
+    "where do research projects live"
+   ],
+   "lesson": "On 2026-09-25 research moved out of the iCloud Claude_Projects/ workspace into the sibling iCloud folder Claude_Research/ by a single rename with the internal layout unchanged, so Claude_Projects/projects/Research/<X> is now Claude_Research/<X>. The working rules, research playbooks, about-me, the research half of active-projects, the session-log history, rules/research-protocol.md, rules/clinical-data.md and the templates/ mirrors (figure-style, tam-taxonomy) moved with it. Claude_Projects/ keeps apps (CaseLog, Opraksis, LifeOS), CRA tooling docs and admin; git repos stay in ~/Claude/dev/. The folders are siblings rather than nested because Claude Code loads every parent CLAUDE.md and keys auto-memory by folder. Entries dated before 2026-09-25 cite iCloud:Claude_Projects/... paths as history and are not rewritten.",
+   "action": "Write standing-rule updates to ~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Research/00_Context/working-rules.md; Claude_Projects/00_Context/working-rules.md is a redirect stub and must never receive rules. The House Figure Style and TAM taxonomy workspace mirrors are Claude_Research/templates/figure-style/fig_style.py and Claude_Research/templates/tam-taxonomy/tam_taxonomy.py. Start new research projects under Claude_Research/Clinical/<area>/ or Claude_Research/Translational/ and open research sessions on Claude_Research so its CLAUDE.md and memory load. When reading older entries, map iCloud:Claude_Projects/{00_Context,templates,rules/research-protocol,rules/clinical-data} and Claude_Projects/projects/Research/<X> to Claude_Research/.",
+   "severity": "high",
+   "applies_to": [
+    "analyze",
+    "visualize",
+    "write-manuscript",
+    "project-init"
+   ],
+   "artifacts": [
+    "~/Library/Mobile Documents/com~apple~CloudDocs/Claude_Projects/tasks/2026-09-25-research-workspace-split.md",
+    "Claude_Research/CLAUDE.md",
+    "Claude_Research/00_Context/working-rules.md",
+    "Claude_Projects/00_Context/working-rules.md (redirect stub)",
+    "~/Claude/archive/workspace-split_2026-09-25/"
+   ]
+  },
+  {
+   "id": "L087-analysis-ladder-compute-and-compare-in-order",
+   "date_added": "2026-09-25",
+   "originating_session": "REPEAT DISPARITIES PROJECT (esophageal cancer, NCDB + SEER; ITSOS 2026 podium 2026-09-25): author directive to standardize how every study is analyzed, from the lessons of this project",
+   "category": "study-design",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "adjusted model",
+    "multivariable",
+    "adjust for",
+    "confounders",
+    "socioeconomic",
+    "SES",
+    "insurance, income, education",
+    "disparity",
+    "Model A",
+    "Model B",
+    "sequential adjustment",
+    "M1 to M5",
+    "IPTW",
+    "propensity score",
+    "PSM",
+    "adjusted Kaplan-Meier",
+    "adjusted survival curve",
+    "E-value",
+    "mediation",
+    "proportion mediated",
+    "machine learning",
+    "causal forest",
+    "just one adjusted model",
+    "deadline",
+    "descoped",
+    "deferred"
+   ],
+   "lesson": "Author directive 2026-09-25: compute and compare, in this order, (1) unadjusted, (2) Model A, adjusted for the clinically relevant variables and confounders only, (3) Model B, adjusted for everything (Model A plus socioeconomic, access and all other pre-specified confounders), (4) adjusted Kaplan-Meier where relevant, (5) IPTW, (6) E-values for unmeasured confounding, (7) causal mediation, (8) machine learning or other novel analyses that add to the study. The author first listed a separate socioeconomic model and a combined model, then clarified the same day: 'I just want two models, A only clinical, B includes everything else too', which is the Model A / Model B convention REPEAT DISPARITIES already used. That project's SAP said 'one model per analysis, no sequential ladders', yet the talk needed crude, Model A, Model B, PSM, IPTW, E-values and mediation, which lived in scattered scripts and were reconciled by hand before the podium. Baseline test 2026-09-25: asked for 'the one adjusted model' before a Friday deadline, the pre-change skill planned crude plus a single adjusted model with no clinical-only comparison, PSM and IPTW 'descoped', and no mediation. Two method errors the ladder now blocks mechanically: a surgery E-value of 3.41 circulated because the RR formula was applied to an OR of 0.50 for a 48% outcome (correct 2.17; 2.22 after the OR was corrected to 0.487), and a difference-of-HRs 'proportion mediated' had to be superseded by a formal AFT/g-formula mediation analysis.",
+   "rule": "Every objective is estimated on each rung in order, on one analytic cohort (the same N for rungs 1-3), and reported side by side with the change from unadjusted (log scale) and E-values. Exactly two adjusted models: Model A clinical only, Model B everything; no socioeconomic-only, 'combined' or M1-M5 models. A rung not run needs a written reason in analysis_plan.ladder.skipped; a deadline is not a reason, and neither is 'don't redo the analysis'. Mediators are never adjusted in Model A or B. In disparities work, the Model A to Model B attenuation is 'accounted for by socioeconomic and access factors', never 'explained away'. E-values use the formula for the measure and the outcome frequency.",
+   "action": "Phase 2 analysis_plan.ladder; HALT 2A locks the Model A and Model B covariate sets (ladder_role clinical / model_b) and the candidate mediators; Phase 5A runs rungs 2-5; Phase 5B starts with E-values via ladder_table.evalue(measure=, common=); Phase 5C runs mediation and ML; Checkpoint B requires zero scripts/ladder_table.py flags (rung names crude, modelA, modelB, adjsurv, iptw, psm, mediation, ml); Table_2 columns follow rung order; registry keys use .modelA / .modelB.",
+   "applies_to": [
+    "analyze",
+    "write-methods-results",
+    "write-abstract",
+    "present",
+    "biomedagent"
+   ],
+   "artifacts": [
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Protocol/RESTART_SAP_2026-05-28.md",
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/decision_log.md",
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Reports/MASTER_ANALYSIS_REGISTRY.json"
+   ],
+   "deprecated": false,
+   "promoted_to": [
+    {
+     "file": "skills/internal/analyze/references/analysis-ladder.md",
+     "note": "The ladder, covariate sets, comparison table, rung requirements"
+    },
+    {
+     "file": "skills/internal/analyze/SKILL.md",
+     "note": "Standing rules block; Phase 2 ladder; HALT 2A ladder roles; Phase 5A/5B/5C; Checkpoint B"
+    },
+    {
+     "file": "skills/internal/analyze/scripts/ladder_table.py",
+     "note": "Ladder table, attenuation, E-values, flags"
+    },
+    {
+     "file": "Claude_Research/00_Context/working-rules.md",
+     "note": "Study-Design Standard"
+    }
+   ],
+   "promoted_date": "2026-09-25"
+  },
+  {
+   "id": "L088-curate-inclusion-exclusion-one-cohort-exact-reconciliation",
+   "date_added": "2026-09-25",
+   "originating_session": "REPEAT DISPARITIES PROJECT (esophageal cancer, NCDB + SEER; ITSOS 2026 podium 2026-09-25): author directive to standardize how every study is analyzed, from the lessons of this project",
+   "category": "study-design",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "inclusion criteria",
+    "exclusion criteria",
+    "cohort definition",
+    "eligibility",
+    "CONSORT",
+    "filter_log",
+    "cohort N",
+    "N mismatch",
+    "close enough",
+    "0 months follow-up",
+    "zero follow-up",
+    "KM export",
+    "Kaplan-Meier display cohort",
+    "stratified analysis",
+    "subgroup analysis",
+    "histology-stratified",
+    "missing stage",
+    "ANALYTIC_STAGE_GROUP",
+    "pathologic stage",
+    "complete case",
+    "selection bias",
+    "differential exclusion",
+    "most recent diagnosis year"
+   ],
+   "lesson": "REPEAT DISPARITIES met four cohort defects. (1) The Kaplan-Meier display export kept 119 patients with 0 months of follow-up (107 White, 12 Black) that the registered Cox cohort dropped, so the deck carried two Ns for one population and a 2-year gap printed as 9.9 points in one place and 9.8 in another; on the histology analysis the author required that 'the numbers need to match exactly for the larger cohort we used, use the same criteria for inclusion'. (2) Excluding missing clinical stage removed 20.1% of Black and 15.3% of White patients, a differential selection that needed its own sensitivity analysis. (3) ANALYTIC_STAGE_GROUP was rejected as a cohort definer because it folds in pathologic stage and so conditions on surgery. (4) No 2023 patient has follow-up in the PUF, so survival and treatment cohorts cover different years. L050 forces the conventional filters to be considered; nothing forced them to be curated, built once, counted by group, or reconciled exactly. Baseline test 2026-09-25: the pre-change skill handled the 119-patient mismatch well (L069, L071) but did not reproduce the registered overall estimate before trusting the strata.",
+   "rule": "Criteria are designed from the question and the dictionary, reviewed at HALT 1, built once by one builder into one cohort with named endpoint sub-cohorts, counted by exposure group with differential-exclusion flags, and reconciled exactly before any deliverable. Eligibility uses baseline information only; unknowns are in or out by explicit decision; missing covariates are handled in the analysis, not by exclusion; a stratified analysis first reproduces the registered overall estimate on the same cohort object.",
+   "action": "Phase 1.1.b and references/cohort-curation.md; the Phase 4.1 builder uses scripts/cohort_flow.py (include/exclude/endpoint/write) and assert_n / assert_same_cohort; register cohort and sub-cohort Ns; route any differential-exclusion flag to HALT 2 with a selection-sensitivity proposal.",
+   "applies_to": [
+    "analyze",
+    "present",
+    "write-methods-results",
+    "visualize"
+   ],
+   "artifacts": [
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Scripts/reconcile_histology_cohorts_0925.py",
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/decision_log.md"
+   ],
+   "deprecated": false,
+   "promoted_to": [
+    {
+     "file": "skills/internal/analyze/references/cohort-curation.md",
+     "note": "Curation, building and reconciliation standard"
+    },
+    {
+     "file": "skills/internal/analyze/SKILL.md",
+     "note": "Standing rules block; Phase 1.1.b; Phase 4.1 builder; Phase 5B reproduce-before-stratifying"
+    },
+    {
+     "file": "skills/internal/analyze/scripts/cohort_flow.py",
+     "note": "CohortFlow, assert_n, assert_same_cohort"
+    },
+    {
+     "file": "skills/references/registry-cohort-checklists.md",
+     "note": "NCDB rows 27-29, SEER row 27, by-group counts"
+    },
+    {
+     "file": "Claude_Research/00_Context/working-rules.md",
+     "note": "Study-Design Standard"
+    }
+   ],
+   "promoted_date": "2026-09-25"
+  },
+  {
+   "id": "L089-data-dictionary-dossier-before-any-variable",
+   "date_added": "2026-09-25",
+   "originating_session": "REPEAT DISPARITIES PROJECT (esophageal cancer, NCDB + SEER; ITSOS 2026 podium 2026-09-25): author directive to standardize how every study is analyzed, from the lessons of this project",
+   "category": "data-verification",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "data dictionary",
+    "PUF",
+    "NAACCR",
+    "recode",
+    "recode map",
+    "value labels",
+    "REASON_FOR_NO_SURGERY",
+    "reason for no surgery",
+    "not recommended",
+    "refused",
+    "not offered",
+    "RX_SUMM_SURG_PRIM_SITE",
+    "RX_SUMM_SURG_PRIM_SITE_2023",
+    "2023 PUF",
+    "alphanumeric codes",
+    "pd.to_numeric",
+    "coding change",
+    "new PUF year",
+    "new SEER release",
+    "what does this code mean",
+    "0 vs 0",
+    "category with no patients",
+    "the abstract already used this script"
+   ],
+   "lesson": "Five REPEAT DISPARITIES defects came from not reading the dictionary. (1) REASON_FOR_NO_SURGERY (NAACCR 1340, allowable 0-2 and 5-9) was recoded with 'Refused' on code 3, which does not exist, and codes 2, 5, 6 and 7 folded into 'Not recommended', so 1,891 documented refusals were counted as not recommended and every refusal statement, including one in the submitted abstract, was void. (2) Code 1, 'not part of the planned first course of treatment', was labelled 'not recommended' and read as surgery not offered, although the coding instruction also assigns it to a patient choosing a non-surgical option among those offered; the talk's framing had to change hours before the podium. (3) RX_SUMM_SURG_PRIM_SITE_2023 (NAACCR 1291) is alphanumeric (A000-A990) and was parsed with pd.to_numeric, so all 8,226 patients diagnosed in 2023 read as unoperated; this manufactured a race-by-era interaction (P=.0011, 'the gap narrowed in the immunotherapy era') that vanished after the fix (P=.35), and the claim was withdrawn. (4) A facility-type string was compared to an integer and matched 0 of 114,633 rows in a memo. (5) ANALYTIC_STAGE_GROUP folds in pathologic stage. Baseline test 2026-09-25: given the old map and two hours to a talk, the pre-change skill reused the script's labels because 'the abstract already used this script', reported refusal as 0/27,957 vs 0/4,002 ('neither group shows a coded refusal'), and never opened the dictionary.",
+   "rule": "No variable enters a spec, a filter or a model without a dossier entry written from the official dictionary for the exact vintage: item and number, page, storage type, allowable codes with definitions, years populated, derivation, individual or area level, consistency rules, and the claim boundary. Recode maps and raw data pass scripts/dictionary_audit.py (D1-D6, M1-M3). Labels in every deliverable come from the dossier. An existing script or map is not a source. A category that counts zero in every group is a mapping alarm.",
+   "action": "Phase 1.0a HARD GATE with references/data-dictionary-dossier.md and scripts/dictionary_audit.py; carry claim boundaries into write-* and present; re-read the dictionary for every new data vintage.",
+   "applies_to": [
+    "analyze",
+    "present",
+    "write-abstract",
+    "write-methods-results",
+    "write-discussion",
+    "biomedagent"
+   ],
+   "artifacts": [
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/decision_log.md",
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Analyses/analysis_report_corrections_recode_evalue_interaction_2026-08-24.md"
+   ],
+   "deprecated": false,
+   "supersedes": [
+    "L010-provider-vs-patient-side-gating"
+   ],
+   "promoted_to": [
+    {
+     "file": "skills/internal/analyze/references/data-dictionary-dossier.md",
+     "note": "Dossier fields, sources, alarms, rationalizations"
+    },
+    {
+     "file": "skills/internal/analyze/SKILL.md",
+     "note": "Standing rules block; Phase 1.0a HARD GATE; --quick never-dropped list"
+    },
+    {
+     "file": "skills/internal/analyze/scripts/dictionary_audit.py",
+     "note": "audit_frame (D1-D6), check_recode_map (M1-M3)"
+    },
+    {
+     "file": "skills/internal/analyze/references/registry-cautions.md",
+     "note": "NCDB coding traps"
+    },
+    {
+     "file": "Claude_Research/00_Context/working-rules.md",
+     "note": "Study-Design Standard"
+    }
+   ],
+   "promoted_date": "2026-09-25"
+  },
+  {
+   "id": "L090-denominator-follows-the-question",
+   "date_added": "2026-09-25",
+   "originating_session": "REPEAT DISPARITIES PROJECT (esophageal cancer, NCDB + SEER; ITSOS 2026 podium 2026-09-25): author directive to standardize how every study is analyzed, from the lessons of this project",
+   "category": "reporting",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "denominator",
+    "percentage",
+    "proportion",
+    "share of",
+    "rate",
+    "among patients who",
+    "reason for no surgery",
+    "why didn't they get surgery",
+    "composition",
+    "row percent",
+    "column percent",
+    "refused less",
+    "percentage points",
+    "which denominator",
+    "all patients vs non-operated",
+    "what is the denominator for this slide"
+   ],
+   "lesson": "The author asked whether the denominator for 'why did patients not get surgery' should be the non-operated patients or all patients, and later 'what is the denominator for this slide?', and was confused because different answers had been given at different times. Both denominators were arithmetically right and answered different questions. Among non-operated stage I-III patients, contraindication (9.8% vs 11.8%) and refusal (3.0% vs 5.0%) looked lower in Black patients; among all stage I-III patients contraindication was higher (7.5% vs 5.8%, RR 1.30) and refusal similar (2.3% vs 2.4%), because non-operated patients were 77% of Black and 49% of White stage I-III patients. Code 1 accounted for 26.1 of the 27.6-point surgery gap. 'Black patients refused less' was a denominator artifact that had reached drafts. Baseline test 2026-09-25: the pre-change skill planned to compare the races on reason shares among the non-operated ('provider-side vs patient-side share').",
+   "rule": "Write each question as 'Among [population], what share...', take the denominator from it, name the population on every table, figure, slide, registry label and sentence, keep it for that question across the project, and log any change. Compare likelihood between groups on all eligible patients; show a within-subgroup composition only within a group. Print n/N beside every percentage; keep Unknown consistently in or out; a denominator equals a registered cohort N; differences are percentage points.",
+   "action": "references/denominators.md; Phase 2 analysis_plan.denominators; Master Excel percentage cells name their denominator; present/references/content-lessons.md applies the same rule to slides.",
+   "applies_to": [
+    "analyze",
+    "present",
+    "write-abstract",
+    "write-methods-results",
+    "write-discussion",
+    "visualize"
+   ],
+   "artifacts": [
+    "Claude_Research/Clinical/Thoracic/REPEAT DISPARITIES PROJECT/Reports/MASTER_ANALYSIS_REGISTRY.json"
+   ],
+   "deprecated": false,
+   "supersedes": [
+    "L010-provider-vs-patient-side-gating"
+   ],
+   "promoted_to": [
+    {
+     "file": "skills/internal/analyze/references/denominators.md",
+     "note": "Question-to-denominator table, compositional trap, rules"
+    },
+    {
+     "file": "skills/internal/analyze/SKILL.md",
+     "note": "Standing rules block; Phase 1.3; Phase 2 denominators"
+    },
+    {
+     "file": "skills/clinical-research-assistant/SKILL.md",
+     "note": "Router: denominators bind every route"
+    },
+    {
+     "file": "Claude_Research/00_Context/working-rules.md",
+     "note": "Study-Design Standard"
+    }
+   ],
+   "promoted_date": "2026-09-25"
   }
  ]
 }
