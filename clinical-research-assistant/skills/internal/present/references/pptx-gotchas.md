@@ -95,3 +95,55 @@ with `set_aspect("equal")`.
 
 `ax.text` overflows silently past the axes and off the canvas. Wrap with
 `textwrap.wrap()` and place lines yourself, or measure first.
+
+## 15. `normAutofit` silently shrinks text
+
+A box carrying `<a:normAutofit fontScale="62500"/>` renders 28 pt text at ~17 pt; the run still
+*says* 28 pt, so an audit of run sizes passes. Build boxes with `<a:noAutofit/>` (deck_style `_tx`
+does) and let `deck_lint.py` S10 report any `fontScale`.
+
+## 16. Never drive the author's live PowerPoint session
+
+If PowerPoint has the author's file open (check `~$<deck>.pptx`, or ask PowerPoint for its open
+presentations), do not open your render copies through it: the AppleScript export can hang behind
+a dialog while the author is working, and a stuck app blocks both of you. Use
+`scripts/preview_deck.py` for layout checks and do the final PDF export when PowerPoint is idle.
+Keynote can export PDF too, but its first launch shows a modal that also hangs automation.
+
+## 17. The sandbox blocks AppleScript and Desktop writes
+
+In a sandboxed shell, `osascript` to PowerPoint fails with "Application isn't running" and writes
+to `~/Desktop` fail with `PermissionError: Operation not permitted`. Both need the command re-run
+outside the sandbox. Check the deck is byte-identical to its backup after a failed write before
+retrying (`cmp`).
+
+## 18. Write only when the deck is closed
+
+Before saving over the author's deck, check for the lock file `~$<deck>.pptx`; re-check immediately
+before `prs.save()`. If it appears, stop and build a preview or a one-slide file instead.
+
+## 19. Titles are often split across runs
+
+Setting `runs[0].text` leaves the old year range in `runs[1]` ("…: 1975–2021: 1975–2022").
+Write the full text into the first run and blank the rest.
+
+## 20. Rotated text boxes: width is the long side
+
+For `rotation = 270`, python-pptx `width` is the text direction (the long side) and `height` the
+thickness. Position by the centre; visual extent is (height × width). Offset a rotated y-axis title
+from the axis by a FIXED distance, never by scaling it with the panel.
+
+## 21. Cloning a slide drags its invisible residue along
+
+Deep-copying a two-panel slide and deleting "everything right of x = 9.6" left panel B's rotated
+y-axis title behind (its box started left of the cut), and a later remap parked it off the slide.
+Delete by panel membership (text, role) and lint S9 (off-slide) before saving.
+
+## 22. Hidden slides shift PDF page numbers
+
+(See 7.) A hidden slide 15 made "page 16" show slide 17. Map pages to slides by title text.
+
+## 23. Legend swatches: use `roundRect`, not flat rectangles
+
+The house swatch is a 0.41 in `roundRect` (adj 0.25). Flat 0.27 × 0.17 in rectangles from the older
+module read as spreadsheet chrome and were replaced deck-wide.
