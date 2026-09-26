@@ -54,7 +54,7 @@ BioMedAgent classifies every task into one of five categories before tool select
 |---|---|---|
 | **Descriptive** | "characterise", "describe", "report rates of", "Table 1", "incidence", "prevalence" | Frequency tables, median (IQR), mean (SD); χ² or Fisher exact across groups; no causal language |
 | **Inferential test** | "is there a difference", "compare groups", "test whether", "two-sample" | t-test / Mann-Whitney U / χ² / Fisher exact / log-rank; report point estimate + 95% CI + JAMA-format P |
-| **Multivariable model** | "adjusted for", "independent of", "controlling for", "after accounting for" | Sequential adjustment M1 → M5; logistic / Cox / linear depending on outcome distribution; E-value mandatory |
+| **Multivariable model** | "adjusted for", "independent of", "controlling for", "after accounting for" | Analysis ladder (L087, `analyze/references/analysis-ladder.md`): unadjusted → Model A clinical → Model B fully adjusted → adjusted survival → IPTW → E-values → mediation → ML / novel; logistic / Cox / linear depending on outcome distribution |
 | **Survival / time-to-event** | "median follow-up", "hazard", "time to", "risk over time", "Kaplan-Meier", "Cox" | Cox proportional-hazards with Schoenfeld diagnostics; Kaplan-Meier estimator; time-stratified Cox if PH violated for the exposure |
 | **Sensitivity / robustness** | "robust to", "sensitive to", "what if", "alternative definition", "complete-case vs imputed" | Multiple imputation (Rubin's rules); E-value (VanderWeele-Ding); subset re-runs; alternate cohort definitions |
 | **Subgroup / interaction** | "in patients with", "stratified by", "interaction", "modifies the effect" | Stratified estimates within levels; formal interaction term test (Wald or LRT); pre-specify subgroups before running them |
@@ -130,7 +130,7 @@ For reference when classifying a request:
 | Cohort selection cascade with exclusion counts | Descriptive | `analyze`, `data-analysis` |
 | Baseline characteristics by exposure (Table 1) | Descriptive | `analyze`, `data-analysis` |
 | Race-disparity gap with χ² P value | Inferential test | `analyze`, `data-analysis` |
-| Sequential M1 → M5 logistic regression | Multivariable model | `analyze`, `data-analysis` |
+| Analysis-ladder regression (L087) | Multivariable model | `analyze` |
 | Cox proportional-hazards for OS or DSS | Survival | `analyze`, `data-analysis` |
 | Schoenfeld residual test + time-stratified Cox | Survival | `analyze`, `data-analysis` |
 | Multiple imputation sensitivity (Rubin's rules) | Sensitivity | `analyze`, `data-analysis` |
