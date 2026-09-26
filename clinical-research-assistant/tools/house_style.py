@@ -29,7 +29,6 @@ import sys, os
 
 FONT = "Times New Roman"
 FALLBACKS = [FONT, "Liberation Serif", "Nimbus Roman", "DejaVu Serif", "serif"]
-_WHITE = {None, "00000000", "FFFFFFFF", "FFFFFF", "00FFFFFF"}
 
 
 # ------------------------------------------------------------------ Word
@@ -72,6 +71,12 @@ def enforce_docx(path: str, check: bool = False) -> list[str]:
                     rF = rPr.makeelement(qn("w:rFonts"), {}); rPr.append(rF)
                 for slot in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
                     rF.set(qn(slot), FONT)
+        # the default template colours its headings and title; runs inherit it unseen
+        col = st.font.color
+        if col.rgb is not None and str(col.rgb) != "000000":
+            v.append(f"style {st_name}: coloured text #{col.rgb}")
+            if not check:
+                st.font.color.rgb = RGBColor(0, 0, 0)
 
     for i, p in enumerate(doc.paragraphs):
         for r in p.runs:
@@ -88,8 +93,13 @@ def enforce_docx(path: str, check: bool = False) -> list[str]:
                 tcPr = cell._tc.get_or_add_tcPr()
                 for sh in tcPr.findall(qn("w:shd")):
                     fill = sh.get(qn("w:fill"))
+                    pat, pcol = sh.get(qn("w:val")), sh.get(qn("w:color")) or "auto"
                     if fill and fill.upper() not in ("AUTO", "FFFFFF"):
                         v.append(f"table {ti}: cell shading #{fill}")
+                    elif pat not in (None, "clear", "nil") and pcol.upper() != "FFFFFF":
+                        # a pattern draws w:color over w:fill, so an auto fill still shades
+                        v.append(f"table {ti}: cell shading {pat} "
+                                 f"{pcol if pcol.lower() == 'auto' else '#' + pcol}")
                     if not check:
                         tcPr.remove(sh)
                 for p in cell.paragraphs:
@@ -106,6 +116,48 @@ def enforce_docx(path: str, check: bool = False) -> list[str]:
 
 
 # ----------------------------------------------------------------- Excel
+def _xlsx_rgb(col) -> str | None:
+    """6-digit hex of an openpyxl Color, or None when it cannot be resolved.
+
+    Unset and automatic colours are black; theme 0/1 without tint (Background 1/Text 1)
+    are white/black; indexed colours go through the default palette. Never read Color.rgb
+    unguarded: on a theme or indexed colour it returns openpyxl's descriptor, not a string."""
+    if col is None or col.type == "auto":
+        return "000000"
+    if col.type == "rgb":
+        return str(col.rgb)[-6:].upper()          # Excel ignores the alpha byte
+    if col.type == "theme":
+        return None if col.tint else {0: "FFFFFF", 1: "000000"}.get(col.theme)
+    if col.type == "indexed":
+        from openpyxl.styles.colors import COLOR_INDEX
+        palette = list(COLOR_INDEX) + ["00000000", "00FFFFFF"]   # 64/65: system fore/background
+        return palette[col.indexed][-6:] if col.indexed < len(palette) else None
+    return None
+
+
+def _xlsx_label(col) -> str:
+    """How a violation names a colour: '#FFC00000', 'theme 4', 'theme 1 tint 0.5', 'indexed 10'."""
+    if col.type == "rgb":
+        return f"#{col.rgb}"
+    if col.type == "auto":
+        return "auto"
+    return f"{col.type} {col.value}" + (f" tint {col.tint:g}" if col.tint else "")
+
+
+def _xlsx_fill(f) -> str | None:
+    """Describe a fill that shows (any pattern that is not none or white), else None."""
+    if f.fill_type is None:
+        return None
+    if f.tagname == "gradientFill":
+        return f"{f.fill_type} gradient"
+    # solid shows fgColor alone; every other pattern draws fgColor over bgColor
+    shown = (f.fgColor,) if f.fill_type == "solid" else (f.fgColor, f.bgColor)
+    bad = [x for x in shown if _xlsx_rgb(x) != "FFFFFF"]
+    if not bad:
+        return None
+    return ("" if f.fill_type == "solid" else f"{f.fill_type} ") + _xlsx_label(bad[0])
+
+
 def enforce_xlsx(path: str, check: bool = False) -> list[str]:
     from openpyxl import load_workbook
     from openpyxl.styles import Font, PatternFill
@@ -114,23 +166,26 @@ def enforce_xlsx(path: str, check: bool = False) -> list[str]:
     for ws in wb.worksheets:
         for row in ws.iter_rows():
             for c in row:
-                if c.value is None:
-                    continue
-                f = c.fill
-                if f is not None and f.fill_type == "solid" and \
-                        getattr(f.fgColor, "rgb", None) not in _WHITE:
-                    v.append(f"{ws.title}!{c.coordinate}: fill #{f.fgColor.rgb}")
+                at = f"{ws.title}!{c.coordinate}"
+                fill = _xlsx_fill(c.fill)           # every cell: a filled blank still shows
+                if fill:
+                    v.append(f"{at}: fill {fill}")
                     if not check:
                         c.fill = PatternFill(fill_type=None)
+                if c.value is None:
+                    continue
                 fn = c.font
-                if (fn.name or "") != FONT or (fn.color is not None and
-                        getattr(fn.color, "rgb", None) not in _WHITE | {"FF000000", "000000"}):
-                    if (fn.name or "") != FONT:
-                        v.append(f"{ws.title}!{c.coordinate}: font {fn.name!r}")
-                    if not check:
-                        # preserve bold/italic/size — L051 bolding must survive
-                        c.font = Font(name=FONT, bold=fn.bold, italic=fn.italic,
-                                      size=fn.size, underline=fn.underline)
+                bad = []
+                if (fn.name or "") != FONT:
+                    bad.append(f"font {fn.name!r}")
+                # black or automatic only: white text vanishes once the fills are gone
+                if _xlsx_rgb(fn.color) != "000000":
+                    bad.append(f"font colour {_xlsx_label(fn.color)}")
+                v += [f"{at}: {b}" for b in bad]
+                if bad and not check:
+                    # preserve bold/italic/size/underline — L051 bolding must survive
+                    c.font = Font(name=FONT, bold=fn.bold, italic=fn.italic,
+                                  size=fn.size, underline=fn.underline)
     if not check:
         wb.save(path)
     return v
