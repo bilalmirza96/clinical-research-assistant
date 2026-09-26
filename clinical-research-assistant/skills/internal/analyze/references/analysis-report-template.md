@@ -44,22 +44,24 @@ For each source, name + version + date + N (raw) + N (after exclusions) + access
 
 ## 4. Cohort Selection (CONSORT-Style)
 
-A numbered exclusion cascade with N at each step. Every excluded category has a count and a reason. Cross-reference: `data/working/filter_log.md` is the source of truth.
+A numbered exclusion cascade with N at each step, overall and by exposure group, with the dictionary reference and rationale for each criterion and any differential-exclusion flag and its selection-sensitivity result (L088). Endpoint sub-cohorts (e.g. overall survival) listed with their Ns. Every N reported anywhere in this report equals one of these registered Ns. Cross-reference: `data/working/filter_log.md` is the source of truth.
 
 ## 5. Variables
 
 - **Outcome:** definition, coding, units (from `variable_spec.outcomes.primary`)
 - **Exposure:** definition, coding, reference category (from `variable_spec.exposure`)
-- **Confounders / covariates:** list with type, levels, missing-data handling
+- **Confounders / covariates:** list with type, levels, missing-data handling, and ladder role (clinical = Model A / model_b = added in Model B / mediator; L087)
 - **Stratification variables (if any):**
 - **Effect modifiers tested (if any):**
+- **Dictionary:** for every coded variable, the dossier entry it was built from (item, page) and the claim-boundary wording used in this report (L089)
+- **Denominators:** for every proportion, the population it is a share of (L090)
 
 ## 6. Statistical Methods
 
 For each analysis:
 - **Method**
 - **Software + version**
-- **Adjustment set** (sequential M1 → M5 specification)
+- **Adjustment set** by ladder rung (L087): Model A clinical, Model B fully adjusted; adjusted-survival method; IPTW/PSM specification; any rung skipped and why
 - **Assumption checks**
 - **Significance threshold** (alpha = 0.05 two-sided default)
 - **Multiple-testing correction** (BH-FDR / Bonferroni — say which family, how many)
@@ -82,7 +84,7 @@ Table 1 reference + 1–2 sentence summary of demographics by exposure.
 - **E-value** (per L005)
 
 ### 8.3 Secondary Analyses
-For each: same fields as primary.
+For each: same fields as primary, presented as the analysis-ladder table from `scripts/ladder_table.py` (rungs in order, estimate + 95% CI, N, change from unadjusted, E-value), followed by causal mediation and any ML / novel method results (L087).
 
 ### 8.4 Sensitivity Analyses
 For each pre-specified sensitivity: result + interpretation (consistent / discrepant).
