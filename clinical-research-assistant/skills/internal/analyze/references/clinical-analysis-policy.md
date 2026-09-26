@@ -65,6 +65,12 @@ No analysis is considered complete without a date-stamped, structured markdown r
 | Time-to-event | Log-rank | Cox PH | HR (95% CI) |
 | Time-to-event (competing risks) | Gray's test | Fine-Gray subdistribution | SHR (95% CI) |
 
+**Order of estimation (per L087).** The model above is fit as a ladder, not once: unadjusted →
+Model A clinical → Model B fully adjusted → adjusted survival → IPTW (+PSM) →
+E-values → causal mediation → ML / novel methods, on one cohort, compared side by side. See
+`analysis-ladder.md`. For sparse cells or non-convergence, re-fit with Firth penalized likelihood
+and report both.
+
 ### Design Adjustments
 
 | Design Feature | Method |
@@ -163,6 +169,10 @@ Halt the analysis and request clarification if ANY of these apply:
 - Missing >40% in key variables with no imputation strategy
 - Time-to-event analysis without censoring variable or undefined time origin
 - Ambiguous coding without data dictionary
+- Any variable used without a data-dictionary dossier entry, or a recode map that fails `dictionary_audit.py` (L089)
+- A category that counts zero in every group (a mapping alarm until the dictionary says otherwise; L089)
+- Two artifacts that claim the same cohort with different Ns (L088)
+- A proportion whose denominator population is not named, or differs from the one used for the same question elsewhere (L090)
 - No overlap in propensity score distributions
 - Severe multicollinearity (VIF >10) or extremely sparse cells
 
@@ -172,7 +182,9 @@ Halt the analysis and request clarification if ANY of these apply:
 
 Flag explicitly if detected:
 
-- Overadjustment (mediator included as covariate)
+- Overadjustment (mediator included as covariate; in the ladder, mediators belong to rung 7 only, L087)
+- Selection on post-baseline information (e.g. a stage field that folds in pathologic stage), or exclusions that remove a visibly different share of one exposure group (L088)
+- Group comparisons made on shares within a subgroup whose size differs by group (compositional denominators, L090)
 - Collider bias
 - EPV <10
 - Multiple testing inflation
@@ -227,3 +239,7 @@ For detailed lookup during analysis, consult:
 - `references/registry-cautions.md` — Registry-specific coding issues and limitations
 - `references/diagnostics-checklist.md` — Full diagnostic protocol per model type
 - `references/variable-collapse-defaults.md` — Default category-collapse rules when user does not specify (used by `/analyze` Phase 1 INTAKE)
+- `references/data-dictionary-dossier.md` — Studying every variable in the official dictionary before use (L089)
+- `references/cohort-curation.md` — Curating, building and reconciling inclusion/exclusion criteria (L088)
+- `references/denominators.md` — Choosing and naming the denominator for each question (L090)
+- `references/analysis-ladder.md` — The order in which estimates are computed and compared (L087)
