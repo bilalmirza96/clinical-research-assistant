@@ -29,7 +29,7 @@ Decision table for selecting the appropriate statistical model based on outcome 
 
 | Strategy | When to Use |
 |---|---|
-| A priori (preferred) | Covariates selected based on clinical knowledge and DAG before analysis |
+| A priori (preferred) | Covariates selected based on clinical knowledge and DAG before analysis, grouped by ladder role (Model A clinical, Model B everything else, mediator) and fit in ladder order (L087, `analysis-ladder.md`) |
 | Change-in-estimate | Include if covariate changes primary estimate by >10% |
 | Stepwise (discouraged) | Only for exploratory/hypothesis-generating analyses; report as such |
 
