@@ -48,6 +48,11 @@ For any analysis using NCDB PUF data.
 | 24 | **Missing data handling for key covariates** | complete-case on outcome; missing-as-category for categoricals (per L004) | follow L004 default? |
 | 25 | **SSDI completeness** (site-specific data items) | per L046 — verify before use | which SSDIs critical; documented per L046 |
 | 26 | **PUF year vintage** | most recent PUF preferred; sometimes restricted to pre-pandemic | which vintage; pandemic handling |
+| 27 | **Stage source** (per L088) | clinical `TNM_CLIN_STAGE_GROUP`; `ANALYTIC_STAGE_GROUP` folds in pathologic stage, which exists only after resection | clinical stage for eligibility and adjustment; never select on a field that conditions on treatment |
+| 28 | **Zero follow-up** (`DX_LASTCONTACT_DEATH_MONTHS` = 0) (per L088) | often dropped from survival models, often kept in KM displays | one decision for the survival sub-cohort, applied to KM export, Cox model, figures and slides alike |
+| 29 | **Years with follow-up** (per L088) | the most recent PUF diagnosis year has no vital status or follow-up | survival sub-cohort year range stated separately from the treatment cohort's |
+
+**By-group counts (per L088):** once the cohort is built, every row that removed patients reports its removals by exposure group (`scripts/cohort_flow.py` → `filter_log.md`). A visibly differential removal (e.g. missing stage: 20.1% of Black vs 15.3% of White patients) gets a selection-sensitivity analysis.
 
 **Default-changes-must-be-flagged warning:** If this study uses a registry that another study in the same lab uses, ANY deviation from that prior study's filters MUST be explicitly justified in `decision_log.md` and surfaced in `manuscript_methods` to enable apples-to-apples comparison.
 
@@ -85,6 +90,7 @@ For any analysis using SEER Research Data (any registry release: 9/13/17/22 regi
 | 24 | **Time from diagnosis to treatment days** | available as categorical recode | use as covariate? restriction? |
 | 25 | **PRCDA designation** | Purchased/Referred Care Delivery Area | restriction if relevant to AI/AN focus |
 | 26 | **Response to neoadjuvant therapy (2010+)** | new SEER variable; populated depending on site | check site-specific completeness per L046 |
+| 27 | **Survival months = 0** (per L088) | handling varies; interacts with the survival months flag | one decision for the survival sub-cohort, applied to every survival artifact |
 
 ---
 
