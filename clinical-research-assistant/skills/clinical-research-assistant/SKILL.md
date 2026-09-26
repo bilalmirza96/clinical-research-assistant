@@ -19,6 +19,8 @@ You are the front door for the entire Clinical Research Assistant system. The us
 
 **Claim-audit gate (L073, NON-NEGOTIABLE).** Also run `python3 tools/claim_audit.py <draft> --registry <MASTER_ANALYSIS_REGISTRY.json>`. It catches assertions of ABSENCE - "was not formally compared", "was never tested", "is not recorded" - that a registered result contradicts. `registry_lint` H8 traces numbers that are PRESENT and is structurally blind to these. Non-zero exit blocks submission-ready status. Two standing rules behind it: never assert a negative about the analysis state from memory (grep the registry first, including in conversational answers), and never treat generated prose - a draft, a summary, an earlier turn - as evidence of what an analysis found. When a hedge is genuinely warranted, write it as a positive statement of what WAS done, naming the key, rather than a bare negative.
 
+**Study-design standard (L087-L090, NON-NEGOTIABLE, author directive 2026-09-25).** Binds every route that touches data or reports a number, including `analyze --quick`, `write-*`, `present` and `visualize`: (1) estimates are computed and compared as the analysis ladder, in order (unadjusted → Model A clinical → Model B fully adjusted → adjusted survival → IPTW → E-values → causal mediation → ML / novel; two adjusted models only); (2) inclusion and exclusion criteria are curated, built once, counted by exposure group and reconciled exactly; (3) every coded variable is read in the official data dictionary before use, and its labels stay inside the dictionary's definition; (4) every proportion's denominator comes from the question, is named, and stays the same for that question everywhere. Details: `skills/internal/analyze/references/` → `analysis-ladder.md`, `cohort-curation.md`, `data-dictionary-dossier.md`, `denominators.md`.
+
 If `../references/skill-registry.yaml` is missing, stale, or the user says they pasted a new skill into `skills/external/`, run:
 
 ```bash
@@ -68,7 +70,7 @@ Classify every request before acting:
 |---|---|
 | New project, project scaffold, study setup | `skills/internal/project-init/SKILL.md` |
 | Resume existing project | `skills/internal/resume-project/SKILL.md` |
-| Clinical dataset analysis, regression, survival, registry analysis | `skills/internal/analyze/SKILL.md` plus `skills/internal/analyze/references/clinical-analysis-policy.md` policy |
+| Clinical dataset analysis, regression, survival, registry analysis, cohort definition, recoding a registry variable, "why didn't they get X" tabulations | `skills/internal/analyze/SKILL.md` plus `skills/internal/analyze/references/clinical-analysis-policy.md` policy and the study-design standard (L087-L090) |
 | Biomedical omics, scRNA-seq, genomics, VCF/BAM/FASTQ/h5ad, ML-heavy workflow | `skills/external/biomedagent/SKILL.md` as delegated engine |
 | Literature review, evidence synthesis, citation search | `skills/internal/literature-review/SKILL.md` |
 | Citation audit, PMID/DOI verification, bibliography cleanup | Prefer an external citation skill if registered; otherwise use `skills/internal/literature-review/SKILL.md` |
@@ -79,7 +81,7 @@ Classify every request before acting:
 | Abstract drafting or audit | `skills/internal/write-abstract/SKILL.md` |
 | Full manuscript orchestration | `skills/internal/write-manuscript/SKILL.md` |
 | Manuscript quality-control audit | `skills/internal/manuscript-qc/SKILL.md` |
-| Conference presentation, abstract talk, slide deck, redesigning slides | `skills/internal/present/SKILL.md` |
+| Conference presentation, podium/oral-abstract talk, slide deck, presenter notes, discussant Q&A prep, redesigning or decluttering slides (gold standard: ITSOS 2026 deck, L085) | `skills/internal/present/SKILL.md` |
 
 ### Step 2 — Select the Best Skill
 
