@@ -19,12 +19,16 @@ Notes
 import subprocess, sys, time
 from pathlib import Path
 
+# A large deck takes longer than AppleScript's default 120 s reply timeout,
+# which surfaces as "AppleEvent timed out (-1712)" with no PDF written.
 APPLESCRIPT = '''
-tell application "Microsoft PowerPoint"
-  open POSIX file "{deck}"
-  save active presentation in POSIX file "{pdf}" as save as PDF
-  close active presentation saving no
-end tell
+with timeout of 900 seconds
+  tell application "Microsoft PowerPoint"
+    open POSIX file "{deck}"
+    save active presentation in POSIX file "{pdf}" as save as PDF
+    close active presentation saving no
+  end tell
+end timeout
 '''
 
 
