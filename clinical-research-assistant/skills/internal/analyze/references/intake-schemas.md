@@ -33,7 +33,9 @@ JSON schemas + examples for the four locked artifacts produced by `/analyze` Pha
             "required": ["expr", "rationale"],
             "properties": {
               "expr": {"type": "string", "description": "Executable boolean expression"},
-              "rationale": {"type": "string"}
+              "rationale": {"type": "string"},
+              "dictionary_ref": {"type": "string", "description": "Dossier entry for the item and codes the expression uses (L089)"},
+              "unknowns": {"enum": ["in", "out"], "description": "Explicit decision for unknown/missing values of the filtered field (L088)"}
             }
           }
         },
@@ -43,6 +45,21 @@ JSON schemas + examples for the four locked artifacts produced by `/analyze` Pha
             "type": "object",
             "required": ["expr", "rationale"],
             "properties": {
+              "expr": {"type": "string"},
+              "rationale": {"type": "string"},
+              "dictionary_ref": {"type": "string"},
+              "unknowns": {"enum": ["in", "out"]}
+            }
+          }
+        },
+        "endpoint_cohorts": {
+          "type": "array",
+          "description": "Named sub-cohorts of the analytic cohort for endpoint eligibility, e.g. overall survival: follow-up > 0 months and diagnosis year with vital status (L088). Every artifact for that endpoint reads this sub-cohort.",
+          "items": {
+            "type": "object",
+            "required": ["name", "expr", "rationale"],
+            "properties": {
+              "name": {"type": "string"},
               "expr": {"type": "string"},
               "rationale": {"type": "string"}
             }
@@ -142,7 +159,9 @@ JSON schemas + examples for the four locked artifacts produced by `/analyze` Pha
         "levels": {"type": "array", "description": "For categorical/ordinal"},
         "reference": {"type": "string", "description": "Reference category for categorical (per L038)"},
         "transform": {"enum": ["none", "log", "sqrt", "z-score", "categorize"]},
-        "auto_collapsed_from": {"type": "string", "description": "If auto-collapsed by INTAKE per variable-collapse-defaults.md, original column name"}
+        "auto_collapsed_from": {"type": "string", "description": "If auto-collapsed by INTAKE per variable-collapse-defaults.md, original column name"},
+        "dossier_ref": {"type": "string", "description": "Entry in specs/data_dictionary_dossier.md for every source column (item, page, codes, claim boundary). Required before the spec is locked (L089)"},
+        "ladder_role": {"enum": ["clinical", "model_b", "mediator", "effect_modifier", "none"], "description": "Covariates only: clinical (Model A, carried into Model B), model_b (added in Model B: socioeconomic, access, facility, other non-clinical confounders), rung-7 mediator (never adjusted in Model A or B), or effect modifier (L087)"}
       }
     }
   }
@@ -209,8 +228,8 @@ Markdown skeletons for every manuscript table planned. Each skeleton uses `[auto
 ### Minimum tables expected
 
 - **Table 1** — Baseline characteristics (mapped to all `covariates` + `effect_modifiers`)
-- **Table 2** — Univariate predictors of primary outcome
-- **Table 3** — Multivariable model for primary outcome (the headline table)
+- **Table 2** — The analysis ladder for the primary outcome: unadjusted, Model A clinical, Model B fully adjusted, adjusted survival, IPTW, PSM, with N, change from unadjusted and E-values (per L087)
+- **Table 3** — Full multivariable model (Model B) for the primary outcome
 - **Table 4** — Multivariable models for secondary outcomes (if planned)
 - **Supplementary Table S1** — Complete-case vs imputed sensitivity (per L004)
 - **Supplementary Table S2** — E-value sensitivity (per L005)
