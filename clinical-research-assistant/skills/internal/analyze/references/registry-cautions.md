@@ -19,7 +19,13 @@ Key coding issues and outcome limitations for commonly used surgical and clinica
 - **Treatment intent**: Cannot reliably distinguish curative from palliative intent
 - **Chemotherapy coding**: Regimen details are limited; specific agents often not captured
 - **Survival follow-up**: Variable by facility and year; check completeness
-- **Selection bias**: Commission on Cancer-accredited hospitals only (~70% of cancer cases)
+- **Selection bias**: Commission on Cancer-accredited hospitals only (~70% of cancer cases). Hospital-based, never "population-based"
+- **Coding traps (per L089; build the dossier from the PUF Data Dictionary for the PUF year):**
+  - `REASON_FOR_NO_SURGERY` (NAACCR 1340) allows 0, 1, 2, 5, 6, 7, 8, 9; there is no code 3 or 4. Refusal is code 7. Code 1, "not part of the planned first course of treatment", also covers a patient choosing an offered non-operative option: never label it "not recommended", "not offered" or "denied"
+  - The 2023 PUF splits surgery coding: `RX_SUMM_SURG_PRIM_SITE` covers diagnoses to 2022 and `RX_SUMM_SURG_PRIM_SITE_2023` (NAACCR 1291) is alphanumeric (A000-A990). Numeric parsing turns every 2023 code into missing
+  - `ANALYTIC_STAGE_GROUP` uses pathologic stage when available, so it conditions on surgery; use clinical stage for eligibility and adjustment
+  - Income and education are zip-code area measures, not the patient's own
+  - The most recent diagnosis year carries no follow-up, and patients with 0 months of follow-up contribute no person-time (L088: one survival sub-cohort for every survival artifact)
 
 ## SEER (Surveillance, Epidemiology, and End Results)
 
