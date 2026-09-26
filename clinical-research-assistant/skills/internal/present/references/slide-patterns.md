@@ -1,5 +1,11 @@
 # Slide patterns
 
+> **Superseded geometry.** The type sizes and furniture positions quoted below predate the
+> 2026-09-25 gold standard (18–22 pt labels, slide numbers, 13.33 in matplotlib canvases). Use
+> `gold-standard-spec.md` for every size, colour and position; keep this file for the *ideas*
+> (estimator ladder, log-symmetric forest, KM idioms, icon array, dumbbell). All sizes are now
+> ≥ 28 pt on a 20 × 11.25 in native slide.
+
 Layouts proven on a real podium deck (20 × 11.25 in). Geometry in inches.
 Figure panels are rendered at 13.33 × 7.5 in (same 16:9) and placed full-bleed.
 
