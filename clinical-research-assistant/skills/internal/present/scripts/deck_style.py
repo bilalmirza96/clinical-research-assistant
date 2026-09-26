@@ -1,220 +1,411 @@
 """
-CRA conference-deck design system.
+CRA conference-deck design system -- GOLD STANDARD v2 (2026-09-25).
 
-Constants were measured off a real 16:9 clinical-research deck (ITSOS 2026), so slides
-built with this module are visually consistent with a hand-built academic deck. Native
-PowerPoint shapes, not images, wherever the content is text or simple geometry -- native
-shapes stay editable by the author and re-render crisply at any projector resolution.
-Charts that need a real plotting engine (Kaplan-Meier, distributions) are rendered with
-matplotlib and placed full-bleed; see references/slide-patterns.md.
+Every token below was measured off the author's gold-standard deck
+(ITSOS 2026, `ITSOS_Mirza.pptx`, 20 x 11.25 in, 16:9) after the author's own
+declutter passes. Slides built with this module match that deck; `deck_lint.py`
+fails any slide that drifts from it. Read references/gold-standard-spec.md for the
+measured spec and the reasoning behind each rule.
 
-Slide is 20.00 x 11.25 in (16:9). All geometry in inches.
+Non-negotiables baked into the defaults (author directives, 2026-09-22..25):
+  * Times New Roman everywhere; every run >= 28 pt (legends 32 pt, titles 43.5 pt bold).
+  * Text is BLACK. No grey text anywhere (grey is for lines/gridlines only).
+    White only on a dark fill. Navy 1A3255 only for structural labels (table
+    headers, forest group labels) and title-slide / closing text.
+  * No bold inside the slide body except structural labels; titles are bold.
+  * No slide numbers, no source line, no in-plot legend boxes. The race legend
+    lives in the footer band, identical on every slide (rounded 0.41 in swatches).
+  * Native PowerPoint shapes; pictures only for branding (logos, watermark).
 
-PALETTE NOTE: NHW/NHB are the project race convention (BLUE = non-Hispanic White,
-RED = non-Hispanic Black; RED is RESERVED for NHB). Registry/category series use
-NCDB_BLUE / SEER_ORANGE or ALT -- never red while a race series is on the same slide.
+PALETTE NOTE: race series NHW = navy 123057, NHB = dark red 801819 (red is RESERVED
+for the disadvantaged group). Category palettes below are author-chosen per slide
+family; never reuse the race red for a category.
 """
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
-import copy
-
-# ---- palette (measured) -----------------------------------------------------
-NHW      = RGBColor(0x12, 0x30, 0x57)   # non-Hispanic White  -- navy
-NHB      = RGBColor(0x80, 0x18, 0x19)   # non-Hispanic Black  -- dark red
-ALT      = RGBColor(0x51, 0x80, 0xBF)   # secondary series (registry/category)
-NCDB_BLUE   = RGBColor(0x00, 0x7A, 0xD1)  # registry: NCDB
-SEER_ORANGE = RGBColor(0xD1, 0x56, 0x00)  # registry: SEER
-INK      = RGBColor(0x22, 0x33, 0x3F)   # headers, category labels
-MUTED    = RGBColor(0x4B, 0x55, 0x63)   # axis labels, tick labels
-FOOT     = RGBColor(0x5B, 0x66, 0x75)   # source line, slide number
-GRID     = RGBColor(0xE9, 0xEC, 0xF0)   # gridlines
-RULE     = RGBColor(0xE1, 0xE6, 0xED)   # title / footer rules
-AXIS     = RGBColor(0x6B, 0x72, 0x80)   # baseline
-PALE     = RGBColor(0xC5, 0xCD, 0xD8)   # 4th stacked segment
-BLACK    = RGBColor(0x00, 0x00, 0x00)
-WHITE    = RGBColor(0xFF, 0xFF, 0xFF)
+from pptx.enum.dml import MSO_LINE
+from lxml import etree
+import copy, math, os
 
 FONT = "Times New Roman"
+_A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+
+# ---- palette (measured off the gold deck) -----------------------------------
+BLACK    = RGBColor(0x00, 0x00, 0x00)   # ALL body text
+WHITE    = RGBColor(0xFF, 0xFF, 0xFF)   # text on dark fills only
+NAVY_TXT = RGBColor(0x1A, 0x32, 0x55)   # structural labels, title-slide background, closing text
+NHW      = RGBColor(0x12, 0x30, 0x57)   # race: non-Hispanic White (navy)
+NHB      = RGBColor(0x80, 0x18, 0x19)   # race: non-Hispanic Black (dark red) -- RESERVED
+GRID     = RGBColor(0xE9, 0xEC, 0xF0)   # gridlines
+RULE     = RGBColor(0xE1, 0xE6, 0xED)   # header + footer rules
+AXIS     = RGBColor(0x6B, 0x72, 0x80)   # axis baselines, arrow shafts (LINES ONLY, never text)
+MARKER   = BLACK                        # forest point + CI (author: "make it black")
+BAND     = RGBColor(0xD9, 0xE0, 0xEF)   # CI band behind a trend line
+POINT    = RGBColor(0x4B, 0x55, 0x63)   # observed points on a trend chart (fill, not text)
+ACCENT   = RGBColor(0x00, 0x7A, 0xD1)   # single-series accent (E-value slide)
+# steps ramp (analytic approach): light -> dark, last step inverted
+STEP_RAMP = [RGBColor(0xED, 0xF1, 0xF7), RGBColor(0xDC, 0xE5, 0xF0), RGBColor(0xC9, 0xD6, 0xE8), NHW]
+# 4-level categorical palettes the author picked (keep the ROLE, swap hexes only on request)
+PAL_MODALITY = [RGBColor(0x0D, 0x1A, 0x2C), RGBColor(0x2C, 0x4E, 0x74), RGBColor(0x54, 0x12, 0x1C), RGBColor(0xC4, 0xA2, 0xA8)]
+PAL_BLUES    = [RGBColor(0x1B, 0x26, 0x3B), RGBColor(0x41, 0x5A, 0x77), RGBColor(0x77, 0x8D, 0xA9), RGBColor(0xE0, 0xE1, 0xDD)]
+PAL_GREYS    = [RGBColor(0xC5, 0xCD, 0xD8), RGBColor(0x63, 0x66, 0x6A)]   # e.g. "adjusted gap" vs "through surgery"
+# legacy names kept so older scripts import cleanly (all TEXT roles now resolve to black)
+INK = BLACK; MUTED = BLACK; FOOT = BLACK
+ALT = RGBColor(0x51, 0x80, 0xBF); NCDB_BLUE = ACCENT; SEER_ORANGE = RGBColor(0xD1, 0x56, 0x00)
+PALE = RGBColor(0xC5, 0xCD, 0xD8)
 
 # ---- type scale (measured) --------------------------------------------------
-SZ_TITLE=43.5; SZ_PANEL=22.5; SZ_VALUE=21.0; SZ_CAT=19.5
-SZ_AXIS=18.0;  SZ_LEGEND=18.0; SZ_EST=22.5; SZ_SUB=16.5; SZ_SRC=16.5
+SZ_MIN = 28.0                       # hard floor, enforced by deck_lint.py
+SZ_TITLE = 43.5                     # slide title, bold, black
+SZ_BODY = 28.0                      # every label, tick, value, estimate, annotation
+SZ_LEGEND = 32.0                    # footer legend labels
+SZ_TS_TITLE = 66.0; SZ_TS_BODY = 32.0   # title slide
+SZ_LIST = 32.0                      # numbered conclusions / disclosures body
+SZ_CLOSING = 148.0                  # "Thank you"
+# legacy aliases -> all at or above the floor
+SZ_PANEL = SZ_VALUE = SZ_CAT = SZ_AXIS = SZ_EST = SZ_SUB = SZ_SRC = SZ_BODY
+LINE_H = 0.50                       # height of a one-line 28 pt box (in)
 
-# ---- canonical geometry (measured) ------------------------------------------
-TITLE=(0.94,0.73,19.94,0.71); TITLE_RULE=(0.94,1.62,18.12,0.01)
-PANEL_A_LET=(0.90,2.11,0.50,0.46); PANEL_A_HDR=(1.52,2.11,8.25)
-PANEL_B_LET=(10.43,2.11,0.50,0.46); PANEL_B_HDR=(11.05,2.11,8.25)
-FOOT_RULE=(0.94,10.29,18.12,0.01)
-LEG_Y=10.50; LEG_TXT_Y=10.45; SRC=(6.56,10.45,8.91,0.31); PGNUM=(18.83,10.45,0.31,0.31)
+# ---- canonical geometry (measured, inches) ----------------------------------
+SLIDE_W, SLIDE_H = 20.0, 11.25
+MARGIN_L = 0.938; CONTENT_W = 18.125; MARGIN_R = MARGIN_L + CONTENT_W      # 19.063
+TITLE = (0.938, 0.729, 19.938, 0.706)          # top-anchored, noAutofit
+TITLE_RULE = (0.938, 1.623, 18.125, 0.01)
+FOOT_RULE = (0.938, 10.286, 18.125, 0.01)
+BODY_TOP, BODY_BOTTOM = 1.95, 10.05            # content band between the rules
+# footer legend (identical on every slide)
+LEG_X0 = 0.92; LEG_SW = 0.41; LEG_SW_TOP = 10.47; LEG_TXT_TOP = 10.391; LEG_TXT_H = 0.539
+LEG_GAP_S = 0.15; LEG_GAP_L = 0.60; LEG_ADJ = 0.25
+# two-panel layout (bars left, forest right) -- panel B starts at the slide midline
+PANEL_A_X = 0.938; PANEL_B_X = 10.43
+# left bar panel / right forest panel defaults
+BAR_X0 = 2.45; BAR_W = 6.1; BAR_BASE = 8.25; BAR_TOP = 3.60; BARW = 0.95
+FOR_X0 = 12.25; FOR_X1 = 15.75; FOR_LBL = 16.35; FOR_TOP = 4.10; FOR_DY = 1.45
+STK_X0 = 3.40; STK_W = 15.30; STK_H = 1.93
+PGNUM = SRC = None                  # removed: no slide numbers, no source line
 
-# left bar panel
-BAR_X0=2.29; BAR_W=6.25; BAR_BASE=8.10; BAR_TOP=3.94; BARW=0.70
-# right forest panel
-FOR_X0=12.05; FOR_X1=15.44; FOR_LBL=16.09; FOR_TOP=4.21; FOR_DY=1.25
-# stacked composition
-STK_X0=4.48; STK_W=13.54; STK_H=1.15
 
-
-def _tx(slide,l,t,w,h,text,size,color,bold=False,align=PP_ALIGN.LEFT,
-        anchor=MSO_ANCHOR.TOP,wrap=True,italic=False):
-    b=slide.shapes.add_textbox(Inches(l),Inches(t),Inches(w),Inches(h))
-    tf=b.text_frame; tf.word_wrap=wrap
-    tf.margin_left=tf.margin_right=tf.margin_top=tf.margin_bottom=0
-    tf.vertical_anchor=anchor
-    p=tf.paragraphs[0]; p.alignment=align
-    r=p.add_run(); r.text=text
-    f=r.font; f.name=FONT; f.size=Pt(size); f.bold=bold; f.italic=italic
-    f.color.rgb=color
+def _tx(slide, l, t, w, h, text, size=SZ_BODY, color=BLACK, bold=False, align=PP_ALIGN.LEFT,
+        anchor=MSO_ANCHOR.TOP, wrap=True, italic=False):
+    """Text box: zero insets, explicit size, no autofit (normAutofit shrinks 28 pt to ~17 pt)."""
+    b = slide.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h))
+    tf = b.text_frame; tf.word_wrap = wrap
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = anchor
+    bp = tf._txBody.find("{%s}bodyPr" % _A)
+    for c in list(bp):
+        if c.tag.endswith("Autofit") or c.tag.endswith("AutoFit"): bp.remove(c)
+    etree.SubElement(bp, "{%s}noAutofit" % _A)
+    for i, line in enumerate(str(text).split("\n")):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.alignment = align
+        r = p.add_run(); r.text = line
+        f = r.font; f.name = FONT; f.size = Pt(max(size, SZ_MIN) if size < 40 else size)
+        f.bold = bold; f.italic = italic; f.color.rgb = color
     return b
 
 
-def _rect(slide,l,t,w,h,color,shape=MSO_SHAPE.RECTANGLE,adj=None):
-    s=slide.shapes.add_shape(shape,Inches(l),Inches(t),Inches(w),Inches(h))
-    s.fill.solid(); s.fill.fore_color.rgb=color; s.line.fill.background()
-    s.shadow.inherit=False
+def _rect(slide, l, t, w, h, color, shape=MSO_SHAPE.RECTANGLE, adj=None, outline=False):
+    s = slide.shapes.add_shape(shape, Inches(l), Inches(t), Inches(w), Inches(h))
+    s.fill.solid(); s.fill.fore_color.rgb = color
+    if not outline: s.line.fill.background()
+    s.shadow.inherit = False
     if adj is not None:
-        try: s.adjustments[0]=adj
+        try: s.adjustments[0] = adj
         except Exception: pass
     return s
 
 
-def frame(slide,title,source,pagenum,legend=None):
-    """Title, rules, source line, page number and optional race legend."""
-    _tx(slide,*TITLE,title,SZ_TITLE,BLACK,bold=True)
-    _rect(slide,*TITLE_RULE,RULE)
-    _rect(slide,*FOOT_RULE,RULE)
-    if legend:
-        # swatch/label x-positions measured off the deck's own slide 20 so the legend
-        # never runs into the source line that starts at x=6.56
-        SLOT=[(0.94,1.31,2.15),(3.76,4.13,2.13)]
-        for i,(lab,col) in enumerate(legend[:2]):
-            sx,tx,tw=SLOT[i]
-            _rect(slide,sx,LEG_Y,0.27,0.17,col)
-            _tx(slide,tx,LEG_TXT_Y,tw,0.32,lab,SZ_LEGEND,INK,wrap=False)
-    _tx(slide,*SRC,source,SZ_SRC,FOOT)
-    _tx(slide,*PGNUM,str(pagenum),SZ_SRC,FOOT,align=PP_ALIGN.RIGHT)
+def _line(slide, x1, y1, x2, y2, color=AXIS, pt=1.0, dash=None):
+    c = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(x1), Inches(y1), Inches(x2), Inches(y2))
+    c.line.color.rgb = color; c.line.width = Pt(pt)
+    if dash is not None: c.line.dash_style = dash
+    return c
 
 
-def panel_header(slide,letter,text,side="A",height=1.26,width=None):
-    lt = PANEL_A_LET if side=="A" else PANEL_B_LET
-    hd = PANEL_A_HDR if side=="A" else PANEL_B_HDR
-    _tx(slide,*lt,letter,SZ_PANEL,INK,bold=True)
-    _tx(slide,hd[0],hd[1],width or hd[2],height,text,SZ_PANEL,INK)
+def text_width_in(text, size=SZ_BODY, typeface=FONT):
+    """Advance width of `text` in inches (fontTools); falls back to 0.5 em per character."""
+    try:
+        from fontTools.ttLib import TTFont
+        path = next((p for p in ("/System/Library/Fonts/Supplemental/%s.ttf" % typeface,
+                                 "/Library/Fonts/%s.ttf" % typeface,
+                                 os.path.expanduser("~/Library/Fonts/%s.ttf" % typeface)) if os.path.exists(p)), None)
+        f = TTFont(path); cmap = f.getBestCmap(); hm = f["hmtx"]; upm = f["head"].unitsPerEm
+        return sum(hm[cmap.get(ord(c), cmap[ord("n")])][0] for c in text) / upm * size / 72
+    except Exception:
+        return 0.5 * len(text) * size / 72
 
 
-def grouped_bars(slide,groups,ymax,ylab,x0=BAR_X0,w=BAR_W,base=BAR_BASE,top=BAR_TOP,
-                 ticks=None,value_fmt="{:.1f}%",cat_size=SZ_CAT,k_gap=None):
-    """groups = [(label, [(value, color), ...]), ...]. Rounded-top bars, matching slide 20."""
-    span=base-top; scale=span/ymax
-    ticks = ticks if ticks is not None else [0,20,40,60,80]
+# ---- slide furniture ----------------------------------------------------------
+def title(slide, text):
+    return _tx(slide, *TITLE, text, SZ_TITLE, BLACK, bold=True)
+
+
+def legend(slide, items, x0=LEG_X0):
+    """Footer legend: [(label, RGBColor), ...]. Rounded 0.41 in swatches, 32 pt black labels,
+    first swatch at x 0.92 in, 0.15 in swatch->label, 0.60 in label->next swatch.
+    Identical geometry on every slide so the footer never jumps between slides."""
+    x = x0
+    for lab, col in items:
+        s = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(LEG_SW_TOP),
+                                   Inches(LEG_SW), Inches(LEG_SW))
+        s.adjustments[0] = LEG_ADJ; s.fill.solid(); s.fill.fore_color.rgb = col; s.shadow.inherit = False
+        x += LEG_SW + LEG_GAP_S
+        w = text_width_in(lab, SZ_LEGEND) + 0.04
+        _tx(slide, x, LEG_TXT_TOP, w, LEG_TXT_H, lab, SZ_LEGEND, BLACK, wrap=False)
+        x += w + LEG_GAP_L
+    return x - LEG_GAP_L
+
+
+RACE_LEGEND = [("Non-Hispanic White", NHW), ("Non-Hispanic Black", NHB)]
+_draw_legend = legend   # frame() takes a `legend=` kwarg that shadows the function name
+
+
+def frame(slide, title_text, source=None, pagenum=None, legend_items=None, legend=None):
+    """Title + header rule + footer rule (+ optional footer legend).
+    `source` / `pagenum` are accepted for old callers and IGNORED: the house deck carries no
+    slide numbers and no source line (provenance lives in the notes archive)."""
+    title(slide, title_text)
+    _rect(slide, *TITLE_RULE, RULE)
+    _rect(slide, *FOOT_RULE, RULE)
+    items = legend_items or legend
+    if items:
+        _draw_legend(slide, items)
+    return slide
+
+
+def panel_header(slide, text, x, y=2.05, w=8.6, align=PP_ALIGN.CENTER):
+    """Plain 28 pt black panel header ("Overall survival (NCDB)"), no letter, no bold."""
+    return _tx(slide, x, y, w, LINE_H, text, SZ_BODY, BLACK, align=align)
+
+
+# ---- bars -----------------------------------------------------------------------
+def grouped_bars(slide, groups, ymax, ylab, x0=BAR_X0, w=BAR_W, base=BAR_BASE, top=BAR_TOP,
+                 ticks=None, p_labels=None, value_fmt=None, k_gap=0.10, barw=BARW):
+    """groups = [(label, [(value, color), ...]), ...]. Top-rounded bars (round2SameRect adj 0.08).
+    p_labels: one string per group ("P<.001", "HR 1.33, P<.001") centred above the pair --
+    the house replaces per-bar value labels with ONE comparison statistic per pair.
+    value_fmt: optional per-bar value label (off by default)."""
+    span = base - top; scale = span / ymax
+    ticks = ticks if ticks is not None else [0, ymax / 4, ymax / 2, 3 * ymax / 4, ymax]
     for tv in ticks:
-        y=base-tv*scale
-        _rect(slide,x0,y,w,0.01,GRID)
-        _tx(slide,x0-0.62,y-0.15,0.52,0.34,str(tv),SZ_AXIS,MUTED,
-            align=PP_ALIGN.RIGHT,wrap=False)
-    _rect(slide,x0,base-0.02,w,0.02,AXIS)
-    # rotated y-axis title: build the box HORIZONTAL then rotate 270 about its centre,
-    # so the text lays out on one line instead of wrapping one character per row.
-    cx=x0-1.30; cy=(top+base)/2.0
-    r=_tx(slide,cx-1.30,cy-0.19,2.60,0.38,ylab,SZ_AXIS,MUTED,
-          align=PP_ALIGN.CENTER,wrap=False)
-    r.rotation=270
-    n=len(groups); gw=w/n
-    for gi,(glab,bars) in enumerate(groups):
-        gc=x0+gw*(gi+0.5)
-        k=len(bars)
-        gap=0.22 if k_gap is None else k_gap
-        tot=k*BARW+(k-1)*gap
-        bx=gc-tot/2
-        for val,col in bars:
-            h=val*scale
-            _rect(slide,bx,base-h,BARW,h,col,MSO_SHAPE.ROUND_2_SAME_RECTANGLE,adj=0.08)
-            _tx(slide,bx+BARW/2-0.39,base-h-0.42,0.78,0.34,value_fmt.format(val),
-                SZ_VALUE,col,bold=True,align=PP_ALIGN.CENTER,wrap=False)
-            bx+=BARW+gap
-        _tx(slide,gc-1.30,base+0.17,2.60,0.38,glab,cat_size,INK,align=PP_ALIGN.CENTER)
+        y = base - tv * scale
+        if tv: _rect(slide, x0, y, w, 0.01, GRID)
+        _tx(slide, x0 - 0.95, y - 0.25, 0.80, LINE_H, "%g" % tv, SZ_BODY, BLACK,
+            align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    _rect(slide, x0, base - 0.02, w, 0.03, AXIS)
+    yl = _tx(slide, 0, 0, top - base + 2 * (base - top), LINE_H, ylab, SZ_BODY, BLACK,
+             align=PP_ALIGN.CENTER, wrap=False)
+    yl.width = Inches(base - top + 0.6); yl.rotation = 270
+    yl.left = Inches(x0 - 1.30 - (base - top + 0.6) / 2); yl.top = Inches((top + base) / 2 - LINE_H / 2)
+    n = len(groups); gw = w / n
+    for gi, (glab, bars) in enumerate(groups):
+        gc = x0 + gw * (gi + 0.5); k = len(bars)
+        tot = k * barw + (k - 1) * k_gap; bx = gc - tot / 2; hmax = 0
+        for val, col in bars:
+            h = val * scale; hmax = max(hmax, h)
+            _rect(slide, bx, base - h, barw, h, col, MSO_SHAPE.ROUND_2_SAME_RECTANGLE, adj=0.08)
+            if value_fmt:
+                _tx(slide, bx + barw / 2 - 0.7, base - h - 0.55, 1.4, LINE_H, value_fmt.format(val),
+                    SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+            bx += barw + k_gap
+        if p_labels and p_labels[gi]:
+            _tx(slide, gc - 1.6, base - hmax - (1.05 if value_fmt else 0.62), 3.2, LINE_H, p_labels[gi],
+                SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+        _tx(slide, gc - gw / 2, base + 0.15, gw, LINE_H, glab, SZ_BODY, BLACK, align=PP_ALIGN.CENTER)
 
 
-def forest(slide,rows,xmin,xmax,ticks,axis_label,x0=FOR_X0,x1=FOR_X1,
-           top=FOR_TOP,dy=FOR_DY,null=1.0,lbl_x=FOR_LBL,lbl_w=3.80,cat_w=1.60,
-           grid_top=3.74,note_text=None):
-    """rows = [(label, point, lo, hi, estimate_text, sub_text, color), ...]. Matches slide 20B.
-
-    Lays the axis ticks and axis title BELOW the last row, computed from the row count,
-    so a 5- or 6-row forest cannot collide with them."""
-    span=x1-x0; sc=span/(xmax-xmin)
-    last=top+dy*(len(rows)-1)
-    grid_bot=last+0.62
-    tick_y=grid_bot+0.06
+# ---- forest ---------------------------------------------------------------------
+def forest(slide, rows, xmin, xmax, ticks, axis_label=None, x0=FOR_X0, x1=FOR_X1, top=FOR_TOP,
+           dy=FOR_DY, null=1.0, lbl_x=FOR_LBL, lbl_w=3.6, cat_w=3.2, header=None, arrow_text=None,
+           log=True, color=MARKER):
+    """rows = [(label, point, lo, hi, estimate_text, sub_text), ...]  (a 7th colour item is accepted
+    and ignored -- markers are black by house rule). Log-scaled x by default.
+    Layout (measured): black 0.20 in marker, 0.035 in CI bar, DOTTED null line, faint gridlines,
+    estimate "0.73 (0.65–0.81)" right of the plot with the P value on the line beneath it,
+    optional header above ("Odds ratio, Black vs White") and a one-sided arrow label below
+    ("← Less likely in Black patients"). Returns the y of the lowest element."""
+    f = (lambda v: math.log(v)) if log else (lambda v: v)
+    sc = (x1 - x0) / (f(xmax) - f(xmin)); px = lambda v: x0 + (f(v) - f(xmin)) * sc
+    last = top + dy * (len(rows) - 1); gtop = top - 0.55; gbot = last + 0.65
+    if header:
+        _tx(slide, x0 - cat_w - 0.25, gtop - 0.75, (x1 - x0) + cat_w + 0.25 + 1.0, LINE_H, header,
+            SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
     for tv in ticks:
-        x=x0+(tv-xmin)*sc
-        _rect(slide,x,grid_top,0.01,grid_bot-grid_top,GRID)
-        _tx(slide,x-0.30,tick_y,0.60,0.33,("%g"%tv),SZ_AXIS,MUTED,
-            align=PP_ALIGN.CENTER,wrap=False)
-    if xmin<=null<=xmax:
-        _rect(slide,x0+(null-xmin)*sc,grid_top,0.02,grid_bot-grid_top,AXIS)
-    for i,(lab,pt,lo,hi,est,sub,col) in enumerate(rows):
-        y=top+i*dy
-        _tx(slide,x0-cat_w-0.22,y+0.02,cat_w,0.35,lab,SZ_CAT,INK,align=PP_ALIGN.RIGHT)
-        xl=x0+(max(lo,xmin)-xmin)*sc; xh=x0+(min(hi,xmax)-xmin)*sc
-        _rect(slide,xl,y+0.12,max(xh-xl,0.02),0.06,col)
-        xp=x0+(pt-xmin)*sc
-        _rect(slide,xp-0.125,y+0.03,0.25,0.25,col,MSO_SHAPE.OVAL)
-        _tx(slide,lbl_x,y-0.19,lbl_w,0.43,est,SZ_EST,INK,bold=True,wrap=False)
-        _tx(slide,lbl_x,y+0.23,lbl_w,0.33,sub,SZ_SUB,MUTED,wrap=False)
-    ax_y=tick_y+0.40
-    _tx(slide,x0-cat_w-0.22,ax_y,9.60,0.33,axis_label,SZ_AXIS,MUTED,wrap=False)
-    if note_text:
-        _tx(slide,x0-cat_w-0.22,ax_y+0.38,9.60,0.33,note_text,SZ_AXIS,INK,bold=True,wrap=False)
-    return ax_y+0.38
+        x = px(tv)
+        if abs(tv - null) > 1e-9: _rect(slide, x, gtop, 0.01, gbot - gtop, GRID)
+        _tx(slide, x - 0.45, gbot + 0.08, 0.90, LINE_H, "%g" % tv, SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+    if xmin <= null <= xmax:
+        _line(slide, px(null), gtop, px(null), gbot, BLACK, 1.25, MSO_LINE.ROUND_DOT)
+    for i, row in enumerate(rows):
+        lab, pt, lo, hi, est, sub = row[:6]
+        y = top + i * dy
+        _tx(slide, x0 - cat_w - 0.25, y - 0.25, cat_w, LINE_H, lab, SZ_BODY, BLACK,
+            align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        xl, xh = px(max(lo, xmin)), px(min(hi, xmax))
+        _rect(slide, xl, y - 0.0175, max(xh - xl, 0.02), 0.035, color)
+        _rect(slide, px(pt) - 0.10, y - 0.10, 0.20, 0.20, color, MSO_SHAPE.OVAL)
+        _tx(slide, lbl_x, y - 0.27, lbl_w, LINE_H, est, SZ_BODY, BLACK, wrap=False)
+        if sub: _tx(slide, lbl_x, y + 0.20, lbl_w, LINE_H, sub, SZ_BODY, BLACK, wrap=False)
+    low = gbot + 0.08 + LINE_H
+    if axis_label:
+        _tx(slide, x0, low, x1 - x0, LINE_H, axis_label, SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+        low += LINE_H
+    if arrow_text:
+        a = _line(slide, x0 + 0.05, low + 0.28, x0 + 0.75, low + 0.28, AXIS, 1.25)
+        etree.SubElement(a.line._get_or_add_ln(), "{%s}headEnd" % _A).set("type", "triangle")   # arrow points left
+        _tx(slide, x0 + 0.90, low + 0.03, 6.0, LINE_H, arrow_text, SZ_BODY, BLACK, wrap=False)
+        low += LINE_H
+    return low
 
 
+def forest_log(slide, rows, axis_label, x0, x1, top, dy, lbl_x, lbl_w=3.6, cat_w=3.2, grid_top=None,
+               note_text=None, tick_fmt=None):
+    """Log-symmetric ratio forest (null centred, mirror ticks). Delegates to forest()."""
+    vals = [v for r in rows for v in r[1:4]]
+    lo_x, hi_x, ticks = sym_axis(vals)
+    return forest(slide, rows, lo_x, hi_x, ticks, axis_label, x0=x0, x1=x1, top=top, dy=dy,
+                  lbl_x=lbl_x, lbl_w=lbl_w, cat_w=cat_w, arrow_text=note_text)
+
+
+# ---- stacked composition bars ---------------------------------------------------
 def _readable_on(bg):
-    """Pick in-bar text colour by background luminance -- white text on #C5CDD8 is unreadable."""
-    lum = 0.299*bg[0] + 0.587*bg[1] + 0.114*bg[2]
-    return INK if lum > 150 else WHITE
+    lum = 0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2]
+    return BLACK if lum > 150 else WHITE
 
 
-def stacked_rows(slide,rows,segments,y0=4.06,dy=1.67,label_x=1.00,label_w=3.20):
-    """rows = [(line1, line2, sublabel, color, [pct,...]), ...]; segments = [(name,color),...].
+def stacked_rows(slide, rows, segments, y0=2.81, dy=2.77, label_x=0.60, label_w=2.55,
+                 x0=STK_X0, w=STK_W, h=STK_H, callout_min_w=1.10):
+    """rows = [(label, [pct, ...]), ...] summing to 100; segments = [(name, RGBColor), ...].
+    Measured on the gold 'Documented Reason' slide: two rows, 1.93 in tall, rounded outer ends.
+    Values print INSIDE a segment when it is wide enough (white on dark, black on light);
+    narrower segments get a tick + callout below the bar instead of being dropped."""
+    for ri, (lab, vals) in enumerate(rows):
+        y = y0 + ri * dy
+        _tx(slide, label_x, y + h / 2 - LINE_H / 2, label_w, LINE_H, lab, SZ_BODY, BLACK,
+            align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        x = x0; calls = []
+        for si, v in enumerate(vals):
+            sw = w * v / 100.0; col = segments[si][1]
+            shp = MSO_SHAPE.RECTANGLE if 0 < si < len(vals) - 1 else MSO_SHAPE.ROUNDED_RECTANGLE
+            _rect(slide, x, y, max(sw - 0.02, 0.01), h, col, shp, adj=0.08 if shp != MSO_SHAPE.RECTANGLE else None)
+            if sw >= callout_min_w:
+                _tx(slide, x, y + h / 2 - LINE_H / 2, sw, LINE_H, "%.1f%%" % v, SZ_BODY, _readable_on(col),
+                    align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+            elif v >= 1.0:
+                calls.append((x + sw / 2, v))
+            x += sw
+        # callouts: tick under the segment, label beneath. Neighbours closer than 1.4 in are
+        # splayed apart (left one right-aligned to its tick, right one left-aligned) so two small
+        # adjacent segments never print "5.0%5.8%".
+        for k, (cx, v) in enumerate(calls):
+            _line(slide, cx, y + h + 0.03, cx, y + h + 0.18, AXIS, 1.0)
+            near_next = k + 1 < len(calls) and calls[k + 1][0] - cx < 1.4
+            near_prev = k > 0 and cx - calls[k - 1][0] < 1.4
+            if near_next:
+                _tx(slide, cx + 0.15 - 1.4, y + h + 0.20, 1.4, LINE_H, "%.1f%%" % v, SZ_BODY, BLACK, align=PP_ALIGN.RIGHT, wrap=False)
+            elif near_prev:
+                _tx(slide, cx - 0.15, y + h + 0.20, 1.4, LINE_H, "%.1f%%" % v, SZ_BODY, BLACK, align=PP_ALIGN.LEFT, wrap=False)
+            else:
+                _tx(slide, cx - 0.7, y + h + 0.20, 1.4, LINE_H, "%.1f%%" % v, SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+    return y0 + dy * len(rows)
 
-    Three-line label block (category / race / n) laid out explicitly so nothing overlaps."""
-    for ri,(l1,l2,sub,lcol,vals) in enumerate(rows):
-        y=y0+ri*dy
-        _tx(slide,label_x,y+0.10,label_w,0.34,l1,SZ_CAT,lcol,bold=True,
-            align=PP_ALIGN.RIGHT,wrap=False)
-        _tx(slide,label_x,y+0.45,label_w,0.34,l2,SZ_CAT,lcol,bold=True,
-            align=PP_ALIGN.RIGHT,wrap=False)
-        _tx(slide,label_x,y+0.80,label_w,0.32,sub,SZ_SUB,MUTED,
-            align=PP_ALIGN.RIGHT,wrap=False)
-        x=STK_X0
-        for si,v in enumerate(vals):
-            w=STK_W*v/100.0
-            col=segments[si][1]
-            _rect(slide,x,y,w,STK_H,col)
-            # Label INSIDE wherever it fits -- an outside label lands in the inter-row gap
-            # and collides with the row above. Colour is chosen by segment luminance.
-            if w>0.62:
-                _tx(slide,x+w/2-0.45,y+0.41,0.90,0.38,"%.1f%%"%v,
-                    SZ_CAT if w>0.95 else SZ_SUB,_readable_on(col),
-                    bold=True,align=PP_ALIGN.CENTER,wrap=False)
-            x+=w
-    return y0+dy*len(rows)
+
+def segment_legend(slide, segments, y=None, x0=LEG_X0):
+    """Category legend in the footer band -- same geometry as the race legend."""
+    return legend(slide, segments, x0=x0)
 
 
-def segment_legend(slide,segments,y=8.43,x0=2.17):
-    x=x0
-    for name,col in segments:
-        _rect(slide,x,y+0.07,0.24,0.18,col)
-        w=0.112*len(name)+0.20
-        _tx(slide,x+0.33,y,w,0.32,name,SZ_SUB,INK)
-        x+=0.33+w+0.42
+def note(slide, text, l=10.43, t=8.38, w=8.6, h=LINE_H, color=BLACK, size=SZ_BODY, bold=False,
+         align=PP_ALIGN.LEFT):
+    """One-line annotation ("Chi-square P<.001", "Race × stage interaction P<.001"): 28 pt black."""
+    return _tx(slide, l, t, w, h, text, max(size, SZ_MIN), color, bold=bold, align=align)
 
 
-def note(slide,text,l=10.43,t=8.38,w=7.79,h=0.33,color=INK,size=SZ_AXIS,bold=False):
-    _tx(slide,l,t,w,h,text,size,color,bold=bold)
+# ---- open polyline (KM curves, trend lines) ---------------------------------------
+def polyline(slide, pts, color, pt=2.5, name="curve", dash=None):
+    """ONE freeform shape carrying an OPEN custGeom path (fill="none", no <a:close/>).
+    add_freeform closes and fills the path -- wrong for a survival curve."""
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    x0_, y0_ = min(xs), min(ys); w = max(max(xs) - x0_, 1e-4); h = max(max(ys) - y0_, 1e-4)
+    sh = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x0_), Inches(y0_), Inches(w), Inches(h))
+    sh.name = name; sh.shadow.inherit = False
+    spPr = sh._element.spPr
+    for g in spPr.findall("{%s}prstGeom" % _A): spPr.remove(g)
+    cust = etree.Element("{%s}custGeom" % _A)
+    for t_ in ("avLst", "gdLst", "ahLst", "cxnLst"): etree.SubElement(cust, "{%s}%s" % (_A, t_))
+    path = etree.SubElement(etree.SubElement(cust, "{%s}pathLst" % _A), "{%s}path" % _A,
+                            {"w": str(int(Inches(w))), "h": str(int(Inches(h))), "fill": "none"})
+    for i, (px_, py_) in enumerate(pts):
+        n = etree.SubElement(path, "{%s}%s" % (_A, "moveTo" if i == 0 else "lnTo"))
+        etree.SubElement(n, "{%s}pt" % _A, {"x": str(int(Inches(px_ - x0_))), "y": str(int(Inches(py_ - y0_)))})
+    spPr.insert(list(spPr).index(spPr.find("{%s}xfrm" % _A)) + 1, cust)
+    sh.fill.background(); sh.line.color.rgb = color; sh.line.width = Pt(pt)
+    if dash is not None: sh.line.dash_style = dash
+    return sh
+
+
+def km_panel(slide, curves, x0, x1, top, bot, header=None, ylab="Overall survival (%)", tmax=60,
+             tstep=12, landmark=24, stat_text=None):
+    """Native Kaplan-Meier panel. curves = [(months_list, surv_frac_list, RGBColor), ...] (step data).
+    House look: 0-100 y axis in steps of 20 (28 pt ticks), months 0..tmax in steps of 12, faint
+    gridlines, thin vertical landmark line at 24 months with a filled dot on each curve,
+    statistic (log-rank P or adjusted HR) at top-right, no in-plot legend (legend in footer)."""
+    fx = lambda t: x0 + (x1 - x0) * t / tmax; fy = lambda s: bot - (bot - top) * s / 100.0
+    for v in range(0, 101, 20):
+        if v: _rect(slide, x0, fy(v), x1 - x0, 0.01, GRID)
+        _tx(slide, x0 - 0.95, fy(v) - 0.25, 0.80, LINE_H, str(v), SZ_BODY, BLACK, align=PP_ALIGN.RIGHT,
+            anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    _rect(slide, x0, bot - 0.01, x1 - x0, 0.02, AXIS); _rect(slide, x0 - 0.01, top, 0.02, bot - top, AXIS)
+    for t in range(0, tmax + 1, tstep):
+        _tx(slide, fx(t) - 0.6, bot + 0.10, 1.2, LINE_H, str(t), SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+    _tx(slide, x0, bot + 0.62, x1 - x0, LINE_H, "Months from diagnosis", SZ_BODY, BLACK, align=PP_ALIGN.CENTER)
+    yl = _tx(slide, 0, 0, bot - top, LINE_H, ylab, SZ_BODY, BLACK, align=PP_ALIGN.CENTER, wrap=False)
+    yl.rotation = 270; yl.left = Inches(x0 - 1.25 - (bot - top) / 2); yl.top = Inches((top + bot) / 2 - LINE_H / 2)
+    if landmark: _line(slide, fx(landmark), top, fx(landmark), bot, RGBColor(0xB8, 0xC0, 0xCC), 1.0)
+    for ts, ss, col in curves:
+        S = [100 * s for s in ss]; pts = [(fx(ts[0]), fy(S[0]))]
+        for i in range(1, len(ts)):
+            if ts[i] > tmax: break
+            pts += [(fx(ts[i]), fy(S[i - 1])), (fx(ts[i]), fy(S[i]))]
+        polyline(slide, pts, col, 2.5)
+        if landmark:
+            k = max(i for i, t in enumerate(ts) if t <= landmark)
+            _rect(slide, fx(landmark) - 0.075, fy(S[k]) - 0.075, 0.15, 0.15, col, MSO_SHAPE.OVAL)
+    if header: panel_header(slide, header, x0 - 0.5, top - 0.95, x1 - x0 + 1.0)
+    if stat_text: _tx(slide, x1 - 7.0, top + 0.35, 7.0, LINE_H, stat_text, SZ_BODY, BLACK, align=PP_ALIGN.RIGHT)
+
+
+# ---- text-led slides -----------------------------------------------------------------
+def numbered_list(slide, items, l=0.94, t=2.05, w=16.5, size=SZ_LIST, spacing=1.35):
+    """Numbered conclusions/disclosures: 32 pt black, one idea per item, generous leading."""
+    b = slide.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(8.0))
+    tf = b.text_frame; tf.word_wrap = True
+    for i, it in enumerate(items):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.line_spacing = spacing; p.space_after = Pt(18)
+        r = p.add_run(); r.text = "%d.  %s" % (i + 1, it)
+        r.font.name = FONT; r.font.size = Pt(size); r.font.color.rgb = BLACK
+    return b
+
+
+def steps(slide, items, top=2.05, left=0.94, width=18.125, box_h=1.22, pitch=2.22):
+    """Analytic-approach ladder: rounded boxes on a light->dark ramp, the final (primary) step
+    inverted (navy fill, white text), small dark triangles between steps. items=[(head, line), ...].
+    Heads are the ONLY bold body text the house allows (structural labels)."""
+    n = len(items); ramp = STEP_RAMP[-n:] if n <= len(STEP_RAMP) else STEP_RAMP
+    for i, (head, line) in enumerate(items):
+        y = top + i * pitch; col = ramp[min(i, len(ramp) - 1)]; txt = WHITE if i == n - 1 else BLACK
+        _rect(slide, left, y, width, box_h, col, MSO_SHAPE.ROUNDED_RECTANGLE, adj=0.06)
+        _tx(slide, left + 0.35, y + box_h / 2 - LINE_H / 2, 0.6, LINE_H, str(i + 1), SZ_BODY, txt, bold=True,
+            anchor=MSO_ANCHOR.MIDDLE)
+        _tx(slide, left + 1.15, y + 0.10, width - 1.5, LINE_H, head, SZ_BODY, txt, bold=True)
+        _tx(slide, left + 1.15, y + 0.58, width - 1.5, LINE_H, line, SZ_BODY, txt)
+        if i < n - 1:
+            _rect(slide, left + width / 2 - 0.12, y + box_h + 0.33, 0.24, 0.20, RGBColor(0x40, 0x40, 0x40),
+                  MSO_SHAPE.ISOSCELES_TRIANGLE).rotation = 180
 
 
 def blank(prs, layout=None):
@@ -251,52 +442,6 @@ def sym_axis(values):
     return 1.0/k, k, [1.0/k, 1.0/m, 1.0, m, k]
 
 
-def forest_log(slide, rows, axis_label, x0, x1, top, dy,
-               lbl_x, lbl_w=3.80, cat_w=3.20, grid_top=None, note_text=None,
-               tick_fmt=lambda v: ("%g" % round(v, 2))):
-    """Forest on a log ratio scale with the null (1.0) centred.
-
-    A linear ratio axis compresses protective effects and stretches harmful ones, so 0.5 and 2.0
-    -- the same effect in opposite directions -- sit at different distances from the null. On a
-    log axis they are equidistant, which is what makes a centred reference line meaningful.
-    """
-    import math
-    vals=[]
-    for _, pt, lo, hi, *_ in rows:
-        vals += [pt, lo, hi]
-    lo_x, hi_x, ticks = sym_axis(vals)
-    L0, L1 = math.log(lo_x), math.log(hi_x)
-    px = lambda v: x0 + (math.log(v) - L0) / (L1 - L0) * (x1 - x0)
-
-    last = top + dy * (len(rows) - 1)
-    gtop = grid_top if grid_top is not None else top - 0.55
-    gbot = last + 0.62
-    tick_y = gbot + 0.06
-    for tv in ticks:
-        x = px(tv)
-        is_null = abs(tv - 1.0) < 1e-9
-        _rect(slide, x, gtop, 0.02 if is_null else 0.01, gbot - gtop, AXIS if is_null else GRID)
-        _tx(slide, x - 0.34, tick_y, 0.68, 0.33, tick_fmt(tv), SZ_AXIS,
-            INK if is_null else MUTED, bold=is_null, align=PP_ALIGN.CENTER, wrap=False)
-
-    for i, (lab, pt, lo, hi, est, sub, col) in enumerate(rows):
-        y = top + i * dy
-        _tx(slide, x0 - cat_w - 0.22, y + 0.02, cat_w, 0.35, lab, SZ_CAT, INK,
-            align=PP_ALIGN.RIGHT, wrap=False)
-        xl, xh = px(max(lo, lo_x)), px(min(hi, hi_x))
-        _rect(slide, xl, y + 0.12, max(xh - xl, 0.02), 0.06, col)
-        xp = px(pt)
-        _rect(slide, xp - 0.125, y + 0.03, 0.25, 0.25, col, MSO_SHAPE.OVAL)
-        _tx(slide, lbl_x, y - 0.19, lbl_w, 0.43, est, SZ_EST, INK, bold=True, wrap=False)
-        _tx(slide, lbl_x, y + 0.23, lbl_w, 0.33, sub, SZ_SUB, MUTED, wrap=False)
-
-    ax_y = tick_y + 0.42
-    lx = x0 - cat_w - 0.22
-    bw = min(9.6, 19.06 - lx)          # never run past the deck's right margin
-    _tx(slide, lx, ax_y, bw, 0.33, axis_label, SZ_AXIS, MUTED, wrap=False)
-    if note_text:
-        _tx(slide, lx, ax_y + 0.38, bw, 0.33, note_text, SZ_AXIS, INK, bold=True, wrap=False)
-    return ax_y + 0.38
 
 
 def clear_slide(slide, keep=None):
