@@ -4,6 +4,40 @@
 
 ---
 
+### 2026-09-28 — Phase 6 red-team is now a real fresh-context subagent
+
+Phase 6's reviewer was, in practice, a skill (`science-superpowers:requesting-red-team-review`)
+loaded and executed inline — the same context window that ran the analysis was also asked to
+find its own mistakes. Every error this lab has actually caught in production (GENIE off-panel
+genes silently coded wild-type; the HNSCC scRNA-seq audit's 4 critical + 8 high-severity issues,
+found only after four sessions of in-context review; the REPEAT DISPARITIES penalizer bias and
+race x era product-term artifact) was caught by a reviewer that did not share the blind spots of
+the context that produced the error, not by that same context re-reading itself.
+
+Added `agents/cra-red-team.md` at the plugin root: a genuine fresh-context subagent (Read, Glob,
+Grep, Bash only — Bash restricted to re-deriving numbers from source CSVs/the registry and
+running the project's own linters; it never writes, edits, or deletes) invoked via the Agent
+tool, `model: inherit` so judgment work stays on the frontier model. Its brief is distilled from
+`references/red-team-brief.md`, `references/audit-agents.md`, and `references/critique-panel.md`
+into ten adversarial lenses (denominators, dictionary labels, cohort N reconciliation,
+off-panel/not-tested coding, penalizer and sparse levels, multiplicity, precision and rounding,
+absence claims, period-trend product terms, plus the standard SP attack vectors) under one rule:
+re-derive, never transcribe. It writes `Reports/red_team_<date>.md` with CRITICAL/HIGH/MEDIUM/LOW
+tiers (each finding as file:line or registry key, expected vs found, and the exact reproducing
+command) and a SHIP / FIX FIRST verdict.
+
+Phase 6 (`SKILL.md`) now dispatches this agent via the Agent tool instead of loading the SP
+skill in-context; its output is copied to `audit_report.md` so every downstream reference (HALT 3,
+the remediation pipeline, State files) is unchanged. Phase 3's inline critique (methodologist /
+skeptic / editor / lessons-applier, `references/critique-panel.md`) is untouched — it still
+escalates to the SP skill only on a CRITICAL plan flaw; that escalation was out of scope for this
+change. `skills/internal/manuscript-qc/SKILL.md` gained Check 18, invoking the same agent before
+any READY FOR SUBMISSION verdict. No HALT / CHECKPOINT / HARD GATE / HARD STOP / NON-NEGOTIABLE
+criterion moved or weakened; counts verified unchanged before/after (`grep -c "^## ✋ HALT"`,
+`"HARD GATE"`, `"HARD STOP"`, `"NON-NEGOTIABLE"`, `"CHECKPOINT"`) and
+`tests/test_study_design_tools.py` still passes (untouched — this change never touched
+`scripts/` or `tests/`).
+
 ### 2026-09-27 — Progressive-disclosure restructure of SKILL.md (L099)
 
 SKILL.md was carrying its own changelog and text already held by reference files into every `/analyze` run (10,086 words, 1,143 of them this changelog). Enforcement is unchanged: frontmatter, Role, the phase map, PREREQUISITE, the four standing rules, State files, References index, Halt presentation policy, every `✋ HALT` and `✓ CHECKPOINT`, Variable spec amendments, Quality gates and After-analysis closure stay in SKILL.md, and every HARD GATE / HARD STOP / NON-NEGOTIABLE criterion is still stated there. What moved:
