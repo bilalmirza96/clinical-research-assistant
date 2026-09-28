@@ -7,7 +7,7 @@
   "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting. Since 2026-09-28 every new lesson ships with a regression check: an agent eval under evals/<Lnnn-slug>/ (claude plugin eval; synthetic fixtures; deterministic graders) or a unit test in tools/tests/test_linters.py when a linter enforces it. Run tools/run_evals.sh smoke before committing a skill edit. A lesson without a check is not closed.",
   "last_promotion_pass": "2026-05-24",
   "promotion_summary": "50/50 lessons now have promoted_to audit trail; L050 added 2026-05-24 (registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 — discovered via NCDB vs SEER first-primary filter mismatch in Esophageal Organ-Preservation HTE); L049 added 2026-05-24 (synthesis-prose claim verification); L048 added 2026-05-24 (Phase 0 pre-design literature recon hard gate); L047 added 2026-05-18; L046 added 2026-05-17; L041 expanded 2026-05-20",
-  "count": 103
+  "count": 104
  },
  "lessons": [
   {
@@ -2878,6 +2878,25 @@
    ],
    "lesson": "Regression eval L091: asked to pull one value from `MASTER_ANALYSIS_REGISTRY.json` and format it (round a hazard ratio, express a fraction as a percentage) into a results sentence, the CRA router never fired at all, so no lesson enforcement (e.g., L091's half-up rounding rule) applied to the answer.",
    "rule": "Updated the router's frontmatter `description` to explicitly name pulling, formatting, rounding, checking, or reporting a number from a study's registry or results as a trigger, alongside its existing triggers, within the same one-paragraph length norm as before. Regression check: the routing grader in `evals/L091-full-precision-rounding`."
+  },
+  {
+   "id": "L103-voice-from-corpus-not-word-bans",
+   "date_added": "2026-09-28",
+   "originating_session": "JAMA Surgery voice-learning loop 2026-09-28 (15 JAMA Surgery originals + JTCVS Open + 2 guidelines; blinded judge tests)",
+   "category": "writing-style",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "Furthermore",
+    "Moreover",
+    "Additionally",
+    "Interestingly",
+    "AI-tell",
+    "banned transition",
+    "write like JAMA Surgery authors",
+    "surgical journal voice"
+   ],
+   "lesson": "The banned-transition list and the AI-tell vocabulary list did not make CRA prose read as human-written: blinded judges picked the published paragraph 14 of 14 times against drafts written under the old rules, and published surgical papers use several of the banned words. The author removed both lists on 2026-09-28. What judges actually caught were structural tells: sentence packing wrong for the section, too many tidy paragraphs, over-explaining, aims written as Methods, field terms swapped for synonyms, and miscalibrated certainty.",
+   "rule": "No transition word or vocabulary word is banned. voice_check.py keeps the em-dash hard failure, section weight and venue limits, and the non-statistical 'significant' soft flag; the word lists are gone (also from deck_lint N1, manuscript-qc checks and command contracts). Voice is taught by the corpus-trained guide installed in skills/references/writing-style.md, chosen by blinded held-out testing. Regression check: test_L103_no_word_bans in tools/tests/test_linters.py."
   }
  ]
 }
