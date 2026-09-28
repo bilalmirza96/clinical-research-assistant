@@ -2607,7 +2607,6 @@
     "percentage",
     "proportion",
     "share of",
-    "rate",
     "among patients who",
     "reason for no surgery",
     "why didn't they get surgery",
@@ -2618,7 +2617,12 @@
     "percentage points",
     "which denominator",
     "all patients vs non-operated",
-    "what is the denominator for this slide"
+    "what is the denominator for this slide",
+    "rate per",
+    "event rate",
+    "incidence rate",
+    "percentage of",
+    "proportion of"
    ],
    "lesson": "The author asked whether the denominator for 'why did patients not get surgery' should be the non-operated patients or all patients, and later 'what is the denominator for this slide?', and was confused because different answers had been given at different times. Both denominators were arithmetically right and answered different questions. Among non-operated stage I-III patients, contraindication (9.8% vs 11.8%) and refusal (3.0% vs 5.0%) looked lower in Black patients; among all stage I-III patients contraindication was higher (7.5% vs 5.8%, RR 1.30) and refusal similar (2.3% vs 2.4%), because non-operated patients were 77% of Black and 49% of White stage I-III patients. Code 1 accounted for 26.1 of the 27.6-point surgery gap. 'Black patients refused less' was a denominator artifact that had reached drafts. Baseline test 2026-09-25: the pre-change skill planned to compare the races on reason shares among the non-operated ('provider-side vs patient-side share').",
    "rule": "Write each question as 'Among [population], what share...', take the denominator from it, name the population on every table, figure, slide, registry label and sentence, keep it for that question across the project, and log any change. Compare likelihood between groups on all eligible patients; show a within-subgroup composition only within a group. Print n/N beside every percentage; keep Unknown consistently in or out; a denominator equals a registered cohort N; differences are percentage points.",
