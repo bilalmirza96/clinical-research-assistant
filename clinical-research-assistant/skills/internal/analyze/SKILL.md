@@ -29,7 +29,7 @@ Phase 5A SECONDARY  ladder rungs 2-5 in order: Model A clinical → Model B full
    ✓ CHECKPT B     INLINE verify + ladder_table.py (one cohort, rung order, attenuation, sign) before sensitivity runs
 Phase 5B SENSITIVITY rung 6 E-values + sensitivity battery + subgroups/effect modification → Sensitivity + Supplementary_* (runs only after Checkpoint B passes)
 Phase 5C EXPLAIN    rung 7 causal mediation → rung 8 ML / novel methods, when they answer a question rungs 1-6 cannot
-Phase 6 AUDIT       ONE clinically-augmented red-team (SP requesting-red-team-review) — replaces the 5-agent panel; verify/repro/completeness already done inline at A/B
+Phase 6 AUDIT       ONE fresh-context red-team (Agent tool → `cra-red-team`) — replaces the 5-agent panel; verify/repro/completeness already done inline at A/B
    ✋ HALT 3        user reviews audit + 4-tier evidence classification
 Phase 7 DELIVER     master analysis_report.md with reproducibility manifest + SCAR registration
 ```
@@ -62,7 +62,7 @@ Read `lessons-log.json` up front. Read each policy reference below **on demand, 
 **All policies in `clinical-analysis-policy.md` OVERRIDE defaults stated here.** Lessons in `lessons-log.json` are enforced via:
 - Phase 3 INLINE plan-sanity (lessons checked inline against `trigger_patterns`; no subagent panel)
 - Phase 4 / 5 execution gates (diagnostics-checklist enforcement; prescribed remediation on failure)
-- Phase 6 red-team: one SP requesting-red-team-review subagent verifies multiple-testing, PH, EPV, etc. via `references/red-team-brief.md` (most checks already done inline at Checkpoints A/B)
+- Phase 6 red-team: one `cra-red-team` agent (spawned fresh-context via the Agent tool) verifies multiple-testing, PH, EPV, etc. via `references/red-team-brief.md` (most checks already done inline at Checkpoints A/B)
 
 If any prerequisite file is missing, halt and surface the gap. Do not proceed without the parent contract loaded.
 
@@ -138,7 +138,7 @@ Read first; resume from the first incomplete phase if any exist.
 
 - `references/intake-schemas.md` — JSON schemas for dataset_spec, variable_spec, table_layouts, figure_intent
 - `references/critique-panel.md` — the four critique lenses' question checklist, now run INLINE (no subagent panel)
-- `references/red-team-brief.md` — clinically-augmented brief for the single SP requesting-red-team-review subagent (supersedes the legacy 5-agent `audit-agents.md`)
+- `references/red-team-brief.md` — clinically-augmented brief distilled into the `cra-red-team` agent (`../../../agents/cra-red-team.md`); this file remains the source the agent brief was distilled from (supersedes the legacy 5-agent `audit-agents.md`)
 - `references/sp-integration.md` — which science-superpowers skill fires at which phase (rigor layer contract)
 - `references/delegation-matrix.md` — K-Dense + BioMedAgent routing by task type, with `resource_class` per task
 - `references/analysis-report-template.md` — 16-section + reproducibility manifest
@@ -634,19 +634,19 @@ Both are reported in calibrated language ("mediation analysis suggests about hal
 
 ---
 
-## PHASE 6 — AUDIT (one clinically-augmented red-team; replaces the 5-agent panel)
+## PHASE 6 — AUDIT (one fresh-context red-team; replaces the 5-agent panel)
 
-**Mechanic (revised 2026-05-30 — token reduction):** Numerical re-check, code-reproducibility replay, and completeness are already done INLINE at Checkpoints A and B via `science-superpowers:verifying-results-before-claiming`. Phase 6 therefore spawns exactly ONE subagent — a `science-superpowers:requesting-red-team-review` reviewer, briefed with `references/red-team-brief.md` (the generic SP reviewer AUGMENTED with CRA's clinical checklist: lessons-log L-rules, diagnostics thresholds, registry cautions, multiple-testing policy, observational-language rule). The reviewer attacks confounds, leakage, assumption violations, multiplicity, and over-claiming. Cost ~3–5K tokens vs. ~17K for the old panel.
+**Mechanic (revised 2026-09-28 — fresh-context reviewer):** Numerical re-check, code-reproducibility replay, and completeness are already done INLINE at Checkpoints A and B via `science-superpowers:verifying-results-before-claiming`. Phase 6 therefore invokes exactly ONE subagent — the `cra-red-team` agent, dispatched via the **Agent tool** (`subagent_type: cra-red-team`), which runs in its own fresh context window, separate from the session that produced the analysis. Every error this lab has actually caught in production (GENIE off-panel genes coded wild-type, the HNSCC 4-critical/8-high audit, the REPEAT DISPARITIES penalizer and era-trend artifacts) was found by a reviewer who did not share the blind spots of the context that made the mistake — an in-context critique inherits the same assumptions that caused the error. Hand the agent, explicitly: the project path, `results_registry.json` / `MASTER_ANALYSIS_REGISTRY.json`, every deliverable path under review, and `analysis_plan.json` (+ pre-registration if present). The agent's own brief (`agents/cra-red-team.md`, distilled from `references/red-team-brief.md`) carries CRA's clinical checklist: lessons-log L-rules, diagnostics thresholds, registry cautions, multiple-testing policy, observational-language rule. It attacks confounds, leakage, assumption violations, multiplicity, and over-claiming, and re-derives every number it checks rather than transcribing it. Cost ~3–5K tokens vs. ~17K for the old panel.
 
 | Old audit agent | Now handled by |
 |---|---|
 | Numerical (re-check numbers) | INLINE `verifying-results-before-claiming` at Checkpoints A/B |
 | Code-reproducibility (replay from raw) | INLINE `verifying-results-before-claiming` (fresh re-run from raw + seed) |
 | Completeness (every planned analysis ran) | INLINE completeness check at Checkpoint B + Phase 5B |
-| Statistical (diagnostics, multiple-testing) | The single red-team reviewer (clinical checklist in `red-team-brief.md`) |
-| Biological-plausibility (sign reversals, clinical sanity) | The single red-team reviewer (clinical checklist) |
+| Statistical (diagnostics, multiple-testing) | The fresh-context `cra-red-team` agent (clinical checklist in `red-team-brief.md`) |
+| Biological-plausibility (sign reversals, clinical sanity) | The fresh-context `cra-red-team` agent (clinical checklist) |
 
-Output: `audit_report.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR).
+Output: the agent writes `Reports/red_team_<date>.md` (tiered CRITICAL/HIGH/MEDIUM/LOW, SHIP/FIX FIRST verdict); analyze copies this into `audit_report.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR) so downstream references below are unchanged.
 
 **If any CRITICAL finding → trigger 6-phase remediation pipeline** (per **L028**):
 1. Surgical text/numerical fixes
