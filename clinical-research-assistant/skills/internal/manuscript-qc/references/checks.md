@@ -149,15 +149,13 @@ For each figure:
   - Introduction: present tense for established facts, past tense for prior studies
   - Discussion: present tense for interpretations, past tense for this study's findings
 - Verify consistent spelling convention (American vs. British English) throughout. Flag mixing (e.g., "esophagus" and "oesophagus").
-- Flag filler phrases: "interestingly," "notably," "importantly," "it is worth noting that," "of note," "it should be mentioned," "as a matter of fact."
 - Verify all abbreviations defined at first use in abstract AND again at first use in main text body.
 - Verify abbreviation usage consistent throughout after definition (no switching between spelled-out and abbreviated forms).
 - Flag abbreviations used fewer than 3 times (may not be worth abbreviating).
 - Flag first-person language and verify the target journal permits it. If not, suggest passive alternatives.
-- Flag subjective or promotional language in results section (results should be objective data reporting only).
 - Check word count against journal limit if target journal specified.
 - Check abstract word count against journal limit if specified.
-- Flag promotional claims ("groundbreaking", an unhedged "novel") and any wording stronger than the design supports. Word lists are not a check: the AI-tell vocabulary ban was retired 2026-09-28 (L103); judge voice against `references/writing-style.md`.
+- Voice, tone, hedging, transitions, word choice, and calibrated-language checks (filler phrases, promotional claims, subjective language, wording stronger than the design supports) are not native checklist items; they are covered by `../../../references/writing-style.md`. Check the draft against its section 4 self-check and run `python3 tools/voice_check.py <draft> [--venue X] [--sections]` from the plugin root; a non-zero exit is a hard failure.
 
 ---
 
