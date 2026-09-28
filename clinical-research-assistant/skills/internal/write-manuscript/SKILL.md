@@ -26,7 +26,7 @@ Before starting, read `../../references/lessons-log.json` (memory of prior manus
 
 Read `skills/references/writing-style.md` in full before drafting. It is the only writing guide for CRA scientific prose, learned from published surgical-journal papers and validated in blind tests (L103), and it overrides any style note elsewhere in this skill. Draft fluently, run its section 4 self-check, then run `python3 tools/voice_check.py <draft>` from the plugin root; a draft with hard failures (em dashes, abstract section weight, venue limits) is not deliverable. No transition or vocabulary word is banned.
 
-All sub-commands (`/write-introduction`, `/write-methods-results`, `/write-discussion`) independently read the same style reference. During the Final Assembly & Audit (Phase 8), verify that all sections use consistent voice, transition words, and formatting per the style guide.
+All sub-commands (`/write-introduction`, `/write-methods-results`, `/write-discussion`, `/write-abstract`) independently read this same guide, and Phase 8 (Final Assembly & Audit) verifies every section against it.
 </writing_style>
 
 <prerequisite>
