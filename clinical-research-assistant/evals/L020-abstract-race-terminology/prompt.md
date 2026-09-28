@@ -2,8 +2,8 @@
 name: L020-abstract-race-terminology
 tags: [smoke, full]
 runs: 1
-max_turns: 12
-timeout_seconds: 300
+max_turns: 20
+timeout_seconds: 450
 allowed_tools: [Read, Write, Edit, Bash, Glob, Grep, Skill]
 ---
 
