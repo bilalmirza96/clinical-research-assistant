@@ -23,7 +23,7 @@ WHAT THIS DOES
                                                              abstract-like files) and
                                                              claim_audit when a registry can
                                                              be found nearby
-     - .docx / .xlsx (any deliverable)                    -> house_style --check
+     - .docx / .xlsx (any deliverable)                    -> house_style --json
    Everything else (scripts, notes, CLAUDE.md, memory, unclassified files) is ignored.
 3. Runs each linter as a subprocess, under a per-call timeout and a 25 s total budget.
    Anything left when the budget runs out is marked SKIPPED and does not block.
@@ -34,18 +34,22 @@ WHAT THIS DOES
 
 DISTINGUISHING HARD FAILURES FROM TOOL ERRORS
 -----------------------------------------------
-voice_check.py and claim_audit.py support --json and a clean {"hard": [...], "soft": [...]}
-shape, but on a missing python-docx dependency (or a bad path) they call `sys.exit(<string>)`
-BEFORE ever emitting JSON — same exit code (1) as a real hard failure. This hook treats a
-non-JSON-parseable response as a TOOL ERROR (reported, never blocking), not a hard failure.
+All four linters (voice_check.py, claim_audit.py, registry_lint.py, house_style.py) share one
+--json contract: stdout is exactly one JSON object {"hard": [...], "soft": [...], "error": null
+| "<message>"} and nothing else, with exit code 0 (no hard findings), 1 (hard findings) or 2
+(tool error - missing dependency, unreadable/missing path, corrupt document, malformed
+registry JSON; "error" is set). This hook calls every linter with --json and classifies
+purely from that contract: exit 2 or a non-null "error" -> TOOL ERROR (reported, never
+blocking); a non-empty "hard" list -> HARD FAIL (blocking); otherwise PASS (or "PASS
+(warnings)" when only "soft" is non-empty). house_style is invoked with --json alone (no
+--check) - --json already implies report-only, so the file is never mutated by this hook.
 
-registry_lint.py and house_style.py expose no --json at all; their exit code conflates a
-genuine hard failure with any unhandled exception (e.g. a malformed registry file, or
-python-docx/openpyxl raising on a corrupt document — see house_style.py's traceback on a
-missing file, which also exits 1). This hook cross-checks the exit code against each tool's
-own success/failure text markers in stdout ("HARD FAILURES (" for registry_lint; "N
-violations" for the specific file for house_style) and only blocks when that marker is
-present, downgrading an ambiguous nonzero exit with no marker to a non-blocking TOOL ERROR.
+The stdout-marker heuristics this hook used before every linter had --json ("HARD FAILURES ("
+for registry_lint, "N violations" for house_style) are gone. What remains is only a parsing
+fallback (_parse_json_output): if a linter ever prints incidental text on stdout before or
+after its JSON object, the fallback still recovers the embedded object with raw_decode rather
+than failing outright. It is not how HARD vs. TOOL ERROR is decided - that classification
+comes only from the JSON body itself, per the contract above.
 """
 from __future__ import annotations
 
@@ -296,6 +300,10 @@ def _parse_json_output(stdout: str) -> dict | None:
 
 
 def check_json_linter(path: Path, linter: str, script: Path, cmd: "list[str]", timeout: float) -> dict:
+    """Run a linter with --json and classify strictly from the shared contract:
+    {"hard": [...], "soft": [...], "error": null | "<message>"}, exit 0/1/2.
+    exit 2 or a non-null "error" -> TOOL ERROR (never blocking); non-empty "hard" -> HARD
+    FAIL (blocking); non-empty "soft" only -> PASS (warnings); otherwise PASS."""
     if not script.is_file():
         return make_result(path, linter, "TOOL ERROR", f"linter script not found: {script}", "")
     run = run_linter(cmd, timeout)
@@ -304,12 +312,18 @@ def check_json_linter(path: Path, linter: str, script: Path, cmd: "list[str]", t
         return make_result(path, linter, *early, run["stderr"] or run["stdout"])
     data = _parse_json_output(run["stdout"])
     if data is None:
-        # No JSON object recoverable at all: e.g. a missing python-docx dependency or a bad
-        # path calls sys.exit(<string>) before any JSON is emitted. Same exit code as a real
-        # hard failure — ambiguous, so this downgrades to a non-blocking tool error.
+        # No JSON object recoverable at all. Every linter now guarantees --json stdout is
+        # exactly one JSON object even on its own internal errors, so this should not
+        # happen in practice; kept as a defensive downgrade to a non-blocking tool error
+        # rather than ever treating unparseable output as a hard failure.
         note = (run["stderr"].strip() or run["stdout"].strip()
                 or f"exit {run['returncode']}, no parseable JSON output")
         return make_result(path, linter, "TOOL ERROR", note, run["stdout"] + run["stderr"])
+    error = data.get("error")
+    if error is not None or run["returncode"] == 2:
+        note = error if isinstance(error, str) and error else (
+            run["stderr"].strip() or f"exit {run['returncode']}, no error message given")
+        return make_result(path, linter, "TOOL ERROR", note, json.dumps(data, indent=2))
     hard = data.get("hard") or []
     soft = data.get("soft") or []
     raw = json.dumps(data, indent=2)
@@ -335,65 +349,15 @@ def check_claim_audit(path: Path, registry: Path, timeout: float) -> dict:
 
 
 def check_registry_lint(path: Path, timeout: float) -> dict:
-    linter = "registry_lint"
-    if not REGISTRY_LINT.is_file():
-        return make_result(path, linter, "TOOL ERROR", f"linter script not found: {REGISTRY_LINT}", "")
-    cmd = [sys.executable, str(REGISTRY_LINT), str(path)]
-    run = run_linter(cmd, timeout)
-    early = _base_status(path, linter, run)
-    if early:
-        return make_result(path, linter, *early, run["stderr"] or run["stdout"])
-    stdout = run["stdout"]
-    # registry_lint has no --json; its exit code alone cannot distinguish a genuine H1-H9
-    # hard failure from any unhandled exception (e.g. malformed registry JSON). Its own
-    # "HARD FAILURES (" marker is a more reliable signal than the exit code.
-    if "HARD FAILURES (" in stdout:
-        lines = [ln.strip() for ln in stdout.splitlines() if ln.strip().startswith("x ")]
-        return make_result(path, linter, "HARD FAIL", " | ".join(lines[:6]), stdout)
-    if run["returncode"] not in (0, 1):
-        return make_result(path, linter, "TOOL ERROR",
-                            f"exit {run['returncode']} with no HARD FAILURES marker (ambiguous)",
-                            stdout + run["stderr"])
-    if run["returncode"] == 1 and "HARD FAILURES (" not in stdout:
-        return make_result(path, linter, "TOOL ERROR",
-                            "exit 1 but no HARD FAILURES marker in stdout (likely an unhandled "
-                            "exception rather than a genuine lint failure)", stdout + run["stderr"])
-    if "REVIEW (" in stdout:
-        lines = [ln.strip() for ln in stdout.splitlines() if ln.strip().startswith("?")]
-        return make_result(path, linter, "PASS (warnings)", " | ".join(lines[:6]), stdout)
-    return make_result(path, linter, "PASS", "clean", stdout)
+    cmd = [sys.executable, str(REGISTRY_LINT), str(path), "--json"]
+    return check_json_linter(path, "registry_lint", REGISTRY_LINT, cmd, timeout)
 
 
 def check_house_style(path: Path, timeout: float) -> dict:
-    linter = "house_style"
-    if not HOUSE_STYLE.is_file():
-        return make_result(path, linter, "TOOL ERROR", f"linter script not found: {HOUSE_STYLE}", "")
-    cmd = [sys.executable, str(HOUSE_STYLE), "--check", str(path)]
-    run = run_linter(cmd, timeout)
-    early = _base_status(path, linter, run)
-    if early:
-        return make_result(path, linter, *early, run["stderr"] or run["stdout"])
-    stdout = run["stdout"]
-    if f"skip (unsupported): {path}" in stdout:
-        return make_result(path, linter, "SKIPPED (unsupported type)", "house_style does not "
-                            "accept this file type", stdout)
-    # No --json here either; house_style crashes with an unhandled traceback (exit 1, empty
-    # stdout) on e.g. a corrupt .docx/.xlsx, which is the same exit code as a real violation
-    # count. Only trust an exit code of 1 when this file's own "N violations" line is present.
-    m = re.search(re.escape(path.name) + r": (\d+) violations", stdout)
-    if m:
-        n = int(m.group(1))
-        if n > 0:
-            return make_result(path, linter, "HARD FAIL", f"{n} house-style violation(s)", stdout)
-        return make_result(path, linter, "PASS", "clean", stdout)
-    if run["returncode"] not in (0, 1):
-        return make_result(path, linter, "TOOL ERROR",
-                            f"exit {run['returncode']} with no 'N violations' marker (ambiguous)",
-                            stdout + run["stderr"])
-    return make_result(path, linter, "TOOL ERROR",
-                        "exit 1 but no 'N violations' marker in stdout (likely an unhandled "
-                        "exception, e.g. a corrupt document, rather than a genuine violation)",
-                        stdout + run["stderr"])
+    # --json already implies report-only (house_style never mutates the file under --json,
+    # regardless of --check), so no --check flag is needed here.
+    cmd = [sys.executable, str(HOUSE_STYLE), str(path), "--json"]
+    return check_json_linter(path, "house_style", HOUSE_STYLE, cmd, timeout)
 
 
 # --------------------------------------------------------------------------------------

@@ -327,6 +327,127 @@ def main():
         check(proc.returncode == 0, "case5b (nonexistent transcript_path): hook exits 0")
         check(proc.stdout.strip() == "", "case5b: no block decision printed (allow)")
 
+        # ------------------------------------------------------------ case 6
+        # registry_lint HARD FAIL (an unlabeled key, H1) -> block. registry_lint and
+        # house_style were rewired from stdout-marker heuristics onto the shared --json
+        # contract (hard/soft/error, exit 0/1/2); this and the next three cases pin that
+        # wiring end to end through the real Stop hook, not just the linters' own --json.
+        from docx import Document  # already a hard dependency of house_style.py itself
+
+        proj6 = os.path.join(tmp_root, "proj6")
+        os.makedirs(os.path.join(proj6, "Reports"), exist_ok=True)
+        reg6_path = os.path.join(proj6, "Reports", "MASTER_ANALYSIS_REGISTRY.json")
+        reg6_content = json.dumps({
+            "NCDB.os.crude_HR": {"label": "", "current": {"value": 1.1, "ci": [1.0, 1.2]}},
+        })
+        with open(reg6_path, "w", encoding="utf-8") as fh:
+            fh.write(reg6_content)
+        transcript6 = os.path.join(tmp_root, "transcript6.jsonl")
+        write_transcript(transcript6, [
+            (proj6, "Write", {"file_path": reg6_path, "content": reg6_content}),
+        ])
+        proc = run_hook({
+            "session_id": "s6", "transcript_path": transcript6, "stop_hook_active": False,
+            "cwd": proj6, "hook_event_name": "Stop",
+        })
+        check(proc.returncode == 0, "case6 (registry_lint HARD FAIL): hook exits 0")
+        out = proc.stdout.strip()
+        decision = json.loads(out) if out else None
+        check(decision is not None and decision.get("decision") == "block",
+              "case6: an unlabeled registry key (H1) BLOCKS the stop")
+        reports6 = find_reports(proj6)
+        if reports6:
+            report_text = open(os.path.join(proj6, "Reports", reports6[0]), encoding="utf-8").read()
+            check("**registry_lint** — HARD FAIL" in report_text,
+                  "case6: report records registry_lint as HARD FAIL, wired through --json "
+                  "(no stdout-marker heuristic)")
+
+        # ------------------------------------------------------------ case 7
+        # registry_lint TOOL ERROR (malformed registry JSON) -> does NOT block, reported only.
+        proj7 = os.path.join(tmp_root, "proj7")
+        os.makedirs(os.path.join(proj7, "Reports"), exist_ok=True)
+        reg7_path = os.path.join(proj7, "Reports", "MASTER_ANALYSIS_REGISTRY.json")
+        reg7_content = "not valid json{{{"
+        with open(reg7_path, "w", encoding="utf-8") as fh:
+            fh.write(reg7_content)
+        transcript7 = os.path.join(tmp_root, "transcript7.jsonl")
+        write_transcript(transcript7, [
+            (proj7, "Write", {"file_path": reg7_path, "content": reg7_content}),
+        ])
+        proc = run_hook({
+            "session_id": "s7", "transcript_path": transcript7, "stop_hook_active": False,
+            "cwd": proj7, "hook_event_name": "Stop",
+        })
+        check(proc.returncode == 0, "case7 (registry_lint TOOL ERROR): hook exits 0")
+        check(proc.stdout.strip() == "",
+              "case7: malformed registry JSON is a TOOL ERROR, not a hard failure - no block "
+              "decision printed")
+        reports7 = find_reports(proj7)
+        if reports7:
+            report_text = open(os.path.join(proj7, "Reports", reports7[0]), encoding="utf-8").read()
+            check("**registry_lint** — TOOL ERROR" in report_text,
+                  "case7: report records registry_lint as TOOL ERROR (exit 2, error set)")
+            check("No hard failures" in report_text,
+                  "case7: a TOOL ERROR never counts as a hard failure")
+
+        # ------------------------------------------------------------ case 8
+        # house_style HARD FAIL (wrong font) -> block. Also confirms --json never mutates
+        # the file it checks (no --check flag is passed by the hook any more).
+        proj8 = os.path.join(tmp_root, "proj8")
+        os.makedirs(os.path.join(proj8, "Reports"), exist_ok=True)
+        docx8_path = os.path.join(proj8, "Reports", "manuscript_test.docx")
+        d8 = Document()
+        d8.add_paragraph("Hello world").runs[0].font.name = "Arial"
+        d8.save(docx8_path)
+        transcript8 = os.path.join(tmp_root, "transcript8.jsonl")
+        write_transcript(transcript8, [
+            (proj8, "Write", {"file_path": docx8_path, "content": "(binary docx)"}),
+        ])
+        proc = run_hook({
+            "session_id": "s8", "transcript_path": transcript8, "stop_hook_active": False,
+            "cwd": proj8, "hook_event_name": "Stop",
+        })
+        check(proc.returncode == 0, "case8 (house_style HARD FAIL): hook exits 0")
+        out = proc.stdout.strip()
+        decision = json.loads(out) if out else None
+        check(decision is not None and decision.get("decision") == "block",
+              "case8: a wrong-font .docx BLOCKS the stop")
+        check(Document(docx8_path).paragraphs[0].runs[0].font.name == "Arial",
+              "case8: the hook's house_style check never mutated the file (report-only)")
+        reports8 = find_reports(proj8)
+        if reports8:
+            report_text = open(os.path.join(proj8, "Reports", reports8[0]), encoding="utf-8").read()
+            check("**house_style** — HARD FAIL" in report_text,
+                  "case8: report records house_style as HARD FAIL, wired through --json "
+                  "(no 'N violations' stdout-marker heuristic)")
+
+        # ------------------------------------------------------------ case 9
+        # house_style TOOL ERROR (a corrupt .docx - not a real zip) -> does NOT block.
+        proj9 = os.path.join(tmp_root, "proj9")
+        os.makedirs(os.path.join(proj9, "Reports"), exist_ok=True)
+        docx9_path = os.path.join(proj9, "Reports", "manuscript_corrupt.docx")
+        with open(docx9_path, "w", encoding="utf-8") as fh:
+            fh.write("this is not a real docx file, just plain text\n")
+        transcript9 = os.path.join(tmp_root, "transcript9.jsonl")
+        write_transcript(transcript9, [
+            (proj9, "Write", {"file_path": docx9_path, "content": "this is not a real docx file"}),
+        ])
+        proc = run_hook({
+            "session_id": "s9", "transcript_path": transcript9, "stop_hook_active": False,
+            "cwd": proj9, "hook_event_name": "Stop",
+        })
+        check(proc.returncode == 0, "case9 (house_style TOOL ERROR): hook exits 0")
+        check(proc.stdout.strip() == "",
+              "case9: a corrupt .docx is a TOOL ERROR, not a hard failure - no block decision "
+              "printed")
+        reports9 = find_reports(proj9)
+        if reports9:
+            report_text = open(os.path.join(proj9, "Reports", reports9[0]), encoding="utf-8").read()
+            check("**house_style** — TOOL ERROR" in report_text,
+                  "case9: report records house_style as TOOL ERROR (exit 2, error set)")
+            check("No hard failures" in report_text,
+                  "case9: a TOOL ERROR never counts as a hard failure")
+
         # ------------------------------------------------------------ bonus: malformed stdin
         proc = subprocess.run([sys.executable, HOOK], input="{not valid json",
                               capture_output=True, text=True, timeout=10.0)
