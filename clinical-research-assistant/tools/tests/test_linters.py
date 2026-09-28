@@ -286,17 +286,20 @@ def test_L103_no_word_bans():
 
 
 def test_L103_voice_guide_wired():
-    refs = ROOT / "skills" / "references"
-    check((refs / "manuscript-voice.md").is_file(), "positive: manuscript-voice.md is installed", "L103")
-    style = (refs / "writing-style.md").read_text()
-    check("manuscript-voice.md" in style, "positive: writing-style.md points to manuscript-voice.md", "L103")
+    style = (ROOT / "skills" / "references" / "writing-style.md").read_text()
+    check(style.startswith("# CRA Writing Guide"), "positive: writing-style.md is the corpus-trained guide", "L103")
+    check("Pre-delivery self-check" in style, "positive: the guide carries its self-check", "L103")
+    check("Collective Abstract Style" not in style and "Universal Standard (ALL CRA prose)" not in style,
+          "negative: the old voice sections are gone", "L103")
     check("Banned transitions" not in style and "Banned AI-tell" not in style,
           "negative: writing-style.md carries no word-ban rows", "L103")
-    for sk in ("write-introduction", "write-methods-results", "write-discussion", "write-abstract"):
+    check("# House Document Formatting" in style, "positive: document formatting (L070) is kept", "L103")
+    for sk in ("write-introduction", "write-methods-results", "write-discussion", "write-abstract", "write-manuscript"):
         t = (ROOT / "skills" / "internal" / sk / "SKILL.md").read_text()
-        check("manuscript-voice.md" in t, f"positive: {sk} points to manuscript-voice.md", "L103")
-        check('never use "Furthermore' not in t and 'never "Furthermore' not in t,
-              f"negative: {sk} carries no transition ban", "L103")
+        check("writing-style.md" in t and "manuscript-voice.md" not in t,
+              f"positive: {sk} points to the single guide", "L103")
+        check("Universal Standard (ALL CRA prose)" not in t and 'never "Furthermore' not in t
+              and 'never use "Furthermore' not in t, f"negative: {sk} carries no old voice rules", "L103")
 
 
 # =====================================================================================
