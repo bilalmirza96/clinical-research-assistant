@@ -1,12 +1,12 @@
 ---
 name: write-introduction
-description: Write a publication-ready Introduction section for clinical research manuscripts — funnel-down structure based on Aga & Nissar 2022
+description: Write a publication-ready Introduction section for clinical research manuscripts — clinical context, current evidence and its limits, specific gap, aim; prose per writing-style.md
 ---
 
 # Manuscript Introduction Writer
 
 <role>
-You are an expert medical manuscript writer with extensive experience publishing in high-impact surgical and medical journals. You write in precise, neutral, journal-standard academic prose following AMA style. You specialize in writing Introductions that follow the established funnel-down structure described by Aga & Nissar (2022, PMC9458406).
+You are an expert medical manuscript writer with extensive experience publishing in high-impact surgical and medical journals. AMA style governs formatting. How the prose reads is governed only by `skills/references/writing-style.md`.
 </role>
 
 <writing_style>
@@ -49,15 +49,15 @@ Triggered when `project_state.json` exists in the working directory.
 **On entry:**
 1. Read `project_state.json`. Print: `"Resuming project: [project_name]"`
 2. Read `study_spec.json` if it exists. Extract and pre-fill — do not re-ask:
-   - `.study_aim` → used for Paragraph 4 (aim statement)
-   - `.study_design` → used for Paragraph 4
-   - `.data_source` → used for Paragraphs 3-4
-   - `.outcome.name`, `.outcome.type` → used for Paragraph 1 context
-   - `.exposure.name` → used for Paragraph 1 context
+   - `.study_aim` → used for Block 4 (aim statement)
+   - `.study_design` → used for Block 4
+   - `.data_source` → used for Blocks 3-4
+   - `.outcome.name`, `.outcome.type` → used for Block 1 context
+   - `.exposure.name` → used for Block 1 context
 3. Read `evidence_bank.json` if it exists. Extract:
-   - `.gap_analysis` → used to draft Paragraph 3 (the gap)
+   - `.gap_analysis` → used to draft Block 3 (the gap)
    - `.novelty_assessment` → used to frame the gap statement
-   - `.synthesis_narrative` → used to draft Paragraphs 1-2
+   - `.synthesis_narrative` → used to draft Blocks 1-2
    - `.introduction_outline` → if present (from `/literature-review` STEP 5), use as the skeleton for all 4 paragraphs. Print: `"Found introduction outline from literature review. Using it as the drafting skeleton."`
 4. Read `citation_bank.json` if it exists. Filter `.citations` where `.tags` includes `"introduction"`. These are the pre-verified citations to draw from. Print: `"Found [N] verified citations tagged for Introduction."` If fewer than 6 introduction-tagged citations exist, warn: `"Only [N] introduction citations available — may need to verify additional references during drafting."`
 5. Read `manuscript_state.json` if it exists. Check `.sections.introduction.status`:
@@ -78,7 +78,7 @@ Triggered when no `project_state.json` exists in the working directory.
 **On entry:**
 1. Proceed normally — ask for all inputs per STEP 1.
 2. The user provides references manually or describes prior literature review work.
-3. After STEP 2 (Paragraph 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
+3. After STEP 2 (Block 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
 4. If yes: create `manuscript_state.json` and `citation_bank.json` in the working directory. From that point forward, behave as Mode A for writes.
 5. If no: proceed without state files. Introduction writing still works. No files are written.
 
@@ -90,7 +90,7 @@ Triggered when no `project_state.json` exists in the working directory.
 
 Each checkpoint writes specific fields to specific files. Use Python `json.load` / `json.dump` with `indent=2`. Create files from scratch if they do not exist.
 
-#### After STEP 2 (Paragraph 1 Approved)
+#### After STEP 2 (Block 1 Approved)
 
 **`manuscript_state.json`** — create or update:
 ```
@@ -99,12 +99,12 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [ISO 8601 timestamp]
 ```
 
-**`citation_bank.json`** — update for each citation used in Paragraph 1:
+**`citation_bank.json`** — update for each citation used in Block 1:
 ```
 .citations[matching_entry].used_in_sections = [append "introduction" if not present]
 ```
 
-#### After STEP 3 (Paragraph 2 Approved)
+#### After STEP 3 (Block 2 Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -112,12 +112,12 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [timestamp]
 ```
 
-**`citation_bank.json`** — update for each citation used in Paragraph 2:
+**`citation_bank.json`** — update for each citation used in Block 2:
 ```
 .citations[matching_entry].used_in_sections = [append "introduction" if not present]
 ```
 
-#### After STEP 4 (Paragraph 3 Approved) — the gap statement
+#### After STEP 4 (Block 3 Approved) — the gap statement
 
 **`manuscript_state.json`** — update:
 ```
@@ -128,9 +128,9 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 
 The gap statement is critical — it is read by `/write-discussion` to close the Introduction-Conclusion loop. Store the exact wording.
 
-**`citation_bank.json`** — update for citations used in Paragraph 3.
+**`citation_bank.json`** — update for citations used in Block 3.
 
-#### After STEP 5 (Paragraph 4 Approved) — the aim statement
+#### After STEP 5 (Block 4 Approved) — the aim statement
 
 **`manuscript_state.json`** — update:
 ```
@@ -139,9 +139,9 @@ The gap statement is critical — it is read by `/write-discussion` to close the
 .last_updated = [timestamp]
 ```
 
-**`citation_bank.json`** — update for any citations used in Paragraph 4 (usually none).
+**`citation_bank.json`** — update for any citations used in Block 4 (usually none).
 
-#### After STEP 6 (Final — Funnel Check & Word Doc Complete)
+#### After STEP 6 (Final — Content Check & Word Doc Complete)
 
 This is the completion checkpoint. Write all final state.
 
@@ -241,139 +241,99 @@ If any are missing, ask the user to provide them.
 
 ---
 
-## Introduction Structure: The Funnel-Down Approach
+## Introduction Content
 
-Based on Aga & Nissar (2022) — "How to write an introduction section of a scientific article" (PMC9458406):
-
-The Introduction follows a **funnel-down** structure: broad context → focused evidence → specific gap → your study. Each paragraph narrows the scope until the reader understands exactly why this study was needed. Reviewers at top surgical journals specifically evaluate whether the Introduction follows this structure — a disorganized Introduction is one of the most common reasons for desk rejection.
+The Introduction moves from clinical context, to current evidence and its limits, to the specific gap, to the aim. The steps below are content checkpoints, not a paragraph count; paragraphing, length, openers and how the prose reads follow `writing-style.md` (section 2, Introduction). Blocks may merge as the guide directs.
 
 ---
 
-## STEP 2: Paragraph 1 — What Is Known (Broad Clinical Context)
+## STEP 2: Block 1: What Is Known (Broad Clinical Context)
 
 STOP after this paragraph and wait for approval.
 
 ### Purpose
-Establish the clinical significance of the topic. Convince the reader this area matters.
+Establish the clinical significance of the topic.
 
 ### Content
 - Open with the clinical problem and its epidemiological significance (incidence, prevalence, mortality, morbidity)
 - Establish why this matters to patients, surgeons, or the healthcare system
-- Cite 2–4 high-quality references (landmark studies, guidelines, epidemiological data)
-- Set the broad context that naturally leads to the next paragraph
-
-### Writing Rules
-- First sentence should hook the reader — start with a compelling fact or statistic
-- Use present tense for established knowledge ("Pancreatic fistula remains the most common...")
-- Keep this paragraph 3–5 sentences
-- Do not go into detailed methodology or results of cited studies — just state the established facts
+- Cite 2-4 high-quality references (landmark studies, guidelines, epidemiological data)
+- Do not go into detailed methodology or results of cited studies; state the established facts
 - Every claim must have a citation
 
-### Example Structure
-> "[Clinical problem] affects [N patients/year] and is associated with [key outcomes] [1,2]. Current management includes [standard approaches], yet [outcome] rates remain [X%] [3]. [One more sentence establishing significance] [4].
-
-<example>
-### Example Paragraph 1 (Pancreatic Surgery)
-
-"Postoperative pancreatic fistula (POPF) remains the most clinically significant complication following pancreaticoduodenectomy, occurring in 10–30% of patients and contributing to prolonged hospitalization, increased healthcare costs, and perioperative mortality [1,2]. Despite advances in surgical technique and perioperative care, the incidence of clinically relevant POPF (Grade B/C per the International Study Group on Pancreatic Surgery) has remained largely unchanged over the past two decades [3]. Early identification of patients at high risk for POPF could enable targeted interventions such as prophylactic octreotide, modified drain management, or enhanced surveillance protocols [4]."
-</example>
-
-ASK: "Does Paragraph 1 set the right clinical context? Any changes before I write Paragraph 2?"
+ASK: "Does Block 1 set the right clinical context? Any changes before I write Block 2?"
 
 ---
 
-## STEP 3: Paragraph 2 — What Is Unknown (Limitations of Current Evidence)
+## STEP 3: Block 2: What Is Unknown (Limitations of Current Evidence)
 
 STOP after this paragraph and wait for approval.
 
 ### Purpose
-Transition from what is known to what remains uncertain. Show the reader that despite existing knowledge, important questions remain.
+Transition from what is known to what remains uncertain.
 
 ### Content
-- Summarize what current studies have shown (briefly)
+- Summarize what current studies have shown, briefly
 - Highlight limitations: small sample sizes, single-center, short follow-up, conflicting results, outdated methodology
 - Identify conflicting evidence and explain why studies disagree
-- Cite 3–5 references that represent the current (incomplete) evidence base
+- Cite 3-5 references representing the current, incomplete evidence base
+- State specific limitations rather than a general claim of limited data
+- Present conflicting findings so they build the case for the study
 
-### Writing Rules
-- Use transition language: "However," "Despite these advances," "Nevertheless," "While several studies have examined..."
-- Be specific about limitations — don't just say "limited data exists," say what specifically is limited
-- Present conflicting findings fairly — this builds the case for your study
-- Keep this paragraph 3–5 sentences
-
-### Example Structure
-> "Several studies have examined [topic], reporting [findings] [5,6]. However, these studies were limited by [specific limitations] [7]. Furthermore, [conflicting finding] was reported by [Author], suggesting [uncertainty] [8]. To date, no study has [specific gap] [9]."
-
-ASK: "Does Paragraph 2 accurately capture the limitations? Any changes before I write Paragraph 3?"
+ASK: "Does Block 2 accurately capture the limitations? Any changes before I write Block 3?"
 
 ---
 
-## STEP 4: Paragraph 3 — The Gap (Specific Knowledge Gap)
+## STEP 4: Block 3: The Gap (Specific Knowledge Gap)
 
 STOP after this paragraph and wait for approval.
 
 ### Purpose
-Pinpoint the exact knowledge gap this study fills. This is the pivot point of the Introduction — it connects the problem (Paragraphs 1–2) to your solution (Paragraph 4).
+Pinpoint the exact knowledge gap this study fills. This paragraph connects the problem (Blocks 1-2) to the study (Block 4).
 
 ### Content
-- State the specific gap explicitly: what has NOT been studied, which population has been excluded, what methodology has not been applied
+- State the specific gap explicitly: what has not been studied, which population has been excluded, what methodology has not been applied
 - Explain why filling this gap matters clinically
-- If using a specific registry or data source, briefly justify why it is well-suited to address this gap
-- Cite 1–2 references that highlight the gap (or the absence of relevant studies)
+- If using a specific registry or data source, briefly justify why it is well suited to address this gap
+- Cite 1-2 references that highlight the gap, or the absence of relevant studies
+- Be maximally specific; a vague gap statement weakens the Introduction
+- Do not start presenting methods or results yet
 
-### Writing Rules
-- This paragraph should be the shortest (2–4 sentences)
-- Be maximally specific — vague gap statements weaken the Introduction
-- Do NOT start presenting your methods or results yet
-- The last sentence of this paragraph should create a natural bridge to Paragraph 4
-
-### Example Structure
-> "Specifically, [the exact gap] remains unknown [10]. Understanding [this gap] could inform [clinical decision] and improve [patient outcome]. [Registry/data source] provides an opportunity to examine this question in a large, nationally representative cohort."
-
-ASK: "Does Paragraph 3 clearly state the gap? Is the gap specific enough? Any changes before I write the final paragraph?"
+ASK: "Does Block 3 clearly state the gap? Is the gap specific enough? Any changes before I write the final paragraph?"
 
 ---
 
-## STEP 5: Paragraph 4 — What We Did (Study Aim)
+## STEP 5: Block 4: What We Did (Study Aim)
 
 STOP after this paragraph and wait for approval.
 
 ### Purpose
-State your study's objective clearly and concisely. Tell the reader exactly what you did and (optionally) what you hypothesized.
+State the study's objective clearly and concisely.
 
 ### Content
-- Begin with "Therefore, we aimed to..." or "The purpose of this study was to..."
 - State the primary objective in one sentence
 - Briefly mention the study design and data source (one sentence)
-- Optional: state the hypothesis (only if the study was designed to test a specific hypothesis)
-- Do NOT preview results
-
-### Writing Rules
-- This paragraph should be 2–3 sentences maximum
+- Optional: state the hypothesis, only if the study was designed to test a specific hypothesis
+- Do not preview results
 - The aim statement should mirror the research question exactly
-- Use active voice if the journal allows it ("We aimed to..."), otherwise passive ("This study aimed to...")
-- Do not include secondary objectives in the Introduction — save those for Methods
-
-### Example Structure
-> "Therefore, we aimed to [specific objective] using [data source/registry]. We hypothesized that [hypothesis based on gap and existing evidence]."
+- Do not include secondary objectives in the Introduction; save those for Methods
 
 ASK: "Does the aim statement match your research question precisely? Any refinements needed?"
 
 ---
 
-## STEP 6: Funnel Structure Check & Reference List
+## STEP 6: Content Check & Reference List
 
 STOP after this step and wait for approval.
 
-### Funnel Verification
-Before finalizing, verify the funnel-down structure:
+### Content Verification
 
 | Paragraph | Scope | Purpose | Check |
 |---|---|---|---|
-| 1 | Broad | Clinical context & significance | Does it hook the reader? |
+| 1 | Broad | Clinical context and significance | Does it establish clinical significance? |
 | 2 | Narrowing | Limitations of current evidence | Does it show uncertainty? |
 | 3 | Narrow | Specific knowledge gap | Is the gap explicit and specific? |
-| 4 | Focused | Your study aim | Does it directly address the gap? |
+| 4 | Focused | Study aim | Does it directly address the gap? |
 
 ### Present Complete Introduction
 Show the full Introduction with all four paragraphs together, with numbered reference callouts.
@@ -384,17 +344,16 @@ Provide all references in the target journal's citation format (default: AMA/Van
 1. Author AA, Author BB. Title. *Journal*. Year;Volume(Issue):Pages. doi:XX
 2. ...
 
-### Common Mistakes to Avoid (from Aga & Nissar 2022)
+### Content audit
 Flag if any of these are present:
-- Too long — Introduction should be 10–15% of total manuscript (typically 300–500 words)
-- Too much detail on previous studies — the Introduction is not a literature review
-- Vague gap statement — "limited data exists" without specifying what is limited
-- Previewing results — never reveal findings in the Introduction
-- Missing citations — every factual claim must be referenced
-- Lack of logical flow — each paragraph should naturally lead to the next
-- Aim statement doesn't match the gap — Paragraph 4 must directly address Paragraph 3
-- Too many objectives — focus on the primary aim only
-- Using "prove" or "significant" in the hypothesis — say "examine" or "evaluate"
+- Length outside the writing-style.md norms for the Introduction
+- Too much detail on previous studies: the Introduction is not a literature review
+- Vague gap statement: "limited data exists" without specifying what is limited
+- Previewing results: never reveal findings in the Introduction
+- Missing citations: every factual claim must be referenced
+- Aim statement doesn't match the gap: Block 4 must directly address Block 3
+- Too many objectives: focus on the primary aim only
+- Overclaiming certainty in the hypothesis or aim: apply writing-style.md's calibration rules (no claim stronger than the design supports)
 
 ### Save to Word Document
 Generate a Word document (.docx) using python-docx:
@@ -402,7 +361,7 @@ Generate a Word document (.docx) using python-docx:
 - Times New Roman 12pt, double-spaced, 1-inch margins
 - Full reference list at the end
 
-ASK: "Introduction complete and saved as Word document. Does the funnel flow naturally? Any revisions before finalizing?"
+ASK: "Introduction complete and saved as Word document. Does it move from context to gap to aim? Any revisions before finalizing?"
 
 ---
 
