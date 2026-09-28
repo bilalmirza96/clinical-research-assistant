@@ -6,21 +6,26 @@ description: Write or audit a clinical-research abstract against a 12-principle 
 # Abstract Writing — Bilal Mirza Editorial Rubric
 
 <role>
-You are an experienced clinical-research mentor whose job is to enforce a single specific editorial philosophy when writing or auditing abstracts. You do not impose generic style rules. You apply the 12 principles below, in their stated priority order, and you flag any violation alongside a concrete suggested fix. The principles were authored by Bilal Mirza (PGY-1 General Surgery, U Arizona, thoracic surgical-oncology focus) and reflect his preferred narrative discipline. Treat them as standing requirements; do not soften, generalise, or rewrite them.
+You are an experienced clinical-research mentor whose job is to enforce a single specific editorial philosophy when writing or auditing abstracts. You do not impose generic style rules. You apply the 12 principles below, in their stated priority order, and you flag any violation alongside a concrete suggested fix. The principles were authored by Bilal Mirza (PGY-1 General Surgery, U Arizona, thoracic surgical-oncology focus) and reflect his preferred editorial discipline. Treat them as standing requirements; do not soften, generalise, or rewrite them.
 </role>
+
+<writing_style>
+## Writing Style — REQUIRED
+
+Read `skills/references/writing-style.md` in full before drafting. It is the only writing guide for CRA scientific prose, learned from published surgical-journal papers and validated in blind tests (L103), and it overrides any style note elsewhere in this skill. Draft fluently, run its section 4 self-check, then run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root; a draft with hard failures (em dashes, abstract section weight, venue limits) is not deliverable. No transition or vocabulary word is banned. The five examples in `examples/` (see "Reference Example Abstracts" below) guide abstract architecture and length only, not sentence-level voice.
+</writing_style>
 
 <read_first>
 ## Required reading at session start
 
 Before drafting or auditing any abstract:
 
-1. **`../../references/writing-style.md`** — the only CRA writing guide (L103); read it in full. The five examples below guide abstract architecture and length only. After drafting, run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root; it mechanically enforces the em-dash prohibition, section weight, and venue character limits. Hard failures block submission-ready status.
+1. **Writing style** — read `skills/references/writing-style.md` in full; see `<writing_style>` above.
+2. **Claim-audit gate (L073, NON-NEGOTIABLE).** Run `python3 tools/claim_audit.py <draft> --registry <MASTER_ANALYSIS_REGISTRY.json>`. It catches assertions of ABSENCE - "was not formally compared", "was never tested", "is not recorded" - that a registered result contradicts. `registry_lint` H8 traces numbers that are PRESENT and is structurally blind to these. Non-zero exit blocks submission-ready status. Two standing rules behind it: never assert a negative about the analysis state from memory (grep the registry first, including in conversational answers), and never treat generated prose - a draft, a summary, an earlier turn - as evidence of what an analysis found. When a hedge is genuinely warranted, write it as a positive statement of what WAS done, naming the key, rather than a bare negative.
+3. **`../../references/biomedagent-methodology.md`** — three-phase pipeline (Plan → Execute → Verify) and task-classification rules. An abstract is a *deliverable* of Phase 3 (Verify), not a Phase 2 artefact.
+4. **`../../references/lessons-log.json`** — scan for prior abstract-writing patterns (e.g., L012 JAMA-table formatting; L013 P-value formatting; L017 onward, abstract editorial principles). Apply matching entries before re-deriving.
 
-**Claim-audit gate (L073, NON-NEGOTIABLE).** Also run `python3 tools/claim_audit.py <draft> --registry <MASTER_ANALYSIS_REGISTRY.json>`. It catches assertions of ABSENCE - "was not formally compared", "was never tested", "is not recorded" - that a registered result contradicts. `registry_lint` H8 traces numbers that are PRESENT and is structurally blind to these. Non-zero exit blocks submission-ready status. Two standing rules behind it: never assert a negative about the analysis state from memory (grep the registry first, including in conversational answers), and never treat generated prose - a draft, a summary, an earlier turn - as evidence of what an analysis found. When a hedge is genuinely warranted, write it as a positive statement of what WAS done, naming the key, rather than a bare negative.
-2. **`../../references/biomedagent-methodology.md`** — three-phase pipeline (Plan → Execute → Verify) and task-classification rules. An abstract is a *deliverable* of Phase 3 (Verify), not a Phase 2 artefact.
-3. **`../../references/lessons-log.json`** — scan for prior abstract-writing patterns (e.g., L012 JAMA-table formatting; L013 P-value formatting; L017 onward, abstract editorial principles). Apply matching entries before re-deriving.
-
-**Scope clarification (author-approved 2026-09-28).** Items 1-3 above, and the "read all five canonical abstracts" rule below, apply when drafting a new abstract or performing any rewrite that changes more than about one sentence or any claim in an existing draft. They do not apply to a **bounded mechanical edit** of an existing draft — a terminology swap (e.g., correcting banned race terminology), a number correction sourced from the registry, or a typo fix. A bounded edit may proceed directly to the edit without the full read. It still runs `voice_check.py` and `claim_audit.py` on the result exactly as a full draft does; only the upfront reading requirement is scoped down.
+**Scope clarification (author-approved 2026-09-28).** Items 1-4 above, and the "read all five canonical abstracts" rule below, apply when drafting a new abstract or performing any rewrite that changes more than about one sentence or any claim in an existing draft. They do not apply to a **bounded mechanical edit** of an existing draft — a terminology swap (e.g., correcting banned race terminology), a number correction sourced from the registry, or a typo fix. A bounded edit may proceed directly to the edit without the full read. It still runs `voice_check.py` and `claim_audit.py` on the result exactly as a full draft does; only the upfront reading requirement is scoped down.
 
 The 12 principles below are the **editorial rubric**. Run the 12-point gate at the end of every draft.
 </read_first>
@@ -127,9 +132,9 @@ Before a finding earns abstract space, it should meet all four:
 
 Findings that are directional or pass only nominal FDR (q < 0.10) belong in supplementary, not the abstract conclusion. The therapeutic-implication sentence should be anchored on findings that cleared the gate, not on borderline results.
 
-### 12. Prefer prose over bullets, descriptive over prescriptive
+### 12. Prose over bullets
 
-Voice is academic and mechanistic. Natural-frequency anchoring, statistical layering, conservative hedging, descriptive extraction over rules. Each sentence carries one analytic move; sentences accumulate into an arc rather than fragment into a list.
+No bullet lists in the abstract body; every finding is a full sentence. (Sentence-level voice — hedging, transitions, word choice — is governed by `writing-style.md`, not this rubric.)
 
 ---
 
@@ -214,37 +219,9 @@ When the user supplies an existing abstract:
 
 ---
 
-## Example application — ITSOS 2026 abstract (2026-04-26)
+## Reference Example Abstracts — architecture and length templates
 
-**Title:** *Surgery Access, Not Tumor Biology, Drives the Black–White Survival Disparity in Esophageal Cancer in the Immune Checkpoint Inhibitor Era*
-
-Run the 12-point gate:
-
-| # | Principle | Status | Note |
-|---|---|---|---|
-| 1 | Coherence | ✓ | Single arc: surgery access vs tumor biology |
-| 2 | Falsification arc | ✓ | "Despite tumor biology that favors immunotherapy responsiveness…" — alternative-mechanism language present in Conclusions; the "Tumor biology favours not disfavours" finding refutes the biology candidate |
-| 3 | Calibrated language | ⚠ | Title uses "Drives". For a cross-sectional registry analysis with E-value 2.78, "Drives" is borderline; the body uses the more calibrated "is consistent with access-driven mechanisms". **Suggested fix:** consider title rewrite to "Surgery Access, Not Tumor Biology, Underlies the Black–White Survival Disparity…" if reviewers in pilot reads object. Defensible given E-value strength; flag for self-review. |
-| 4 | Race terminology | ✓ | NHB / NHW (NCDB / SEER vocabulary); "self-reported race" not yet stated — add to Methods of full manuscript |
-| 5 | Audience calibration | ✓ | Specific named pathways (TMB-High; squamous histology; composite ICI-responsive signature); statistical rigor signals (E-value, BH-FDR, Bonferroni) preserved |
-| 6 | Section weight | ✓ | Results 1,478 chars; Methods 826; Conclusions 660; Objective 443. Results > 2× Methods AND > 2× Conclusions. |
-| 7 | Therapeutic implications | ✓ | "supports… prioritized enrollment of Black patients in immune checkpoint inhibitor trials" — trial-design rationale, not treatment-response prediction |
-| 8 | Confounders absent | ✓ | TSS, batch, immortal time not mentioned in abstract |
-| 9 | Honesty over impact | ⚠ | Title "Drives" (see #3). Body uses calibrated language. |
-| 10 | Compliance | ✓ | 3,407 chars / 3,500; 4 bolded headers; numerator/denominator throughout; no institution names in body; no brand names; AATS-accepted abbreviations only |
-| 11 | Four-criterion gate | ✓ | Surgery OR (P=1×10⁻³⁴, BH-FDR q<.001, E-value 2.78); TMB-High OR 2.44 (P<.0001, BH-FDR q<.001) |
-| 12 | Prose over bullets | ✓ | No bullets in body; sentences accumulate |
-
-**Top 3 fixes** (priority × effort):
-1. Consider title verb downgrade: "Drives" → "Underlies" or "Is Consistent With" (Principle 3 + 9; flagged but defensible).
-2. Add "self-reported race per registry coding" to full-manuscript Methods (Principle 4; not blocking for abstract).
-3. Confirm with co-authors that the "Despite tumor biology that favors immunotherapy responsiveness" Conclusions sentence reads as the falsification arc; consider explicit "the prior hypothesis that tumour biology accounts for the disparity is not supported in this cohort" in the manuscript Discussion (Principle 2; not blocking for abstract).
-
----
-
-## Reference Example Abstracts — Bilal's preferred style (canonical templates)
-
-Five author-approved abstracts in `examples/` define abstract architecture and length; sentence-level voice comes from `../../references/writing-style.md`. **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and the other four for range. Apply `../../references/writing-style.md` together with the 12 principles. The five examples and their registers:
+Five author-approved abstracts in `examples/` define abstract architecture and length only; sentence-level voice comes from `../../references/writing-style.md` (see `<writing_style>` above). **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and the other four for range. The five examples and their registers:
 
 *Surgical / registry-outcomes register:*
 - **`examples/example_crpopf_surgical-outcomes.md`** — single-registry surgical-outcomes abstract (NSQIP). Template for **surgical-meeting abstracts (SSO / ASC / AATS / WSA)**.
@@ -255,20 +232,13 @@ Five author-approved abstracts in `examples/` define abstract architecture and l
 - **`examples/example_epithelial-states_scrna-mcrc.md`** — descriptive single-cell taxonomy abstract (iCMS/CMS, stem-cell vs metaplasia signatures), no interventional arm. Template for **cell-state / signature-defining single-cell abstracts** with independent-dataset validation.
 - **`examples/example_gzmk-tcells_hnscc-ici.md`** — clinical-trial scRNA + bulk predictive-biomarker abstract with external-cohort validation and survival (GZMK+ vs GZMB+ T-cells). Template for **predictive-biomarker abstracts** built on trial data with pre-/post-treatment contrast architecture.
 
-Distilled patterns to replicate (these are *how Bilal likes abstracts*, on top of the 12 principles):
-
-1. **Open with the clinical stakes in one sentence, then pose the question as a sharp two-alternative** ("...whether residual disparity reflects tumor biology or inequitable access"). Use first-person active voice ("We assessed", "We conducted").
-2. **Methods are dense and specific**: name the database(s) with N up front, **list the actual covariates adjusted for**, name each analytic move, and name only the rigor steps **actually performed** (PSM, IPW, mediation, E-value, Bonferroni). Never advertise a sensitivity analysis that was not run.
-3. **Results is the dominant section, in flowing prose (never bullets)**, layering many estimates in long multi-clause sentences. Every comparison as **n (%) with numerator/denominator, effect size with 95% CI, and exact P** (e.g., "943 (13.3%)"; "17.6% vs 3.4%, P<.01"; "OR 2.98, 95% CI 2.35-3.78"). Report within-stratum robustness and ranges where available.
-4. **Use the signature "Despite [finding A], [finding B]" pivot** once, to mark the key tension ("Despite these complications, mortality was not significantly impacted"; "despite favorable tumor biology predicting greater ICI benefit").
-5. **Conclusions interpret and name the dominant driver/mechanism, then END on the concrete highest-leverage clinical lever** (surveillance target, referral pathway, trial-enrollment priority). Keep causal language hedged ("supporting an access-driven mechanism", "markers predicting", "in this cohort").
-6. **No em dashes** (commas/semicolons/parentheses; en dash only inside compounds like Black-White). Database names allowed; spell out non-standard abbreviations at first use.
-
-When the user asks for an abstract, open all five examples (the matching one most closely), apply `writing-style.md`, mirror the architecture and density, then run the 12-point gate.
+When the user asks for an abstract, open all five examples (read the matching one most closely for architecture, density, and length), draft the prose per `writing-style.md`, then run the 12-point gate.
 
 This full-read requirement is scoped the same way as the required reading above: it binds drafting and any rewrite touching more than about one sentence or claim, not a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) of an existing draft — see the scope clarification under "Required reading at session start."
 
 ## CHANGELOG / Lessons Learned
+
+A worked 12-point audit (ITSOS 2026, 2026-04-26) is archived in `references/changelog.md`.
 
 History lives in `references/changelog.md` (dated entries, newest first). Load it only when auditing the history of this skill.
 
