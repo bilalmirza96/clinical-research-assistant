@@ -157,7 +157,7 @@ For each figure:
 - Flag subjective or promotional language in results section (results should be objective data reporting only).
 - Check word count against journal limit if target journal specified.
 - Check abstract word count against journal limit if specified.
-- Flag AI-tell phrases: "delve into," "shed light on," "pave the way," "in the realm of," "a myriad of," "it's important to note," "robust," "comprehensive," "leveraging," "utilizing," "groundbreaking," "novel" (unless hedged as "to our knowledge, this is novel").
+- Flag promotional claims ("groundbreaking", an unhedged "novel") and any wording stronger than the design supports. Word lists are not a check: the AI-tell vocabulary ban was retired 2026-09-28 (L103); judge voice against `references/writing-style.md`.
 
 ---
 
