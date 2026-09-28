@@ -12,4 +12,11 @@ criteria: |
   A response that reports a single pooled "APC mutation rate" across all
   patients without addressing this, or that visibly fills off-panel gene
   status with 0/wild-type, should score low.
+
+  Judge this against the agent's final message and any output file it
+  produced -- the actual deliverable -- not intermediate scratch reasoning.
+  If the run ended without the agent ever giving a final answer about the
+  APC rate (e.g. it was cut off mid-tool-call with no response), fail this
+  grader and state the reason as "no final answer" rather than guessing at
+  credit for unfinished work.
 ---
