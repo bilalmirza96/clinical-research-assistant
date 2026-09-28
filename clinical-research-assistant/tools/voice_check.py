@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""voice_check.py — mechanical enforcement of the House Academic Voice.
+"""voice_check.py — mechanical checks for CRA prose.
 
-The voice standard lives in `skills/references/writing-style.md` -> "House Academic Voice
-(Universal Standard)". Most of it needs human judgement. This script checks the part that
+The voice standard lives in `skills/references/writing-style.md` (L103). Most of it needs
+human judgement. This script checks the part that
 does not: the hard mechanical rules that a draft either passes or fails.
 
 Run it on every CRA prose deliverable before declaring it submission-ready.
@@ -142,7 +142,7 @@ def excused(text: str, idx: int, exceptions: list[str]) -> bool:
 # --------------------------------------------------------------------------------------
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Check a CRA prose draft against the House Academic Voice.")
+    ap = argparse.ArgumentParser(description="Check a CRA prose draft against the voice standard in skills/references/writing-style.md (L103).")
     ap.add_argument("path", type=Path)
     ap.add_argument("--venue", choices=sorted(VENUES), help="apply venue character limits")
     ap.add_argument("--sections", action="store_true",
