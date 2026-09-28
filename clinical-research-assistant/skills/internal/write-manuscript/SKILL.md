@@ -24,7 +24,7 @@ Before starting, read `../../references/lessons-log.json` (memory of prior manus
 <writing_style>
 ## Writing Style — REQUIRED
 
-Before drafting any manuscript text, read `skills/references/writing-style.md` and apply ALL patterns defined there, starting with its final section **"House Academic Voice — Universal Standard (ALL CRA prose)"** — the binding voice contract, which overrides any conflicting section-specific guidance. Also read all five canonical abstracts in `../write-abstract/examples/`. Run `python3 tools/voice_check.py <draft>` on every section as it is completed and again on the assembled manuscript; hard failures block delivery. Run `python3 tools/claim_audit.py <draft> --registry <registry.json>` on the same cadence (L073): it blocks claims of absence that a registered result contradicts. This file defines the author's unique writing voice — sentence architecture, hedging patterns, transition words, statistical layering, equity framing, naming specificity, and a banned list of AI-tell phrases. Every writing phase (Introduction, Methods, Results, Discussion, Abstract) must conform to these patterns. The Abstract must open with the finding and effect size before any background, and close by naming a specific therapy — never with "further research is warranted."
+Read `skills/references/writing-style.md` in full before drafting. It is the only writing guide for CRA scientific prose, learned from published surgical-journal papers and validated in blind tests (L103), and it overrides any style note elsewhere in this skill. Draft fluently, run its section 4 self-check, then run `python3 tools/voice_check.py <draft>` from the plugin root; a draft with hard failures (em dashes, abstract section weight, venue limits) is not deliverable. No transition or vocabulary word is banned.
 
 All sub-commands (`/write-introduction`, `/write-methods-results`, `/write-discussion`) independently read the same style reference. During the Final Assembly & Audit (Phase 8), verify that all sections use consistent voice, transition words, and formatting per the style guide.
 </writing_style>
@@ -489,7 +489,7 @@ For multi-cohort manuscript projects exiting an audit-driven rigor remediation, 
 5. Four-tier evidence base (per L035 — ROBUST/PARTIAL/NOVEL/HYPOTHESIS-GENERATING)
 6. The audit story (why the evidence base is now defensible; pre-empts reviewer pseudoreplication and "AUROC without CI" critiques)
 7. Manuscript story arc with 3 working title options (3-act structure: validation → biomarker → future-work)
-8. Suggested abstract (≤350 words, JITC structured format) — apply the writing-style.md §12 rule (open with finding+effect size; close with named therapy)
+8. Suggested abstract (≤350 words, JITC structured format) — apply the structured-abstract norms in writing-style.md
 9. What goes where in the manuscript (section-by-section content map with word targets and figure assignments)
 10. Path to submission (PI review → next-session deferred items → drafting sessions → polish → submit)
 11. Document index (where every supporting artifact lives, with audience tag)
