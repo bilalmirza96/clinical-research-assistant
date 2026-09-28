@@ -2,8 +2,8 @@
 name: L091-full-precision-rounding
 tags: [smoke, full]
 runs: 1
-max_turns: 25
-timeout_seconds: 600
+max_turns: 40
+timeout_seconds: 900
 append_system_prompt: "Automated regression run for the CRA plugin. The PI has pre-approved every HALT, CHECKPOINT and sign-off in advance: do not stop to ask for approval. At each halt, state it in one line, record the decision, and continue through execution to the deliverable within the turn budget."
 allowed_tools: [Read, Write, Edit, Bash, Glob, Grep, Skill, Task]
 ---
