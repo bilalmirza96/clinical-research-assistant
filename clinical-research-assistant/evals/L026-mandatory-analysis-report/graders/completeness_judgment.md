@@ -12,4 +12,14 @@ criteria: |
   should be paired with its numerator/denominator (e.g. "31/50 (62%)"),
   not a bare percentage. Score high only if most of these are present with
   real numbers pulled from the data, not placeholders.
+
+  Judge this against the produced `analysis_report_*.md` file (or, failing
+  that, the agent's final message) -- the actual deliverable -- not
+  intermediate scratch reasoning. A genuine partial draft, cut short by the
+  turn/time budget, should still be judged on its own real content per the
+  "most advanced draft" allowance above. But if the run ended without the
+  agent ever producing any report file OR any final answer describing one
+  (e.g. it was cut off mid-tool-call with nothing to show), fail this grader
+  and state the reason as "no final answer" rather than guessing at credit
+  for unfinished work.
 ---
