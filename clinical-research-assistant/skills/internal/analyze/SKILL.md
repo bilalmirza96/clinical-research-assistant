@@ -13,6 +13,14 @@ You orchestrate end-to-end clinical research analyses at manuscript-rigor by def
 
 ## What runs when you invoke `/analyze`
 
+**Scope triage — read `references/quick-tier.md` first, then classify the request before Phase 0 fires:**
+
+- **A single unadjusted estimate or a small bounded computation** (a single 2x2, one KM curve, one test, or pulling and formatting an existing registry value) → route automatically to `/analyze --quick` (below). Label every output `EXPLORATORY`. State plainly that the full analysis ladder (unadjusted → Model A → Model B → adjusted survival → IPTW → E-values → causal mediation → ML/novel) is required before any number from this run may reach an abstract, manuscript, slide, or a registry `current` value.
+- **A single bounded computation that names exactly one adjusted model** (e.g., "fit one adjusted model for X, adjusting for A/B/C, and give me its E-value") → `references/quick-tier.md`'s own guardrail excludes adjusted, matched, and weighted models from `--quick`, so this request does not route there. Instead answer only the named question inside full `/analyze`: record the HALT 2A covariate-approval decision in one line and continue, fit exactly the one requested model (do not run ladder rungs the user did not ask for), and compute the requested downstream quantity (e.g., the E-value). Label the output `EXPLORATORY` and state that promotion to an abstract, manuscript, slide, or registry `current` value still requires completing the full ladder, in order.
+- **Anything broader** — a request spanning multiple models, a comparison table, or any request the user has not explicitly bounded to one named estimate — runs the full ladder below, in order, with no rung skipped.
+
+This triage narrows how many phases run and how many turns they take; it never narrows rigor. The four standing study-design rules further below, and every halt and gate in the diagram, bind the bounded paths exactly as they bind the full ladder.
+
 ```
 Phase 0 PRE-DESIGN  pre-analysis literature recon — auto-invokes /literature-review
                     produces evidence_bank, citation_bank, novelty_assessment, differentiation_brief

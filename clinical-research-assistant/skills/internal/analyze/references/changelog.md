@@ -4,6 +4,23 @@
 
 ---
 
+### 2026-09-28 — Scope-triage step for bounded/quick requests (L100)
+
+Regression eval evidence: asked for one adjusted model plus its E-value, `/analyze` insisted on
+running the full analysis ladder and ran out of turns before answering. Added a **scope-triage**
+step at the very start of "What runs when you invoke `/analyze`": a single unadjusted/small bounded
+computation now routes automatically to `--quick` (`references/quick-tier.md`), labeled
+`EXPLORATORY`; a single bounded computation that names exactly one adjusted model (e.g., one model
++ its E-value) is **not** routed to `--quick` because `quick-tier.md`'s own guardrail excludes
+adjusted/matched/weighted models — instead it answers only the named question inside full
+`/analyze` (one-line HALT 2A decision, fit only the requested model, compute only the requested
+downstream quantity), labeled `EXPLORATORY`, with promotion to a manuscript/abstract/slide/registry
+`current` value still requiring the full ladder. Author-approved 2026-09-28; principle: both
+standing rules (the full ladder, and quick-tier's own guardrails) stay intact, only their scope of
+application is clarified — no HALT/CHECKPOINT/HARD GATE/HARD STOP/NON-NEGOTIABLE text moved or
+weakened (counts verified unchanged before/after). Regression check: `evals/L005-e-value-adjusted-estimate`.
+Lessons-log **L100**.
+
 ### 2026-09-28 — Phase 6 red-team is now a real fresh-context subagent
 
 Phase 6's reviewer was, in practice, a skill (`science-superpowers:requesting-red-team-review`)
