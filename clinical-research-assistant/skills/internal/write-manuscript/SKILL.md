@@ -508,6 +508,12 @@ Once the brief is approved by PIs, the manuscript drafts AGAINST the brief — t
 
 ## CHANGELOG / Lessons Learned
 
+### 2026-09-27 — One precision per estimate; run-time record dates (L097, L098)
+Print an estimate and its CI limits at one number of decimals (the fewest any holds, never below the main text), re-rounded half-up through the boundary guard; never pad stored strings with zeros (3-decimal and 3-significant-figure storage look alike once trailing zeros drop); footnote cells left mixed by an unstored final 5. Scan every table for the class when an audit flags one instance. Record writers stamp dates at run time, never from a fixed constant.
+
+### 2026-09-26 — One formatter, full precision, boundary guard (L091)
+Every manuscript surface (text, tables, figures, supplement) renders numbers through one Decimal ROUND_HALF_UP formatter reading full-precision values (registry `current.fp` companions preferred). A boundary guard fails strict builds when a value is printed from a stored rounded number on a rounding boundary (e.g., 0.275 to 2 dp) until a gated full-precision refit is registered. E-values are computed from full-precision inputs. Reference implementation: REPEAT DISPARITIES `Scripts/manuscript_format.py`, `Scripts/render_manuscript_numbers.py --strict`, `Scripts/run_a11_precision.py`.
+
 ### 2026-05-03 — HNSCC TAM Multi-Cohort Validation (Bilal Mirza, U Arizona)
 
 - **Manuscript brief precedes manuscript drafting** (L037). For multi-cohort projects, the FINAL manuscript brief is the PI-review artifact; the manuscript drafts against it after PI sign-off.
