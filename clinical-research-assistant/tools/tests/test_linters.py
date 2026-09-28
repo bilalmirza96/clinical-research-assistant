@@ -300,6 +300,10 @@ def test_L103_voice_guide_wired():
               f"positive: {sk} points to the single guide", "L103")
         check("Universal Standard (ALL CRA prose)" not in t and 'never "Furthermore' not in t
               and 'never use "Furthermore' not in t, f"negative: {sk} carries no old voice rules", "L103")
+        leftovers = [m for m in ("Writing Rules", "Example Structure", "Style Rules", "Toggle Rule",
+                                 "Aga & Nissar", "Required rhetorical moves", "Collective Abstract")
+                     if m in t]
+        check(not leftovers, f"negative: {sk} carries no style section of its own {leftovers}", "L103")
 
 
 # =====================================================================================
