@@ -11,6 +11,7 @@ Run it on every CRA prose deliverable before declaring it submission-ready.
     python3 tools/voice_check.py draft.md --venue asc      # adds venue limit checks
     python3 tools/voice_check.py draft.md --sections       # adds abstract section-weight check
     python3 tools/voice_check.py draft.docx --venue asc --sections
+    python3 tools/voice_check.py draft.md --style none     # skip AMA typesetting items
 
 Exit status is 1 if any HARD rule fails, else 0, so it can gate a workflow.
 Soft findings (context-dependent words) are reported but never fail the run.
@@ -55,6 +56,19 @@ OVERCLAIM_VERBS = [
     "is refuted", "are refuted", "is characterized by", "are characterized by",
     "independent of", "predicts", "predict ", "drives", "driving", "establishes",
     "demonstrates", "proves", "proven", "confirms",
+]
+
+# AMA Manual of Style typesetting that blinded judges read as a human, copyedited tell
+# (fresh-paper test 2026-09-28, lessons-log L105). Reported SOFT; skip with --style none.
+AMA_CHECKS = [
+    (re.compile(r"\b\d{1,3}(?:,\d{3})+\b"),
+     "comma in a number (AMA: 1000, 38 976 with a space from five digits up)"),
+    (re.compile(r"(?<=[.!?] )\d"),
+     "sentence starts with a numeral (restructure or spell out)"),
+    (re.compile(r"supplementary (?:material|materials|appendix|data)", re.I),
+     "'supplementary material' (AMA: 'Supplement 1', 'eTable 3 in Supplement 1')"),
+    (re.compile(r"\bbeta coefficient", re.I),
+     "spelled-out 'beta coefficient' (AMA: the symbol \u03b2)"),
 ]
 
 VENUES = {
@@ -147,6 +161,8 @@ def main() -> int:
     ap.add_argument("--venue", choices=sorted(VENUES), help="apply venue character limits")
     ap.add_argument("--sections", action="store_true",
                     help="check structured-abstract section weight (Results >= 2x Methods and Conclusions)")
+    ap.add_argument("--style", choices=["ama", "none"], default="ama",
+                    help="typesetting convention for soft checks (default ama, JAMA family)")
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     ap.add_argument("--stop-at", default=BODY_END_SENTINEL,
                     help=f"ignore everything from this marker onward (default: {BODY_END_SENTINEL!r}); "
@@ -195,6 +211,12 @@ def main() -> int:
 
     secs = split_sections(prose)
     sec_chars = {k: len(v) for k, v in secs.items()}
+
+    # --- SOFT: AMA typesetting ------------------------------------------------------
+    if args.style == "ama":
+        for rx, why in AMA_CHECKS:
+            for m in rx.finditer(prose):
+                soft.append(f"AMA style: {why}: {context(prose, m.start())}")
 
     # --- SOFT: overclaiming verbs ------------------------------------------------------
     # Scan only the body sections when they exist, so commentary *about* flagged verbs in a
