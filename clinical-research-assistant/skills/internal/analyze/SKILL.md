@@ -40,29 +40,7 @@ Five halts (Phase 0, HALT 1, HALT 2, HALT 2A, HALT 3). Phase 0 is a HARD GATE �
 
 ## `/analyze --quick` — exploratory tier (per L058)
 
-**Purpose.** A deliberately lightweight path for exploratory looks (a single 2×2, one KM curve, a quick descriptive contrast) and for the moment you would otherwise abandon the plugin and hand-run Python. It keeps the load-bearing rigor — a reproducible seeded run and inline verification — while dropping the full halt ladder. It exists so that "quick" never means "outside the plugin" (the manual-execution reliability gap).
-
-**Invoke:** `/analyze --quick "<one pre-named contrast>"`. What runs:
-
-```
-resource check (light)
-→ single analysis with random_state=42 (appropriate test by outcome class, per Phase 4.1)
-→ ✓ INLINE verify (science-superpowers:verifying-results-before-claiming): fresh re-run, read estimate + 95% CI + p, confirm reproduction
-→ write the result to the EXPLORATORY log ONLY (never to SCAR) → one concise result card → STOP
-```
-
-**Where the number goes — the structural firewall (closes the laundering path).** A `--quick` result is written **only** to `Reports/exploratory_quick_log.md` (+ `exploratory_quick_log.json`), tagged `mode=quick`, `evidence_class=EXPLORATORY-UNGATED`, `literature_vetted=false`, `preregistered=false`, carrying the contrast, seed, estimate, 95% CI, and p. It is **never** written to `MASTER_ANALYSIS_REGISTRY.json` / SCAR, nor to any Master Excel tab. Because L045 makes the SCAR registry the **sole** source for every manuscript and abstract number, keeping quick results out of it makes an exploratory estimate **structurally ineligible** for a manuscript — the exclusion is enforced by the artifact boundary, not by a banner. `write-abstract` / `write-manuscript` read SCAR and never the exploratory log. (Do **not** call `scripts/analysis_registry.py` in `--quick` mode; its schema has no exploratory field and writing there would defeat the firewall.)
-
-**`EXPLORATORY-UNGATED` is not an L035 tier.** The HALT 3 evidence tiers (1–4, per L035) are an *earned, post-audit* partition defined by which multiple-testing correction a result survives across the full family of tests. A `--quick` run has no family, no BH-FDR/Bonferroni, and no red-team audit, so it has **no L035 tier at all**. It carries the orthogonal provenance class `EXPLORATORY-UNGATED` — never "Tier 4" — so a quick result and a genuinely-earned Tier-4 result are never conflated.
-
-**Dropped vs. full `/analyze`:** Phase 0 lit-recon hard gate, HALT 0/1/2/2A/2B/3, Master Excel scaffolding + shell sign-off, pre-registration, the red-team subagent, SCAR registration, and the 16-section report. **Never dropped:** the random seed, the inline verification re-run, the dictionary definition of any coded variable the contrast uses (L089), and a named denominator for any proportion (L090).
-
-**Hard guardrails:**
-
-- A `--quick` result is `EXPLORATORY-UNGATED`, is **forbidden from any abstract, table, or manuscript primary/secondary result**, and carries no `novelty_assessment` — it **must not seed a `study_spec`** or any confirmatory artifact. The result card banner states this, but the real barrier is that the number never enters SCAR (above).
-- **No adjusted / matched / weighted models** in `--quick` — those require the HALT 2A variable-approval gate. If the question needs adjustment, `--quick` refuses and points to full `/analyze`.
-- **One contrast only** — a single pre-named comparison, no multiple-testing family. Needing several is the signal to switch to full `/analyze`.
-- **Promotion path:** to turn a `--quick` finding into a manuscript result, run the full `/analyze` pipeline (Phase 0 → HALT 3); it re-derives the number under a pre-registered, audited family and writes it to SCAR. The exploratory log records the question so the confirmatory run can reference what prompted it.
+Load `references/quick-tier.md` only when `/analyze` is invoked with `--quick`. It defines the exploratory tier: what runs, the structural firewall (results go to `Reports/exploratory_quick_log.md` only, never to SCAR or any Master Excel tab; class `EXPLORATORY-UNGATED`, not an L035 tier), what is dropped versus never dropped, and the guardrails (no adjusted / matched / weighted models, one contrast, promotion only through full `/analyze`).
 
 ---
 
@@ -165,6 +143,10 @@ Read first; resume from the first incomplete phase if any exist.
 - `references/delegation-matrix.md` — K-Dense + BioMedAgent routing by task type, with `resource_class` per task
 - `references/analysis-report-template.md` — 16-section + reproducibility manifest
 - `references/analysis-ladder.md`, `references/cohort-curation.md`, `references/data-dictionary-dossier.md`, `references/denominators.md` — the four study-design standards (L087-L090)
+- `references/quick-tier.md` — the `--quick` exploratory tier (what runs, the exploratory-log firewall, guardrails); load only when invoked with `--quick`
+- `references/changelog.md` — dated history of every change to this skill (L051, L087-L090, L092-L096, restructures); load only to learn why a rule exists or to append an entry at SESSION-END
+- `../../references/kdense-delegations.md` §4b — Phase 0 K-Dense delegation chain and contracts; load during Phase 0 only
+- `../../references/registry-cohort-checklists.md` — per-registry inclusion/exclusion checklist and its enforcement contract; load at Phase 1.1.a before any filter is written
 - `scripts/ladder_table.py` (ladder table, attenuation, E-values), `scripts/cohort_flow.py` (cohort builder, CONSORT by group, exact reconciliation), `scripts/dictionary_audit.py` (data and recode-map audit against the dossier); tests: `python3 tests/test_study_design_tools.py`
 
 ---
@@ -198,25 +180,13 @@ If any are missing, stale, or research-question-mismatched → **auto-invoke `/l
 
 Spawn `/literature-review` via Task() (subagent_type=`general-purpose`) with the briefing:
 
-> "Phase 0 pre-design literature recon for `/analyze`. Read `study_spec.json` for the research question. Produce evidence_bank.json (prior work landscape), citation_bank.json (L041-verified citations), novelty_assessment.json (using `templates/state/novelty_assessment.template.json` schema), and differentiation_brief.md (using `templates/state/differentiation_brief.template.md` schema). Use K-Dense delegations per `references/kdense-delegations.md` §Phase-0. Hand control back to /analyze when all four artifacts exist and the differentiation brief is populated up to (but not including) PI signature."
+> "Phase 0 pre-design literature recon for `/analyze`. Read `study_spec.json` for the research question. Produce evidence_bank.json (prior work landscape), citation_bank.json (L041-verified citations), novelty_assessment.json (using `templates/state/novelty_assessment.template.json` schema), and differentiation_brief.md (using `templates/state/differentiation_brief.template.md` schema). Use K-Dense delegations per `../../references/kdense-delegations.md` §4b (Phase 0). Hand control back to /analyze when all four artifacts exist and the differentiation brief is populated up to (but not including) PI signature."
 
 /literature-review handles the search; /analyze does NOT proceed to HALT 0 until the four artifacts exist.
 
 ### 0.3 K-Dense skill delegations (Phase 0 specific)
 
-Read these as expert reference, do not re-invoke if already loaded in /literature-review:
-
-| Step | K-Dense skill | Purpose |
-|---|---|---|
-| Initial ideation if Q is broad | `scientific-skills:scientific-brainstorming` | Cast wider net before narrowing |
-| Systematic search | `scientific-skills:literature-review` | Multi-database (PubMed + bioRxiv + OpenAlex) sweep |
-| Search infrastructure | `scientific-skills:pubmed-database`, `scientific-skills:openalex-database` | Direct DB query when needed |
-| Quality scoring of comparators | `scientific-skills:scholar-evaluation` | Rank prior papers by methodological rigor |
-| Critical assessment of prior evidence | `scientific-skills:scientific-critical-thinking` | Identify limitations in prior work that justify our study |
-| Hypothesis refinement | `scientific-skills:hypothesis-generation` | Sharpen research question post-recon if pivot needed |
-| Citation verification | `scientific-skills:citation-management` | L041 hard gate — every entry in citation_bank verified |
-
-Full delegation contracts in `../../references/kdense-delegations.md` §1 (citation), §5 (Phase 0 — Pre-design Lit Recon).
+Read these as expert reference, do not re-invoke if already loaded in /literature-review. The Phase 0 delegation chain (brainstorming if the question is broad → `literature-review` sweep → direct PubMed/OpenAlex queries → `scholar-evaluation` ranking of comparators → `scientific-critical-thinking` → `hypothesis-generation` on pivot → `citation-management`, the L041 hard gate on every `citation_bank` entry) and its full contracts: `../../references/kdense-delegations.md` §4b (Phase 0 — Pre-design Lit Recon) and §1 (citation). Load that reference only while Phase 0 is running.
 
 ### 0.4 Required outputs
 
@@ -312,16 +282,14 @@ Every dataset touched (primary + merged + external):
 
 #### 1.1.a Registry-specific inclusion/exclusion checklist (HARD GATE per L050)
 
-**Before any filter is written to `dataset_spec.json`,** the assistant must invoke the registry-specific checklist from `../../references/registry-cohort-checklists.md`:
+**Before any filter is written to `dataset_spec.json`,** load `../../references/registry-cohort-checklists.md` for the registry named in `study_spec.dataset_type` (NCDB / SEER / NSQIP / UNOS / TriNetX / generic) and run its enforcement contract in full. What must be true before `dataset_spec.json` is written:
 
-1. Identify the registry from `study_spec.dataset_type` (NCDB / SEER / NSQIP / UNOS / TriNetX / generic).
-2. Load the corresponding checklist (~25 standard items per registry).
-3. Present as a structured table with: filter name | common defaults in literature | proposed value for this study with rationale | `[ ]` PI checkbox.
-4. PI selects yes / no / custom for each item. Custom values require free-text rationale.
-5. PI must explicitly tick `[ ] I have reviewed every item; no filter is silently defaulted` before `dataset_spec.json` is written.
-6. **Cross-registry studies (e.g., NCDB + SEER replication)** must present a side-by-side comparison table; every deviation between registries surfaces as a §HALT/AMBIGUITY note requiring justification.
+- every item (~25 per registry) presented as a table: filter | common defaults in literature | proposed value with rationale | `[ ]` PI checkbox; PI decides yes / no / custom (custom requires free-text rationale);
+- PI has explicitly ticked `[ ] I have reviewed every item; no filter is silently defaulted`;
+- cross-registry studies (e.g., NCDB + SEER replication) presented side by side, every deviation surfaced as a §HALT/AMBIGUITY note requiring justification;
+- the completed checklist, including filters considered AND rejected, appended to `Reports/phase1_consort_<date>.md` as a permanent record.
 
-The completed checklist (including filters considered AND rejected) is appended to `Reports/phase1_consort_<date>.md` as a permanent record.
+The failure this gate prevents (the L050 NCDB "all primaries" vs SEER "first primary only" mismatch) is recorded under Origin at the top of that reference.
 
 #### 1.1.b Curate the criteria, not just the checklist (per L088)
 
@@ -332,8 +300,6 @@ field that folds in post-treatment data, such as NCDB `ANALYTIC_STAGE_GROUP`). M
 are handled in the analysis, not by exclusion. Endpoint eligibility (for survival: follow-up > 0
 and a year with vital status) is a named sub-cohort of the one analytic cohort, never a second
 filter chain.
-
-**Failure mode this gate prevents (per L050 worked example):** Esophageal Organ-Preservation HTE — NCDB Phase 1 silently defaulted "all primaries" (no sequence-number filter); SEER Phase 1 silently defaulted "first primary only." The two cohorts were not methodologically comparable until the PI caught it. The root cause was that no structured checklist forced explicit review of each conventional filter at design lock.
 
 ### 1.2 `variable_spec.json`
 
@@ -575,7 +541,7 @@ Phase 4 complete — Table_1 populated.
 At this halt, propose to the PI two distinct variable lists, each with per-variable rationale:
 
 1. **`matching_variables[]`** — variables for PSM matching and the IPTW propensity model (the design dimension)
-2. **`adjustment_covariates[]`** — covariates for multivariable adjustment in Cox / logistic / linear models (the estimation dimension), grouped by ladder role (per L087): **Model A** = the clinically relevant variables and confounders; **Model B** = Model A plus everything else pre-specified (socioeconomic, access, facility and other non-clinical confounders). No other adjusted models. Candidate **mediators** (treatment received, anything measured after the exposure on the path to the outcome) are listed separately for rung 7 and are never adjusted in Model A or B. In a disparities study, say for each socioeconomic or access variable whether it is treated as a confounder or a possible mediator.
+2. **`adjustment_covariates[]`** — covariates for multivariable adjustment in Cox / logistic / linear models (the estimation dimension), grouped by ladder role (per L087): **Model A** = the clinically relevant variables and confounders; **Model B** = Model A plus everything else pre-specified. No other adjusted models. Candidate **mediators** are listed separately for rung 7 and are never adjusted in Model A or B; in a disparities study, say for each socioeconomic or access variable whether it is treated as a confounder or a possible mediator. Definitions of each set, the never-in-A-or-B list and the disparities caveat: `references/analysis-ladder.md` → "Covariate sets".
 
 Overlap between the two lists is allowed but not required — a variable may be matched-but-not-adjusted (e.g., demographics where match handles confounding) or adjusted-but-not-matched (e.g., a clinical severity score with high missingness that excludes it from the match but supports it as a covariate).
 
@@ -783,74 +749,4 @@ Mandatory at end of every `/analyze` run:
 
 ## CHANGELOG / Lessons Learned
 
-### 2026-09-26 — Audit lessons from REPEAT DISPARITIES v01 (L092-L095)
-- **No ridge on exposure models (L092).** lifelines' penalizer scales with the mean log-likelihood; 0.05 inflated an exposure HR. Fit unpenalized; fix singular fits by finding sparse levels (count and disclose), never by penalizing.
-- **Genomic platforms and units (L093).** Never pool TMB across platforms or scales; compare within sequencing assay; gate unit conversions against the source's bins (GENIE TMB is per base). Mask off-panel genes; withdraw gene-level claims when coverage is unknown.
-- **Test differences, not significance (L094).** Compare stratum estimates formally (product term, or ratio of independent estimates per Altman and Bland 2003).
-- **Treatment fields before approval (L095).** Tabulate a registry drug-class field by year and histology against approval dates before interpreting it; restrict the primary analysis to the approval era.
-- **Period trends need period-specific covariates (L096).** A race x era product term with every covariate effect held constant across eras manufactured a widening disparity (histology x era change absorbed by the race term). Estimate change across periods from within-period models (ratio of independent estimates) or let major prognostic covariates vary by period; report the common-effects product term only as a labelled sensitivity.
-
-### 2026-09-25 — L087-L090 — Analysis ladder, cohort curation, data-dictionary dossier, denominators
-
-Author directive after the REPEAT DISPARITIES project (esophageal cancer, NCDB + SEER; ITSOS 2026
-podium): "compute and compare in this order... always care about inclusion and exclusion
-criteria... study the data dictionaries in detail... use consistent and most appropriate
-denominators for the question being asked."
-
-1. **Analysis ladder (L087).** Phase 5 now runs fixed rungs in order on one cohort: unadjusted,
-   Model A (clinical only), Model B (clinical plus everything else), adjusted survival, IPTW
-   (+PSM), E-values, causal mediation (new Phase 5C), ML / novel methods. Two adjusted models only
-   (author: "A only clinical, B includes everything else too"). `Table_2` columns follow the
-   rungs; HALT 2A approves covariate sets by ladder role; `scripts/ladder_table.py` (table,
-   attenuation, E-values, flags) gates Checkpoint B. `evalue()` refuses an OR or HR without a
-   stated outcome frequency (the project's circulating surgery E-value of 3.41 was the RR formula
-   on a common-outcome OR; the correct value was 2.17).
-2. **Cohort curation (L088).** New §1.1.b and `references/cohort-curation.md`: baseline-only
-   eligibility, explicit unknowns, endpoint sub-cohorts, CONSORT by exposure group with
-   differential-exclusion flags, one builder (`scripts/cohort_flow.py`), exact N reconciliation
-   (the project's KM export and Cox model differed by 119 zero-follow-up patients).
-3. **Data-dictionary dossier (L089).** New HARD GATE §1.0a, `references/data-dictionary-dossier.md`,
-   `scripts/dictionary_audit.py`. Five project defects it catches: "Refused" mapped to a code that
-   NAACCR 1340 does not have; code 1 labelled "not recommended"; the 2023 alphanumeric surgery
-   field parsed as numeric (a false era-narrowing claim, P=.0011 → .35); a coding break by year;
-   surgery flag vs reason code 0.
-4. **Denominators (L090).** `references/denominators.md`; Phase 2 `denominators` plan section;
-   Master Excel percentage cells name their denominator. The project's "Black patients refused
-   less" came from comparing shares among non-operated patients.
-5. **L010 withdrawn** (provider-side "not recommended" reading of the reason field).
-
-Tested RED/GREEN: three pressure scenarios run against the pre-change skill failed (a single adjusted
-model with no clinical-only comparison and IPTW/PSM "descoped" under deadline; reason shares
-compared across races among the non-operated; the old recode map reused with refusals reported
-as 0 vs 0) and passed when re-run against this version. A transfer test on an unrelated SEER
-study exposed a "don't redo the analysis, just tighten the sentence" loophole, which was closed
-and re-tested. Tool tests:
-`python3 tests/test_study_design_tools.py`.
-
-### 2026-05-28 — L051 — Analysis-skill internal workflow + Master Excel Workbook + bolding + HALT 2A
-
-Refinements added by Bilal Mirza in an interactive workflow design session (2026-05-28). All seven sub-items are interrelated and were specified together; they should be propagated to working-rules.md, the clinical-research-playbook, and the parent CRA repo CHANGELOG.md as a single coherent update.
-
-1. **Primary / secondary terminology locked.** Primary analysis = crude / unadjusted with the appropriate statistical test by outcome class (χ²/Fisher, t/Wilcoxon, log-rank + univariable Cox, χ² + crude OR). Secondary analysis = PSM + multivariable + KM + IPTW + method variants (GBT-IPTW / AIPW / frailty Cox). This terminology is enforced throughout this skill and overrides any prior usage where "primary" meant "adjusted multivariable headline." See §"Terminology lock" callouts in Phase 4 and Phase 5.
-
-2. **Phase 1.0 objectives lock** (new sub-step before §1.1). PI pre-specifies and signs off on `primary_objective` (single contrast sentence) + numbered `secondary_objectives[]`, each with their own outcome, exposure, time horizon, and comparator. Output: `specs/objectives_locked.json` + `Protocol/objectives_locked_<date>.md`. Immutable after PI sign-off; any change is a dated SAP §9-style amendment in `Protocol/sap_amendments.md`.
-
-3. **Phase 1.3 Master Excel Workbook** (replaces legacy markdown `table_layouts.md`). Single file `Reports/MASTER_TABLES_<project>_<date>.xlsx` with explicit named tabs: `Table_1`, `Table_2`, `Table_3`, …, `Sensitivity`, `Supplementary_1`, `Supplementary_2`, …. Coexists with `MASTER_ANALYSIS_REGISTRY.json` (per L045 — machine truth with `history[]`) and its auto-rendered `.md` index. The Excel is the human-facing tabular artifact the manuscript pulls from; the JSON is the audit trail.
-
-4. **Phase 2 PLAN — `matching_variables[]` separated from `adjustment_covariates[]`.** Two distinct lists in `analysis_plan.json`, each entry carrying per-variable rationale (DAG, clinical relevance, comparator precedent, missingness profile). Overlap allowed but not required.
-
-5. **Phase 4 restructured** as PRIMARY (CRUDE / UNADJUSTED) → fills `Table_1`. New shell sign-off gate before any cell is populated. Bold cells where p<0.05. No matching / weighting / adjustment at Phase 4 — those are forbidden until HALT 2A is signed.
-
-6. **HALT 2A inserted** between Phase 4 and Phase 5 — Variable Pre-specification & Approval Gate. Propose matching + adjustment variables with rationale per locked objective; PI signs off; lock to `Protocol/variables_locked_<date>.md` + `specs/variables_locked.json`. Phase 5 reads `specs/variables_locked.json` at start; halts if absent or unsigned.
-
-7. **Phase 5 restructured** as SECONDARY (ADJUSTED) → fills `Table_2` + `Sensitivity` + `Supplementary_*`. Bold cells where BH-FDR q<0.05. Concordance check vs. Phase 4 crude (direction agreement, magnitude within ~30%, CI overlap) for every primary objective; disagreement logged for Limitations.
-
-**Why this matters:** Prior workflow conflated "primary" with "primary contrast" (the adjusted headline), bypassing the standard biostatistical convention that primary = unadjusted and secondary = adjusted. The bolding rule + Excel workbook give the PI an immediately scannable artifact that maps directly to the manuscript tables; the HALT 2A gate prevents covariates from sneaking into the adjusted model without explicit PI review. The objectives lock prevents post-hoc objective drift.
-
-**Companion edits in this same release** (push together):
-- `internal/project-init/SKILL.md` — added primary + secondary objective questions to STEP 1; added `Protocol/` folder to STEP 2 directory tree.
-- `internal/manuscript-qc/SKILL.md` — added Check 16 (4-artifact numeric reconciliation: abstract ↔ manuscript ↔ Excel ↔ JSON).
-- `iCloud:SESSION-END PROTOCOL.md` — added Step 4.6 per-project 4-artifact reconciliation (iCloud-local, not in this repo).
-- `references/lessons-log.json` — L051 machine-readable entry with trigger patterns + actions.
-
-**Worked example pending:** First clinical-research project initiated under this workflow will become the canonical worked example (link to be added here at first project completion).
+History lives in `references/changelog.md` (dated entries, newest first: L092-L096 audit lessons, the L087-L090 study-design standard, the L051 workflow redesign, and every later restructure). Load it only when you need to know why a rule or phase looks the way it does, or when appending a dated entry at SESSION-END. Machine-readable lessons stay in `../../references/lessons-log.json`.
