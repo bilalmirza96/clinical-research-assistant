@@ -5,7 +5,7 @@ usage:  python3 deck_lint.py DECK.pptx [--minutes 7] [--include-hidden] [--json 
 exit 1 if any FAIL. WARN lines need a human decision (usually: confirm, or fix).
 
 Slide checks                                              Notes checks
-  S1 font family is Times New Roman           FAIL          N1 banned transition opener           FAIL
+  S1 font family is Times New Roman           FAIL          N1 (retired 2026-09-28, L103)          --  
   S2 every run >= 28 pt                        FAIL          N2 NCDB called population-based       FAIL
   S3 text colour black / white / navy 1A3255   FAIL          N3 decimal percentage ("30.2%")       WARN
   S4 bold below 40 pt (structural label?)      WARN          N4 em dash                            WARN
@@ -28,7 +28,6 @@ OK_TEXT = {"000000", "FFFFFF", "1A3255", "123057"}      # black, white-on-dark, 
 MIN_PT = 28.0
 TITLE_XY = (0.938, 0.729); HDR_Y = 1.623; FTR_Y = 10.286; RULE_X = 0.938; RULE_W = 18.125
 LEG = dict(x0=0.92, sw=0.41, sw_top=10.47, txt_top=10.391, pt=32.0)
-BANNED = r"^(Furthermore|Moreover|Additionally|Interestingly)\b"
 
 
 def walk(shapes):
@@ -187,9 +186,6 @@ def lint(path, minutes=None, include_hidden=False):
             add("WARN", n, "N8", "no presenter notes")
         if note:
             notes_words += len(note.split())
-            for para in [q.strip() for q in note.split("\n") if q.strip()]:
-                if re.match(BANNED, para):
-                    add("FAIL", n, "N1", f"banned transition opener: {para[:50]!r}")
             if re.search(r"NCDB", note) and re.search(r"population[- ](based|database|data)", note, re.I):
                 add("FAIL", n, "N2", "NCDB described as population-based (it is hospital-based)")
             for m in re.findall(r"\d+\.\d+\s?%", note):
