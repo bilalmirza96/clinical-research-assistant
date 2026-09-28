@@ -2897,6 +2897,24 @@
    ],
    "lesson": "The banned-transition list and the AI-tell vocabulary list did not make CRA prose read as human-written: blinded judges picked the published paragraph 14 of 14 times against drafts written under the old rules, and published surgical papers use several of the banned words. The author removed both lists on 2026-09-28. What judges actually caught were structural tells: sentence packing wrong for the section, too many tidy paragraphs, over-explaining, aims written as Methods, field terms swapped for synonyms, and miscalibrated certainty.",
    "rule": "No transition word or vocabulary word is banned. voice_check.py keeps the em-dash hard failure, section weight and venue limits, and the non-statistical 'significant' soft flag; the word lists are gone (also from deck_lint N1, manuscript-qc checks and command contracts). Voice is taught by the corpus-trained guide installed in skills/references/writing-style.md, chosen by blinded held-out testing. Regression check: test_L103_no_word_bans in tools/tests/test_linters.py. Update 2026-09-28: skills/references/writing-style.md was fully replaced by the corpus-trained guide (blind-test winner v3: 2.86 vs 2.36 and 3.21 vs 2.43 of 5 against the prior voice; v4 and v5 rejected). It is the only CRA writing guide; the old author-style reference, Collective Abstract Style and House Academic Voice sections are gone, and every write-* skill and the router point to it. House Document Formatting (L070) is kept at the end of the file."
+  },
+  {
+   "id": "L104-rhetorical-decoration-patterns",
+   "date_added": "2026-09-28",
+   "originating_session": "Review of humanizer (blader) and humanink (sirambrosio) pattern sets against writing-style.md, 2026-09-28",
+   "category": "writing-style",
+   "severity": "MEDIUM",
+   "trigger_patterns": [
+    "not X but Y",
+    "serves as",
+    "represents",
+    "stacked hedges",
+    "aphorism",
+    "humanizer",
+    "humanink"
+   ],
+   "lesson": "Of 61 patterns in the humanizer and humanink skills, about 20 were already in the guide, several conflict with surgical convention (passive-voice ban, rule-of-three ban, word lists, 'associated with' flagged as vague), and seven were real gaps: rhetorical decoration that adds no fact.",
+   "rule": "writing-style.md section 1 item 13 and self-check item 13 cover seven decoration habits. Cut: 'not X but Y' reversals, stacked hedges, dramatic one-line closers, aphorisms, three or more consecutive same-subject openings. Rationed, not removed (author directive): 'represents'/'serves as' (flag at 2 or more per section) and trailing -ing riders (keep only those carrying an inference, flag at 2 or more per paragraph). No word bans. Regression check: test_L104_decoration_patterns in tools/tests/test_linters.py."
   }
  ]
 }
