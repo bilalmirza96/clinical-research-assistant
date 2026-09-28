@@ -54,6 +54,11 @@ if [[ -z "$VERSION" ]]; then
   exit 2
 fi
 
+# Needed early: the version-bump path below backs up installed_plugins.json into the
+# same timestamped directory that file-level backups use later in this script.
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+BACKUP_DIR="$HOME/.claude/plugins/.cra-redeploy-backups/$STAMP"
+
 CACHE=""
 for d in "$HOME"/.claude/plugins/cache/*/clinical-research-assistant/"$VERSION"; do
   [[ -d "$d" ]] && CACHE="$d" && break
@@ -61,8 +66,74 @@ done
 [[ -z "$CACHE" && -d "$HOME/.claude/plugins/clinical-research-assistant" ]] && CACHE="$HOME/.claude/plugins/clinical-research-assistant"
 
 if [[ -z "$CACHE" ]]; then
-  printf "${YELLOW}… no deployed CRA plugin cache for v%s — nothing to redeploy.${RESET}\n" "$VERSION"
-  exit 0
+  # No cache dir at the CURRENT plugin.json version. Before giving up, check whether an
+  # OLDER versioned cache dir exists (i.e. plugin.json was bumped but never redeployed).
+  # If so, this is a version bump: stand up the new version dir from the newest existing
+  # one, repoint installed_plugins.json at it, and fall through to the normal deploy.
+  OLD_CACHE=""; OLD_VERSION=""; MARKETPLACE=""
+  for d in "$HOME"/.claude/plugins/cache/*/clinical-research-assistant/*/; do
+    [[ -d "$d" ]] || continue
+    v="$(basename "${d%/}")"
+    [[ "$v" == *.bak-* ]] && continue   # e.g. 3.9.3.bak-2026-09-16 — not a real version dir
+    [[ "$v" == "$VERSION" ]] && continue
+    mp="$(basename "$(dirname "$(dirname "${d%/}")")")"
+    if [[ -z "$OLD_VERSION" ]] || [[ "$(printf '%s\n%s\n' "$OLD_VERSION" "$v" | sort -V | tail -1)" == "$v" ]]; then
+      OLD_VERSION="$v"; OLD_CACHE="${d%/}"; MARKETPLACE="$mp"
+    fi
+  done
+
+  if [[ -z "$OLD_CACHE" ]]; then
+    printf "${YELLOW}… no deployed CRA plugin cache for v%s — nothing to redeploy.${RESET}\n" "$VERSION"
+    exit 0
+  fi
+
+  NEW_CACHE="$HOME/.claude/plugins/cache/$MARKETPLACE/clinical-research-assistant/$VERSION"
+  INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
+  PLUGIN_KEY="clinical-research-assistant@$MARKETPLACE"
+
+  printf "${YELLOW}⚠ version bump detected${RESET}: plugin.json is v%s but the deployed cache is v%s (marketplace: %s)\n" "$VERSION" "$OLD_VERSION" "$MARKETPLACE"
+  printf "Will:\n"
+  printf "  1. copy %s → %s\n" "$OLD_CACHE" "$NEW_CACHE"
+  printf "  2. update %s: \"%s\" version %s→%s, installPath → %s (JSON backed up first)\n" "$INSTALLED_JSON" "$PLUGIN_KEY" "$OLD_VERSION" "$VERSION" "$NEW_CACHE"
+  printf "  3. continue with the normal repo→cache deploy against the new cache dir\n"
+
+  if [[ $DRY_RUN -eq 1 ]]; then
+    printf "${DIM}(dry run — not copying %s, not touching installed_plugins.json)${RESET}\n" "$NEW_CACHE"
+    CACHE="$OLD_CACHE"   # preview the subsequent diff against what the new cache would start as
+  else
+    mkdir -p "$(dirname "$NEW_CACHE")"
+    cp -pR "$OLD_CACHE" "$NEW_CACHE"
+
+    if [[ -f "$INSTALLED_JSON" ]]; then
+      mkdir -p "$BACKUP_DIR"
+      cp -p "$INSTALLED_JSON" "$BACKUP_DIR/installed_plugins.json.bak"
+      python3 - "$INSTALLED_JSON" "$PLUGIN_KEY" "$OLD_VERSION" "$VERSION" "$NEW_CACHE" <<'PYEOF'
+import json, sys, datetime
+path, key, old_v, new_v, new_path = sys.argv[1:6]
+with open(path) as f:
+    data = json.load(f)
+entries = data.get("plugins", {}).get(key)
+if entries is None:
+    sys.exit("plugin key not found in installed_plugins.json: " + key)
+now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") \
+    + f"{datetime.datetime.now(datetime.timezone.utc).microsecond // 1000:03d}Z"
+for e in entries:
+    if e.get("version") == old_v:
+        e["version"] = new_v
+        if isinstance(e.get("installPath"), str) and old_v in e["installPath"]:
+            e["installPath"] = e["installPath"].replace(old_v, new_v)
+        e["lastUpdated"] = now
+with open(path, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+PYEOF
+    else
+      printf "${RED}✗ %s not found — skipping installed_plugins.json update${RESET}\n" "$INSTALLED_JSON"
+    fi
+
+    CACHE="$NEW_CACHE"
+    printf "${GREEN}✓ stood up %s and updated installed_plugins.json${RESET}\n" "$NEW_CACHE"
+  fi
 fi
 
 # Runtime artifacts that are never part of the plugin payload.
@@ -79,9 +150,6 @@ list_files() {  # $1 = root; prints relative paths
 }
 
 mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo 0; }
-
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BACKUP_DIR="$HOME/.claude/plugins/.cra-redeploy-backups/$STAMP"
 
 printf "repo  : %s ${GREEN}(v%s)${RESET}\n" "$PLUGIN_SRC" "$VERSION"
 printf "cache : %s\n" "$CACHE"
