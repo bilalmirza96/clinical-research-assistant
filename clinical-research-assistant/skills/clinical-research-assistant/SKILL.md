@@ -139,4 +139,4 @@ When the user pastes a new skill or skill bundle into `skills/external/`:
 
 ## Learning Rule
 
-If routing fails, the selected skill is insufficient, or an external skill should become part of the normal CRA workflow, add a structured lesson to `../references/lessons-log.json` and update the relevant internal skill or routing documentation.
+If routing fails, the selected skill is insufficient, or an external skill should become part of the normal CRA workflow, add a structured lesson to `../references/lessons-log.json` and update the relevant internal skill or routing documentation. Every lesson also ships with a regression check (added 2026-09-28): an agent eval under `../../evals/<Lnnn-slug>/` (`claude plugin eval`, synthetic fixtures, deterministic graders) or a unit test in `../../tools/tests/test_linters.py` when a linter enforces it; run `tools/run_evals.sh smoke` before committing a skill edit. A lesson without a check is not closed.
