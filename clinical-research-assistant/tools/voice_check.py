@@ -74,12 +74,14 @@ BODY_END_SENTINEL = "[END OF ABSTRACT BODY]"
 # --------------------------------------------------------------------------------------
 
 def read_text(path: Path) -> str:
-    """Return plain text from .md/.txt or .docx."""
+    """Return plain text from .md/.txt or .docx.
+
+    Raises ImportError (missing python-docx) or any exception python-docx/pathlib raises
+    (corrupt document, unreadable path) up to the caller, which turns it into the --json
+    error contract or the legacy stderr-message-and-exit-1 behavior.
+    """
     if path.suffix.lower() == ".docx":
-        try:
-            from docx import Document
-        except ImportError:
-            sys.exit("python-docx is required to read .docx files: pip install python-docx")
+        from docx import Document  # raises ImportError if python-docx is not installed
         return "\n".join(p.text for p in Document(str(path)).paragraphs)
     return path.read_text(encoding="utf-8")
 
@@ -151,13 +153,32 @@ def main() -> int:
                          "pass '' to disable")
     args = ap.parse_args()
 
-    if not args.path.exists():
-        sys.exit(f"no such file: {args.path}")
+    def fail(msg: str) -> int:
+        """Report a tool error (exit code 2). Under --json, emit the one-object JSON
+        contract with "error" set and nothing else on stdout. Otherwise, preserve the
+        pre-existing behavior: message to stderr, exit 1 (unchanged for --json-less callers)."""
+        if args.json:
+            print(json.dumps({"hard": [], "soft": [], "error": msg}))
+            return 2
+        print(msg, file=sys.stderr)
+        return 1
 
-    raw = read_text(args.path)
+    if not args.path.exists():
+        return fail(f"no such file: {args.path}")
+
+    try:
+        raw = read_text(args.path)
+    except ImportError:
+        return fail("python-docx is required to read .docx files: pip install python-docx")
+    except Exception as exc:
+        return fail(f"failed to read {args.path}: {exc}")
+
     if args.stop_at and args.stop_at not in raw:
-        print(f"note: body-end sentinel {args.stop_at!r} not found — counting the whole file. "
-              f"Add the sentinel after the last body section so trailing notes are excluded.\n")
+        note = (f"note: body-end sentinel {args.stop_at!r} not found — counting the whole file. "
+                f"Add the sentinel after the last body section so trailing notes are excluded.\n")
+        # Under --json, stdout must be exactly one JSON object and nothing else — the
+        # advisory goes to stderr instead. Human mode is unchanged (stdout, as before).
+        print(note, file=sys.stderr if args.json else sys.stdout)
     prose = strip_scaffold(raw, args.stop_at or None)
     hard: list[str] = []
     soft: list[str] = []
@@ -220,7 +241,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({"file": str(args.path), "body_chars": body_chars,
                           "sections": sec_chars, "hard": hard, "soft": soft,
-                          "pass": not hard}, indent=2))
+                          "pass": not hard, "error": None}, indent=2))
         return 1 if hard else 0
 
     print(f"voice_check — {args.path.name}")
