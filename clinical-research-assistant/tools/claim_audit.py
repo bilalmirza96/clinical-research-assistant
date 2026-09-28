@@ -158,11 +158,11 @@ MAX_CANDIDATES = 4
 # --------------------------------------------------------------------------------------
 
 def read_text(path: Path, stop_at: str | None) -> str:
+    """Raises ImportError (missing python-docx) or any read/parse exception up to the
+    caller, which turns it into the --json error contract or the legacy stderr-message-
+    and-exit-1 behavior."""
     if path.suffix.lower() == ".docx":
-        try:
-            import docx  # type: ignore
-        except ImportError:
-            sys.exit("python-docx is required to read .docx files: pip install python-docx")
+        import docx  # type: ignore  # raises ImportError if python-docx is not installed
         text = "\n".join(p.text for p in docx.Document(str(path)).paragraphs)
     else:
         text = path.read_text(encoding="utf-8")
@@ -296,13 +296,34 @@ def main() -> int:
                     help="ignore everything after this sentinel line")
     args = ap.parse_args()
 
-    if not args.path.exists():
-        sys.exit(f"no such file: {args.path}")
-    if not args.registry.exists():
-        sys.exit(f"no such registry: {args.registry}")
+    def fail(msg: str) -> int:
+        """Report a tool error (exit code 2). Under --json, emit the one-object JSON
+        contract with "error" set and nothing else on stdout. Otherwise, preserve the
+        pre-existing behavior: message to stderr, exit 1."""
+        if args.json:
+            print(json.dumps({"hard": [], "soft": [], "error": msg}))
+            return 2
+        print(msg, file=sys.stderr)
+        return 1
 
-    text = read_text(args.path, args.stop_at)
-    registry = load_registry(args.registry)
+    if not args.path.exists():
+        return fail(f"no such file: {args.path}")
+    if not args.registry.exists():
+        return fail(f"no such registry: {args.registry}")
+
+    try:
+        text = read_text(args.path, args.stop_at)
+    except ImportError:
+        return fail("python-docx is required to read .docx files: pip install python-docx")
+    except Exception as exc:
+        return fail(f"failed to read {args.path}: {exc}")
+
+    try:
+        registry = load_registry(args.registry)
+    except (json.JSONDecodeError, ValueError) as exc:
+        return fail(f"malformed registry JSON in {args.registry}: {exc}")
+    except Exception as exc:
+        return fail(f"failed to read registry {args.registry}: {exc}")
 
     hard, soft = [], []
     for lineno, sent in split_sentences(text):
@@ -324,7 +345,7 @@ def main() -> int:
 
     if args.json:
         print(json.dumps({"hard": hard, "soft": soft,
-                          "registry_keys": len(registry)}, indent=1))
+                          "registry_keys": len(registry), "error": None}, indent=1))
         return 1 if hard else 0
 
     print(f"claim_audit: {args.path.name}  ({len(registry)} registry keys)")
