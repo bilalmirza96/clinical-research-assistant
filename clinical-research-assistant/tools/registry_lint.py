@@ -6,6 +6,7 @@ registry_lint.py - mechanical safeguards against result-logging confusion (L071)
     python3 tools/registry_lint.py <registry> --results-dir Reports   # also finds orphans
     python3 tools/registry_lint.py <registry> --arms adeno,scc        # parity check
     python3 tools/registry_lint.py <registry> --deliverable Reports/abstract.md
+    python3 tools/registry_lint.py <registry> --json                  # {"hard","soft","error"}
 
 WHY THIS EXISTS
 ---------------
@@ -16,7 +17,9 @@ consequence was a MATCHED estimate from one arm being written into an abstract n
 UNMATCHED estimate from the other, and a subgroup verdict reported as INFERIOR when the
 like-for-like value was INCONCLUSIVE. Prose rules did not prevent it. This does.
 
-Exit code 0 = clean, 1 = hard failures. Wire it into any workflow that touches a registry.
+Exit code 0 = clean, 1 = hard failures, 2 = tool error (missing/unreadable/malformed
+registry, only reachable with --json — without --json a bad registry path or malformed
+JSON raises as before). Wire it into any workflow that touches a registry.
 
 CHECKS (hard failures)
   H1  every key has a non-empty label
@@ -81,9 +84,27 @@ def main() -> int:
                          "Every exception MUST carry a reason; an entry without one is "
                          "itself a hard failure.")
     ap.add_argument("--warn-only", action="store_true")
+    ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     a = ap.parse_args()
 
-    R = load(a.registry)
+    def fail(msg: str) -> int:
+        """Report a tool error (exit code 2). Under --json, emit the one-object JSON
+        contract with "error" set and nothing else on stdout. Without --json, this path
+        is not used — a bad registry raises as before (unchanged legacy behavior)."""
+        print(json.dumps({"hard": [], "soft": [], "error": msg}))
+        return 2
+
+    if a.json:
+        try:
+            R = load(a.registry)
+        except FileNotFoundError:
+            return fail(f"no such registry: {a.registry}")
+        except (json.JSONDecodeError, ValueError) as exc:
+            return fail(f"malformed registry JSON in {a.registry}: {exc}")
+        except Exception as exc:
+            return fail(f"failed to read registry {a.registry}: {exc}")
+    else:
+        R = load(a.registry)
     hard: list[str] = []
     soft: list[str] = []
 
@@ -98,7 +119,8 @@ def main() -> int:
                     hard.append(f"IGNORE-FILE {chk} entry has no reason: "
                                 f"{ent.get('pattern')}")
         n = sum(len(v) for k, v in ignores.items() if not k.startswith("_"))
-        print(f"ignore-file: {a.ignore_file.name}, {n} documented exceptions\n")
+        if not a.json:
+            print(f"ignore-file: {a.ignore_file.name}, {n} documented exceptions\n")
 
     def ignored(check: str, text: str) -> bool:
         for ent in ignores.get(check, []):
@@ -109,7 +131,8 @@ def main() -> int:
     def add(bucket: list[str], check: str, msg: str) -> None:
         if not ignored(check, msg):
             bucket.append(f"{check} {msg}")
-    print(f"registry_lint - {a.registry.name}: {len(R)} keys\n")
+    if not a.json:
+        print(f"registry_lint - {a.registry.name}: {len(R)} keys\n")
 
     # ---- H1 label present
     for k, e in R.items():
@@ -237,6 +260,10 @@ def main() -> int:
         if untraced:
             add(soft, "H8", f"{d.name}: decimals with no matching registry value: "
                             f"{sorted(set(untraced))[:12]}")
+
+    if a.json:
+        print(json.dumps({"hard": hard, "soft": soft, "error": None}))
+        return 1 if (hard and not a.warn_only) else 0
 
     for label, items in (("HARD FAILURES", hard), ("REVIEW", soft)):
         if items:
