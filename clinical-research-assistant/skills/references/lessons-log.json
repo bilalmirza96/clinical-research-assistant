@@ -2657,6 +2657,152 @@
     }
    ],
    "promoted_date": "2026-09-25"
+  },
+  {
+   "id": "L091-full-precision-half-up-boundary-guard",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: independent adversarial audit of manuscript v01 and remediation amendment A11 (manuscript v02)",
+   "category": "reporting",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "round",
+    "rounding",
+    "3 decimals",
+    "registry value",
+    "render numbers",
+    "table cell",
+    "figure label",
+    "off by 0.01",
+    "precision",
+    "x.xx5"
+   ],
+   "lesson": "Registry values stored at 3 decimals and printed at 2 were wrong whenever the stored digit was 5 (0.275 may be 0.27498): about 19 manuscript values were off by 0.01 and Figure 2 disagreed with the text. Separate helpers in text, tables and figures used different rounding rules.",
+   "rule": "Render every manuscript surface through one Decimal ROUND_HALF_UP formatter (project manuscript_format.py). New producers store full precision. A registry entry may carry a full-precision companion (current.fp) that the resolver prefers. A boundary guard records any value printed from a stored number with exactly nd+1 decimals ending in 5, and strict builds fail until a gated refit (must reproduce the stored value) registers the companion. Compute E-values from full-precision inputs."
+  },
+  {
+   "id": "L092-no-ridge-on-exposure-models",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: independent adversarial audit of manuscript v01 and remediation amendment A11 (manuscript v02)",
+   "category": "statistics",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "penalizer",
+    "ridge",
+    "lifelines",
+    "convergence",
+    "singular matrix",
+    "model B",
+    "stability"
+   ],
+   "lesson": "A lifelines Cox model B was fit with penalizer 0.05 'for stability'. lifelines scales the penalty against the mean log-likelihood, so it shrank the socioeconomic coefficients and inflated the exposure HR (1.081 vs 1.053 unpenalized), halving the apparent attenuation from model A. The instability that motivated it was a single-patient covariate level.",
+   "rule": "Fit exposure models unpenalized. When a fit is singular, find the sparse level or collinearity, drop or merge those rows, count and disclose them. Never let a penalty change the exposure estimate silently; if one is unavoidable, leave the exposure unpenalized and report both fits."
+  },
+  {
+   "id": "L093-genomic-platform-and-units",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: independent adversarial audit of manuscript v01 and remediation amendment A11 (manuscript v02)",
+   "category": "data-integrity",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "TMB",
+    "tumor mutational burden",
+    "GENIE",
+    "whole-exome",
+    "WES",
+    "panel",
+    "mut/Mb",
+    "gene enrichment"
+   ],
+   "lesson": "A race difference in TMB-high was an artifact: all 20 whole-exome samples (binary High/Low TMB code) came from Black patients and were pooled with panel bins; within sequencing assay the OR was about 1. The GENIE TMB file stores mutations per base (x 1e6 = per Mb), which an earlier script misread as degenerate, wrongly abandoning the prespecified TMB >= 10 threshold. Off-panel genes were coded wild-type in the harmonized matrix.",
+   "rule": "Never pool TMB across platforms or scales; compare groups within sequencing assay (conditional logistic by SEQ_ASSAY_ID). Gate unit conversions against the source's own bins. Mask off-panel genes as not tested; if panel definitions are missing for most assays, do not report gene-level comparisons."
+  },
+  {
+   "id": "L094-test-differences-not-significance",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: independent adversarial audit of manuscript v01 and remediation amendment A11 (manuscript v02)",
+   "category": "statistics",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "among resected",
+    "among nonresected",
+    "not significant in",
+    "whereas among",
+    "subgroup",
+    "within treatment group",
+    "improved in White but not Black"
+   ],
+   "lesson": "The v01 draft contrasted a non-significant HR among resected patients with a significant HR among non-resected patients; the formal comparison (ratio of HRs 0.97, P = .50) showed no difference. A similar construction was used for within-race era trends.",
+   "rule": "Never present a difference in significance as a difference in effect. Test it: a product-term interaction, or for displayed independent stratum estimates, the ratio of the 2 estimates (Altman and Bland 2003). Report the test beside the stratum estimates."
+  },
+  {
+   "id": "L095-registry-treatment-fields-before-approval",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: independent adversarial audit of manuscript v01 and remediation amendment A11 (manuscript v02)",
+   "category": "data-integrity",
+   "severity": "MEDIUM",
+   "trigger_patterns": [
+    "immunotherapy",
+    "checkpoint",
+    "RX_SUMM_IMMUNOTHERAPY",
+    "ICI era",
+    "before approval",
+    "exposure window"
+   ],
+   "lesson": "The NCDB immunotherapy field recorded 7-15% use in stage IV esophageal adenocarcinoma in 2013-2017, before any checkpoint inhibitor was approved for esophagogastric cancer, so all-years 'immunotherapy' was not checkpoint inhibition.",
+   "rule": "Before interpreting a registry treatment field as a specific drug class, tabulate use by diagnosis year and histology against approval dates; restrict the primary analysis to the approval era and report all years as sensitivity."
+  },
+  {
+   "id": "L096-period-trends-need-period-specific-covariates",
+   "date_added": "2026-09-26",
+   "originating_session": "REPEAT DISPARITIES PROJECT: re-audit of manuscript v02",
+   "category": "statistics",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "race x era",
+    "interaction with era",
+    "did the disparity narrow",
+    "widened over time",
+    "trend across periods",
+    "calendar period",
+    "product term"
+   ],
+   "lesson": "A race x era product term in a model that held every covariate effect constant across eras gave a significant widening of the Black-White HR (ratio 1.12). The separately fitted per-era HRs printed beside it implied 1.05. Adenocarcinoma survival improved more than squamous survival across eras, and 76% of Black vs 19% of White patients had squamous histology, so the race x era term absorbed a histology x era change. With histology x era terms, or with within-era models, the change was not significant.",
+   "rule": "Estimate change in a disparity across periods from models fitted within each period (ratio of the independent estimates, Altman-Bland) or from a product-term model that lets the major prognostic covariates vary by period. Report the common-effect product term only as a labelled sensitivity. Check that any printed per-period estimates imply the reported ratio."
+  },
+  {
+   "id": "L097-one-precision-per-estimate-never-pad-stored-strings",
+   "date_added": "2026-09-27",
+   "originating_session": "REPEAT DISPARITIES PROJECT: verification of supplement v04",
+   "category": "reporting",
+   "severity": "MEDIUM",
+   "trigger_patterns": [
+    "supplement table",
+    "decimals",
+    "trailing zero",
+    "mixed precision",
+    "CI limits",
+    "format registry values",
+    "eTable"
+   ],
+   "lesson": "Supplement v04 printed 103 estimate cells whose point estimate and CI limits carried different decimals, e.g. 0.972 (0.911-1.04), because each value was shown at its own stored decimals. Stored strings came from two conventions that look identical once trailing zeros are dropped: round(x, 3) (1.04 means 1.040) and 3 significant figures (1.04 means 1.035-1.045). A fix for one table (V9) left the class in 16 others.",
+   "rule": "Print an estimate and its CI at one number of decimals: the fewest held by any of the three, never below the main text, reached by half-up re-rounding through the boundary guard. Never pad a stored string with zeros unless the producer's convention is known for that field. Leave and footnote any cell whose re-rounding would depend on an unstored final 5, or register a full-precision value. When an audit flags one instance of a display defect, scan every table for the class."
+  },
+  {
+   "id": "L098-run-time-dates-in-record-writers",
+   "date_added": "2026-09-27",
+   "originating_session": "REPEAT DISPARITIES PROJECT: verification of supplement v04",
+   "category": "provenance",
+   "severity": "LOW",
+   "trigger_patterns": [
+    "upsert",
+    "registry date",
+    "last_updated",
+    "DATE =",
+    "registered date",
+    "update_log"
+   ],
+   "lesson": "An upsert script with a fixed DATE constant ran just after midnight: the new registry entry and its update_log line were stamped with the previous day, last_updated did not advance, and the supplement printed the stale registry date. Amendment timing claims depend on these stamps.",
+   "rule": "Record writers take the date (and preferably the time) at run time. A fixed date is allowed only as an explicit argument that the log records. Correct a wrong stamp as a logged metadata change, never by silently rewriting history."
   }
  ]
 }
