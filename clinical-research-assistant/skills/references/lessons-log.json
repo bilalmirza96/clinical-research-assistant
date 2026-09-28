@@ -2,7 +2,7 @@
  "_meta": {
   "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
   "schema_version": "1.0",
-  "last_updated": "2026-09-25",
+  "last_updated": "2026-09-27",
   "maintainer": "clinical-research-assistant skill, sourced from real sessions",
   "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
   "last_promotion_pass": "2026-05-24",
@@ -2803,6 +2803,26 @@
    ],
    "lesson": "An upsert script with a fixed DATE constant ran just after midnight: the new registry entry and its update_log line were stamped with the previous day, last_updated did not advance, and the supplement printed the stale registry date. Amendment timing claims depend on these stamps.",
    "rule": "Record writers take the date (and preferably the time) at run time. A fixed date is allowed only as an explicit argument that the log records. Correct a wrong stamp as a logged metadata change, never by silently rewriting history."
+  },
+  {
+   "id": "L099-progressive-disclosure-history-out-of-skill",
+   "date_added": "2026-09-27",
+   "originating_session": "CRA maintenance: progressive-disclosure split of the analyze skill",
+   "category": "skill-architecture",
+   "severity": "MODERATE",
+   "trigger_patterns": [
+    "SKILL.md",
+    "CHANGELOG / Lessons Learned",
+    "skill too long",
+    "token budget",
+    "progressive disclosure",
+    "references/",
+    "load only when",
+    "duplicate reference text",
+    "changelog in skill"
+   ],
+   "lesson": "SKILL.md files were carrying changelog history and duplicated reference text into every run: the analyze skill loaded 10,086 words on each invocation, 1,143 of them its own changelog, plus Phase 0, 1.1.a and HALT 2A blocks already held verbatim by kdense-delegations.md, registry-cohort-checklists.md and analysis-ladder.md. History and duplicated detail cost context on every run without adding enforcement.",
+   "rule": "SKILL.md holds enforcement and a phase checklist only (frontmatter, role, halts, checkpoints, gates, stop conditions, the references index). History lives in references/changelog.md, detail lives in references/ with an explicit load trigger stated at the pointer, and lessons live in this log. Moves are verbatim and verified byte-for-byte; halt, checkpoint and gate counts are asserted unchanged before and after."
   }
  ]
 }
