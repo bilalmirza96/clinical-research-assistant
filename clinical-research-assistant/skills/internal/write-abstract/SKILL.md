@@ -20,6 +20,8 @@ Before drafting or auditing any abstract:
 2. **`../../references/biomedagent-methodology.md`** — three-phase pipeline (Plan → Execute → Verify) and task-classification rules. An abstract is a *deliverable* of Phase 3 (Verify), not a Phase 2 artefact.
 3. **`../../references/lessons-log.json`** — scan for prior abstract-writing patterns (e.g., L012 JAMA-table formatting; L013 P-value formatting; L017 onward, abstract editorial principles). Apply matching entries before re-deriving.
 
+**Scope clarification (author-approved 2026-09-28).** Items 1-3 above, and the "read all five canonical abstracts" rule below, apply when drafting a new abstract or performing any rewrite that changes more than about one sentence or any claim in an existing draft. They do not apply to a **bounded mechanical edit** of an existing draft — a terminology swap (e.g., correcting banned race terminology), a number correction sourced from the registry, or a typo fix. A bounded edit may proceed directly to the edit without the full read. It still runs `voice_check.py` and `claim_audit.py` on the result exactly as a full draft does; only the upfront reading requirement is scoped down.
+
 The 12 principles below are the **editorial rubric**. Run the 12-point gate at the end of every draft.
 </read_first>
 
@@ -263,6 +265,8 @@ Distilled patterns to replicate (these are *how Bilal likes abstracts*, on top o
 6. **No em dashes** (commas/semicolons/parentheses; en dash only inside compounds like Black-White). Database names allowed; spell out non-standard abbreviations at first use.
 
 When the user asks for an abstract, open all five examples (the matching one most closely), apply the "Collective Abstract Style" section of `writing-style.md`, mirror the architecture and density, then run the 12-point gate.
+
+This full-read requirement is scoped the same way as the required reading above: it binds drafting and any rewrite touching more than about one sentence or claim, not a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) of an existing draft — see the scope clarification under "Required reading at session start."
 
 ## CHANGELOG / Lessons Learned
 
