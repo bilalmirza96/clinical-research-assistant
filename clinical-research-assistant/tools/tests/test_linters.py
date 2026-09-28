@@ -595,3 +595,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def test_L104_decoration_patterns():
+    guide = (ROOT / "skills" / "references" / "writing-style.md").read_text()
+    assert "**13. Rhetorical decoration" in guide
+    assert "13. Decoration (section 1 item 13)" in guide
+    for phrase in ('"Not X but Y" reversal', "Copula avoidance (rationed)",
+                   "Decorative -ing rider (rationed)", "Stacked hedges",
+                   "Dramatic one-line closer", "Aphorism or dead metaphor",
+                   "three or more consecutive sentences"):
+        assert phrase in guide, phrase
+
