@@ -135,18 +135,7 @@ All state files are backward compatible — commands work standalone without sta
 
 ## Writing Style Reference
 
-All manuscript-writing commands must read and apply `skills/references/writing-style.md` before drafting any text.
-
-That file is the single source of truth for:
-- sentence architecture
-- hedging patterns
-- transition words
-- statistical layering
-- equity framing
-- voice rules
-- banned phrases
-
-Do not duplicate those rules here.
+All manuscript-writing commands must read and apply `skills/references/writing-style.md` before drafting any text. It is the single source of truth for how CRA prose reads: voice, tone, sentence architecture, paragraphing, hedging, transitions, and word choice. Do not duplicate those rules here.
 
 ---
 
