@@ -381,6 +381,8 @@ Every abstract opens on the **clinical or biological stake**, then narrows to th
 
 Before drafting any abstract: (1) read the venue/study-type-matched example in `examples/` for architecture, (2) read the other four quickly to re-absorb the common voice, (3) draft against the five-part shape above, (4) run the 12-point gate. When auditing, check the submitted draft against both the 12-point gate and the five points here, and quote the matching reference pattern when proposing a fix.
 
+Scope clarification (author-approved 2026-09-28): steps (1)-(2) apply to drafting and to any audit-rewrite touching more than about one sentence or claim, not to a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) — see the fuller statement under "House Academic Voice" below.
+
 ---
 
 # House Academic Voice — Universal Standard (ALL CRA prose)
@@ -402,6 +404,14 @@ Before drafting any abstract: (1) read the venue/study-type-matched example in `
 4. Run the mechanical gate: `python3 tools/voice_check.py <draft> [--venue X] [--sections]`.
    It exits non-zero on any hard failure. A draft with hard failures is not deliverable.
 5. For abstracts, additionally run the 12-point editorial gate in `write-abstract/SKILL.md`.
+
+**Scope clarification (author-approved 2026-09-28).** Steps 1-2 above (read this section; read all
+five canonical abstracts) apply to drafting and to any rewrite that changes more than about one
+sentence or any claim in an existing draft. They do not apply to a bounded mechanical edit of an
+existing draft — a terminology swap, a number correction sourced from the registry, or a typo fix.
+Such a bounded edit may proceed directly to steps 3-5: draft (edit) it, then run `voice_check.py`
+and `claim_audit.py` on the result exactly as on a full draft. Only the upfront full-reference-read
+in steps 1-2 is scoped down; the mechanical and claim-audit gates are never skipped.
 
 ## A. Hard mechanical rules (enforced by `tools/voice_check.py`)
 
