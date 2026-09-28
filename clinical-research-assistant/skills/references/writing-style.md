@@ -69,6 +69,15 @@ Ranked by how often the judges cited the pattern. Each item is a pair: model hab
 
 **12. Stock endings.** Drafts close the Discussion or Conclusions with a future-research agenda or a two-verb flourish ("facilitate adoption and support translation"). -> Published Conclusions run two to four sentences with no statistics. They restate the finding in the design's own words and end on one calibrated implication or a short statement that a question remains.
 
+**13. Rhetorical decoration (added 2026-09-28 from the humanizer and humanink pattern sets, L104).** Seven habits that dress up a sentence without adding a fact. Two are rationed, not removed; the rest are cut.
+- *"Not X but Y" reversal.* "The leak rate was not a consequence of technique but of patient selection." -> State what the data show, then interpret: "The higher leak rate was confined to patients with albumin below 3.0 g/dL, which suggests that selection rather than technique accounted for the difference."
+- *Copula avoidance (rationed).* "represents", "serves as", "stands as", "functions as" in place of "is". -> Default to "is". One such verb in a section is acceptable; two or more in a section is the tell.
+- *Decorative -ing rider (rationed).* A trailing participle that adds no fact: "Follow-up was extended to 5 years, reflecting the importance of long-term outcomes." -> Cut it. A trailing participle that carries an inference stays ("..., suggesting that margin status mediated part of the benefit"), as item 7 recommends, but no more than one per paragraph.
+- *Stacked hedges.* "may potentially suggest a possible association". -> One calibrated hedge per claim, or none when the design supports a direct statement ("Frailty was associated with readmission").
+- *Dramatic one-line closer.* "This difference matters." after a result. -> Replace the emphasis with the next fact ("..., a difference that persisted after adjustment for comorbidity and stage").
+- *Aphorism or dead metaphor.* "Surgical quality is the cornerstone of oncologic success." -> Say the literal claim ("Adequate lymph node yield is required for accurate staging").
+- *Same subject opening three or more consecutive sentences.* "Patients were screened. Patients were randomized. Patients were followed." -> Combine or vary the subject. Two in a row is normal Methods prose.
+
 ---
 
 ## 2. How these authors sound
@@ -179,6 +188,7 @@ Run each item against your own draft before delivery. Fix the draft rather than 
 10. Parallelism: are paired estimates in one sentence? Are lists in protocol order rather than re-sorted?
 11. Numbers: does every percentage have its numerator and denominator where the data give them? Is every number traceable to the analysis registry, and is anything else flagged UNSOURCED?
 12. Ending: do the Conclusions stop on one calibrated implication, without an agenda and without a flourish?
+13. Decoration (section 1 item 13): no "not X but Y" reversals, stacked hedges, one-line dramatic closers or aphorisms. Count "represents"/"serves as" per section (flag at 2 or more) and trailing -ing riders per paragraph (flag at 2 or more; cut any that add no fact). Flag three or more consecutive sentences opening with the same subject.
 
 ---
 
