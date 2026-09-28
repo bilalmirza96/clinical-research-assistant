@@ -99,6 +99,8 @@ Sentences are long here (about 30 words on average) and subordinated. Participia
 ### Results (median about 600 words, near-zero hedges)
 - Paragraph 1: flow of participants in one dense block (screened, excluded with reasons in protocol order, crossovers inside the group they affected, analyzed N), then baseline characteristics with a table pointer.
 - Then the primary outcome, secondary outcomes and subgroups, in the order the Methods set out.
+- Make the outcome or the patients the subject of the sentence ("Ninety-day mortality was lower...", "Among 38 976 patients (mean [SD] age, 55.7 [19.8] years; 21 944 [56.3%] female),..."). Do not signpost with "For the primary outcome," or "X was distributed as follows:", and fold demographics into one parenthetical sentence rather than a list lead-in.
+- JAMA typesetting (AMA style), which judges read as human: no comma in numbers (1000; 38 976 with a space from five digits up); "Supplement 1" and "eTable 3 in Supplement 1", not "supplementary material"; the SI conversion as "(to convert to g/L, multiply by 10.0)"; the symbol β for a regression coefficient; no numeral at the start of a sentence (restructure: "Recently, 2 trials..." or spell it out). `voice_check.py` flags these as review items.
 - Each distinct result gets a short sentence. Paired values sit together: "(18/212 [8.5%] vs 31/208 [14.9%])". Give the denominator compactly in the parenthesis and do not rebuild "of the N patients" frames around every count.
 - No literature, no mechanism and no "Despite" pivots. A single trailing participle ("suggesting that...") is the most interpretation this section allows, and many papers use none.
 
@@ -111,7 +113,7 @@ Sentences are long here (about 30 words on average) and subordinated. Participia
 
 ### Limitations
 - A headed block, usually opened by "This study has several limitations." or a close variant. Strengths, if given, come first as design features.
-- "First", "Second" and "Third" are common. Each limitation is one or two sentences: the fact, then its consequence in a trailing clause. Name the excluded population or the unmeasured outcome. Keep examples in a trailing parenthetical "(eg, ...)".
+- "First", "Second" and "Third" are common, and they run inside one paragraph, not a paragraph each; a separate paragraph is for a different kind of point (for example, how to read a noninferiority result), introduced by a plain declarative sentence rather than another ordinal. Do not add an ordinal just to extend the list, and do not open the strengths and the limitations with two separate framing sentences. Each limitation is one or two sentences: the fact, then its consequence in a trailing clause. Name the excluded population or the unmeasured outcome. Keep examples in a trailing parenthetical "(eg, ...)".
 - Say "a single state" or "a single center" before naming it. Use "likely", not "probably".
 
 ### Conclusions (one paragraph, about 55 words, two sentences)
@@ -186,7 +188,7 @@ Run each item against your own draft before delivery. Fix the draft rather than 
 8. Connectives: count sentence-initial transitions per paragraph. More than two is a tell. Keep the one real turn and move the rest into subordinate clauses or trailing participles.
 9. Subjects and voice: are patients, surgeons or "we" the subjects wherever possible? Does the Discussion use "our study" and "our data"? Does the abstract Objective begin "To..."?
 10. Parallelism: are paired estimates in one sentence? Are lists in protocol order rather than re-sorted?
-11. Numbers: does every percentage have its numerator and denominator where the data give them? Is every number traceable to the analysis registry, and is anything else flagged UNSOURCED?
+11. Numbers and typesetting: run `voice_check.py` and clear its AMA-style items (comma thousands, sentence-initial numerals, "supplementary material", spelled-out beta). Does every percentage have its numerator and denominator where the data give them? Is every number traceable to the analysis registry, and is anything else flagged UNSOURCED?
 12. Ending: do the Conclusions stop on one calibrated implication, without an agenda and without a flourish?
 13. Decoration (section 1 item 13): no "not X but Y" reversals, stacked hedges, one-line dramatic closers or aphorisms. Count "represents"/"serves as" per section (flag at 2 or more) and trailing -ing riders per paragraph (flag at 2 or more; cut any that add no fact). Flag three or more consecutive sentences opening with the same subject.
 
