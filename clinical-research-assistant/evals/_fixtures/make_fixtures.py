@@ -98,6 +98,14 @@ def make_cohort_csv():
         lines.append(",".join(r))
     w("cohort_50.csv", "\n".join(lines) + "\n")
 
+    # Handed to make_registry_mock() below so the registry's stageIV entry is
+    # DERIVED from the same array that produced the CSV, not a second
+    # hand-typed literal (that mismatch -- label says "of the 50-patient
+    # cohort" while n was hardcoded "5/8" -- was the L091 fixture-contradiction
+    # bug this function now prevents by construction). No new RNG draws here,
+    # so downstream fixtures (tmb_mixed.csv etc.) are unaffected.
+    return {"n": n, "stageIV_n": int((stage == "IV").sum())}
+
 
 # ---------------------------------------------------------------------------
 # 2. tmb_mixed.csv — mixed WES vs targeted-panel mutation/TMB data
@@ -158,7 +166,10 @@ def make_tmb_csv():
 # ---------------------------------------------------------------------------
 # 3. registry_mock.json — mirrors analysis_registry.py's schema
 # ---------------------------------------------------------------------------
-def make_registry_mock():
+def make_registry_mock(cohort_stats):
+    stageIV_n = cohort_stats["stageIV_n"]
+    cohort_n = cohort_stats["n"]
+    stageIV_value = stageIV_n / cohort_n
     registry = {
         "registry_meta": {
             "project": "EVAL-SYNTHETIC-DISPARITIES",
@@ -254,16 +265,16 @@ def make_registry_mock():
             },
             "cohort_50.stageIV.proportion_of_cohort": {
                 "domain": "cohort_50",
-                "label": "Proportion of cohort_50 diagnosed at stage IV (rounding boundary test value)",
+                "label": "Proportion of cohort_50 diagnosed at stage IV",
                 "current": {
-                    "value": 0.625,
+                    "value": stageIV_value,
                     "ci": None,
                     "p": "NA",
-                    "n": "5/8",
+                    "n": f"{stageIV_n}/{cohort_n}",
                     "analysis_id": "EVAL-V1",
                     "script": "eval_fixture_analysis.py",
                     "source_file": "Reports/EVAL-V1_results.json",
-                    "source_key": "descriptive.stageIV_subgroup_fraction",
+                    "source_key": "descriptive.stageIV_proportion_of_cohort",
                     "date": "2026-09-01",
                     "status": "current",
                 },
@@ -355,9 +366,9 @@ def make_project_claude():
 
 
 if __name__ == "__main__":
-    make_cohort_csv()
+    cohort_stats = make_cohort_csv()
     make_tmb_csv()
-    make_registry_mock()
+    make_registry_mock(cohort_stats)
     make_abstract_draft()
     make_project_claude()
     print("done.")

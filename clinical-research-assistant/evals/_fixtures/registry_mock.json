@@ -100,16 +100,16 @@
     },
     "cohort_50.stageIV.proportion_of_cohort": {
       "domain": "cohort_50",
-      "label": "Proportion of cohort_50 diagnosed at stage IV (rounding boundary test value)",
+      "label": "Proportion of cohort_50 diagnosed at stage IV",
       "current": {
-        "value": 0.625,
+        "value": 0.2,
         "ci": null,
         "p": "NA",
-        "n": "5/8",
+        "n": "10/50",
         "analysis_id": "EVAL-V1",
         "script": "eval_fixture_analysis.py",
         "source_file": "Reports/EVAL-V1_results.json",
-        "source_key": "descriptive.stageIV_subgroup_fraction",
+        "source_key": "descriptive.stageIV_proportion_of_cohort",
         "date": "2026-09-01",
         "status": "current"
       },
