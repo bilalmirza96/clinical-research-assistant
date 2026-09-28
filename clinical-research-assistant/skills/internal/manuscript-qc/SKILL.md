@@ -123,6 +123,21 @@ it names. If the claim survives, rewrite it as a POSITIVE statement of what was 
 the key ("the interaction was tested on the pooled cohort, not on this endpoint"), so the next
 reader can check it. A bare negative names nothing and rots into a false fact.
 
+### Check 18 — Fresh-context red team (added 2026-09-28)
+
+Before this skill declares a manuscript **READY FOR SUBMISSION**, invoke the `cra-red-team`
+agent via the Agent tool (`subagent_type: cra-red-team`) — a genuine fresh-context subagent,
+not an in-context re-read of Checks 1–17. Hand it the project path, the registry
+(`MASTER_ANALYSIS_REGISTRY.json` / `results_registry.json`), the manuscript + abstract +
+Excel workbook as deliverable paths, and `analysis_plan.json`. It re-derives numbers from
+source and returns `Reports/red_team_<date>.md` with a SHIP / FIX FIRST verdict. This is the
+same fresh-context reviewer `/analyze` Phase 6 uses — a manuscript can pass every native check
+here and still carry an error the drafting session could not see in its own text (the class of
+error this checklist exists to catch is upstream mis-derivation, not just prose-vs-table drift).
+
+**Severity: CRITICAL if the agent's verdict is FIX FIRST or reports any CRITICAL finding.**
+Non-zero (FIX FIRST) blocks READY FOR SUBMISSION regardless of Checks 1–17's outcome.
+
 ## Output Format
 
 For each issue found, report:
@@ -147,6 +162,7 @@ MINOR: [n] — recommended fixes
 SCHOLAR-EVAL: [problem]/5  [methodology]/5  [analysis]/5  [writing]/5  TOTAL [n]/20
 CITATION AUDIT: PASS [n]  AMBIGUOUS [n]  FAIL [n]
 RECONCILIATION (4-artifact): PASS [n]  DRIFT [n]  FAIL [n]
+RED TEAM (cra-red-team, fresh-context): SHIP / FIX FIRST
 VERDICT: READY / NOT READY FOR SUBMISSION
 ```
 
@@ -155,6 +171,7 @@ Do not approve any manuscript with:
 - ScholarEval TOTAL < 14/20 (Check 14)
 - Any Check 15 FAIL (potential fabrication)
 - Any Check 16 FAIL (numeric drift between abstract / manuscript / Excel / JSON — symptom of a stale vintage in the source-of-truth chain)
+- Any Check 18 FIX FIRST verdict or CRITICAL finding from the `cra-red-team` agent
 
 ## Severity Definitions
 
