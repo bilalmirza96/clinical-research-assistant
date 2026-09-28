@@ -107,7 +107,7 @@ if [[ -z "$CACHE" ]]; then
     if [[ -f "$INSTALLED_JSON" ]]; then
       mkdir -p "$BACKUP_DIR"
       cp -p "$INSTALLED_JSON" "$BACKUP_DIR/installed_plugins.json.bak"
-      python3 - "$INSTALLED_JSON" "$PLUGIN_KEY" "$OLD_VERSION" "$VERSION" "$NEW_CACHE" <<'PYEOF'
+      if ! python3 - "$INSTALLED_JSON" "$PLUGIN_KEY" "$OLD_VERSION" "$VERSION" "$NEW_CACHE" <<'PYEOF'
 import json, sys, datetime
 path, key, old_v, new_v, new_path = sys.argv[1:6]
 with open(path) as f:
@@ -127,6 +127,19 @@ with open(path, "w") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
 PYEOF
+      then
+        # The heredoc failed (e.g. the plugin key is missing from installed_plugins.json).
+        # Its own exit status was previously ignored here, so this failure was silently
+        # swallowed and the script went on to report success. Undo everything this run did:
+        # restore the backup just taken, and remove the version dir this run created (never
+        # remove it if it pre-existed - it never does on this branch, since we only reach
+        # here when no cache dir existed at the current version).
+        printf "${RED}✗ failed to update %s for %s — restoring backup and aborting${RESET}\n" \
+          "$INSTALLED_JSON" "$PLUGIN_KEY"
+        cp -p "$BACKUP_DIR/installed_plugins.json.bak" "$INSTALLED_JSON"
+        rm -rf "$NEW_CACHE"
+        exit 1
+      fi
     else
       printf "${RED}✗ %s not found — skipping installed_plugins.json update${RESET}\n" "$INSTALLED_JSON"
     fi
