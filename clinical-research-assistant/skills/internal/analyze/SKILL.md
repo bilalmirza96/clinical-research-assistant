@@ -783,6 +783,13 @@ Mandatory at end of every `/analyze` run:
 
 ## CHANGELOG / Lessons Learned
 
+### 2026-09-26 — Audit lessons from REPEAT DISPARITIES v01 (L092-L095)
+- **No ridge on exposure models (L092).** lifelines' penalizer scales with the mean log-likelihood; 0.05 inflated an exposure HR. Fit unpenalized; fix singular fits by finding sparse levels (count and disclose), never by penalizing.
+- **Genomic platforms and units (L093).** Never pool TMB across platforms or scales; compare within sequencing assay; gate unit conversions against the source's bins (GENIE TMB is per base). Mask off-panel genes; withdraw gene-level claims when coverage is unknown.
+- **Test differences, not significance (L094).** Compare stratum estimates formally (product term, or ratio of independent estimates per Altman and Bland 2003).
+- **Treatment fields before approval (L095).** Tabulate a registry drug-class field by year and histology against approval dates before interpreting it; restrict the primary analysis to the approval era.
+- **Period trends need period-specific covariates (L096).** A race x era product term with every covariate effect held constant across eras manufactured a widening disparity (histology x era change absorbed by the race term). Estimate change across periods from within-period models (ratio of independent estimates) or let major prognostic covariates vary by period; report the common-effects product term only as a labelled sensitivity.
+
 ### 2026-09-25 — L087-L090 — Analysis ladder, cohort curation, data-dictionary dossier, denominators
 
 Author directive after the REPEAT DISPARITIES project (esophageal cancer, NCDB + SEER; ITSOS 2026
