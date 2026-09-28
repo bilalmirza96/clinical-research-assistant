@@ -11,4 +11,11 @@ criteria: |
   corrections are actually applied (not just named). Score low if the agent
   only reports raw p-values and asserts significance without showing the
   corrected values.
+
+  Judge this against the agent's final message and any report file it
+  produced -- the actual deliverable -- not intermediate scratch reasoning.
+  If the run ended without the agent ever giving a final answer or producing
+  a deliverable file (e.g. it was cut off mid-tool-call with no response),
+  fail this grader and state the reason as "no final answer" rather than
+  guessing at credit for unfinished work.
 ---
