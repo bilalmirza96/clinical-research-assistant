@@ -2,12 +2,12 @@
  "_meta": {
   "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
   "schema_version": "1.0",
-  "last_updated": "2026-09-27",
+  "last_updated": "2026-09-28",
   "maintainer": "clinical-research-assistant skill, sourced from real sessions",
   "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting. Since 2026-09-28 every new lesson ships with a regression check: an agent eval under evals/<Lnnn-slug>/ (claude plugin eval; synthetic fixtures; deterministic graders) or a unit test in tools/tests/test_linters.py when a linter enforces it. Run tools/run_evals.sh smoke before committing a skill edit. A lesson without a check is not closed.",
   "last_promotion_pass": "2026-05-24",
   "promotion_summary": "50/50 lessons now have promoted_to audit trail; L050 added 2026-05-24 (registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 — discovered via NCDB vs SEER first-primary filter mismatch in Esophageal Organ-Preservation HTE); L049 added 2026-05-24 (synthesis-prose claim verification); L048 added 2026-05-24 (Phase 0 pre-design literature recon hard gate); L047 added 2026-05-18; L046 added 2026-05-17; L041 expanded 2026-05-20",
-  "count": 100
+  "count": 103
  },
  "lessons": [
   {
@@ -2827,6 +2827,57 @@
    ],
    "lesson": "SKILL.md files were carrying changelog history and duplicated reference text into every run: the analyze skill loaded 10,086 words on each invocation, 1,143 of them its own changelog, plus Phase 0, 1.1.a and HALT 2A blocks already held verbatim by kdense-delegations.md, registry-cohort-checklists.md and analysis-ladder.md. History and duplicated detail cost context on every run without adding enforcement.",
    "rule": "SKILL.md holds enforcement and a phase checklist only (frontmatter, role, halts, checkpoints, gates, stop conditions, the references index). History lives in references/changelog.md, detail lives in references/ with an explicit load trigger stated at the pointer, and lessons live in this log. Moves are verbatim and verified byte-for-byte; halt, checkpoint and gate counts are asserted unchanged before and after."
+  },
+  {
+   "id": "L100-narrow-analysis-requests-route-to-quick-tier",
+   "date_added": "2026-09-28",
+   "originating_session": "CRA regression eval run 2026-09-28: three author-approved scope amendments",
+   "category": "routing",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "one adjusted model plus its E-value",
+    "how robust is it to unmeasured confounding",
+    "single pre-named contrast",
+    "one KM curve",
+    "one test",
+    "small bounded computation",
+    "just one estimate"
+   ],
+   "lesson": "Regression eval L005: asked for one adjusted model plus its E-value, `/analyze` insisted on running the full analysis ladder (Phase 0 through HALT 3) and ran out of turns before ever answering the question. The full-ladder standing rule (L087) has no scope boundary distinguishing a single bounded ask from a manuscript-bound analysis, so every request paid the full cost regardless of size.",
+   "rule": "Added a scope-triage step at the very start of `/analyze`'s \"What runs when you invoke /analyze\": a single unadjusted/small bounded computation routes automatically to `--quick` (`references/quick-tier.md`), labeled EXPLORATORY. A single bounded computation naming exactly one adjusted model (e.g., one model plus its E-value) is NOT sent to `--quick`, because quick-tier's own guardrail excludes adjusted/matched/weighted models; instead it answers only the named question inside full `/analyze` (one-line HALT 2A decision, fit only the requested model, compute only the requested downstream quantity), labeled EXPLORATORY, with the full ladder still required before the number reaches an abstract, manuscript, slide, or registry `current` value. Neither the ladder text nor quick-tier's guardrails were weakened; HALT/CHECKPOINT/HARD GATE/HARD STOP/NON-NEGOTIABLE counts in `SKILL.md` verified unchanged before/after. Regression check: `evals/L005-e-value-adjusted-estimate`."
+  },
+  {
+   "id": "L101-bounded-edits-skip-full-reference-read",
+   "date_added": "2026-09-28",
+   "originating_session": "CRA regression eval run 2026-09-28: three author-approved scope amendments",
+   "category": "editorial-process",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "fix banned race terminology in an existing abstract",
+    "terminology swap in a draft",
+    "number correction sourced from the registry",
+    "typo fix in a draft",
+    "clean it up and edit it in place",
+    "bounded mechanical edit"
+   ],
+   "lesson": "Regression eval L020: asked to fix three banned race terms in an existing draft abstract, the router and `write-abstract` required reading five reference files and all five canonical example abstracts before touching the draft, and ran out of turns mid-edit. The House Academic Voice \"read all five canonical abstracts\" rule (L062) did not distinguish a bounded terminology/number/typo fix from drafting a new abstract or rewriting its substance.",
+   "rule": "Added a scope clarification to `write-abstract/SKILL.md` (\"Required reading at session start\" and \"Reference Example Abstracts\"), to `writing-style.md`'s \"House Academic Voice\" and \"Collective Abstract Style\" sections, and to the router's \"Read First\": the full-reading requirement applies to drafting and to any rewrite changing more than about one sentence or any claim, not to a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) of an existing draft, which proceeds directly to the edit. `voice_check.py` and `claim_audit.py` still run on the result of a bounded edit exactly as on a full draft; only the upfront full-reference-read is scoped down. Regression check: `evals/L020-abstract-race-terminology`."
+  },
+  {
+   "id": "L102-router-fires-on-registry-number-requests",
+   "date_added": "2026-09-28",
+   "originating_session": "CRA regression eval run 2026-09-28: three author-approved scope amendments",
+   "category": "routing",
+   "severity": "HIGH",
+   "trigger_patterns": [
+    "pull a value from the registry",
+    "round the hazard ratio to 2 decimal places",
+    "give me the stage IV fraction as a percentage",
+    "report a number from the registry",
+    "don't recompute anything just report what's already locked in the registry"
+   ],
+   "lesson": "Regression eval L091: asked to pull one value from `MASTER_ANALYSIS_REGISTRY.json` and format it (round a hazard ratio, express a fraction as a percentage) into a results sentence, the CRA router never fired at all, so no lesson enforcement (e.g., L091's half-up rounding rule) applied to the answer.",
+   "rule": "Updated the router's frontmatter `description` to explicitly name pulling, formatting, rounding, checking, or reporting a number from a study's registry or results as a trigger, alongside its existing triggers, within the same one-paragraph length norm as before. Regression check: the routing grader in `evals/L091-full-precision-rounding`."
   }
  ]
 }
