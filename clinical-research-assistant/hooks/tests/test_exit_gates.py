@@ -11,6 +11,7 @@ runs the hook as a real subprocess (python3 exit_gates.py) piping JSON on stdin,
 Claude Code's Stop contract does, so a regression in the transcript-parsing, classification,
 subprocess-timeout, or fail-open behavior is caught here rather than only at unit level.
 """
+import importlib.util
 import json
 import os
 import shutil
@@ -20,6 +21,12 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOOK = os.path.join(HERE, "..", "exit_gates.py")
+
+# Imported directly (not just subprocess'd) so extract_bash_redirect_targets can be unit
+# tested without building a full transcript/hook round trip.
+_spec = importlib.util.spec_from_file_location("exit_gates", HOOK)
+exit_gates = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(exit_gates)
 
 FAILS = []
 
@@ -86,6 +93,24 @@ Conclusions: The gate should block.
 [END OF ABSTRACT BODY]
 """
 
+ABSTRACT_NO_SENTINEL_WITH_VIOLATIONS = """Introduction: The stake here is clear — we test the gate.
+
+Objective: To determine whether the exit gate blocks on a hard voice failure when the \
+body-end sentinel is absent, which is exactly when voice_check.py prints its advisory \
+"note: body-end sentinel ... not found" line to stdout before its JSON.
+
+Methods: We wrote a short synthetic abstract with a known violation and no sentinel line \
+at all, so voice_check counts the whole file and also emits its advisory note first.
+
+Results: The abstract contains an em dash right here — which is a HARD failure. Furthermore, \
+it also contains a banned transition word, which is a second HARD failure by itself, and this \
+results section is padded out with extra sentences so that it comfortably remains the largest \
+section of the draft, well past twice the length of the methods and conclusions sections that \
+surround it here.
+
+Conclusions: The gate should still block even though there is no sentinel line.
+"""
+
 CLEAN_ABSTRACT = """Introduction: The stake here is clear, and we state it in the first person.
 
 Objective: To determine whether a clean abstract passes the exit gate without triggering a block.
@@ -106,6 +131,33 @@ Conclusions: The gate should allow the session to stop.
 
 
 def main():
+    # ---------------------------------------------------------- unit: redirect-target parsing
+    # A quoted redirect target containing spaces must be captured whole, not truncated at the
+    # first space, for both `>` (double-quoted) and `tee` (single-quoted).
+    targets = exit_gates.extract_bash_redirect_targets(
+        'python3 script.py > "/tmp/spaced abstract.md"')
+    check(targets == ["/tmp/spaced abstract.md"],
+          f"double-quoted redirect target with a space is captured whole (got {targets})")
+
+    targets = exit_gates.extract_bash_redirect_targets(
+        "python3 script.py >> '/tmp/another spaced report.md'")
+    check(targets == ["/tmp/another spaced report.md"],
+          f"single-quoted append-redirect target with a space is captured whole (got {targets})")
+
+    targets = exit_gates.extract_bash_redirect_targets(
+        'echo hi | tee "/tmp/spaced tee output.md"')
+    check(targets == ["/tmp/spaced tee output.md"],
+          f"double-quoted tee target with a space is captured whole (got {targets})")
+
+    targets = exit_gates.extract_bash_redirect_targets(
+        "echo hi | tee -a '/tmp/spaced tee append.md'")
+    check(targets == ["/tmp/spaced tee append.md"],
+          f"single-quoted 'tee -a' target with a space is captured whole (got {targets})")
+
+    # unquoted targets (no spaces) still work as before
+    targets = exit_gates.extract_bash_redirect_targets("echo hi > /tmp/plain.md")
+    check(targets == ["/tmp/plain.md"], f"unquoted redirect target still works (got {targets})")
+
     tmp_root = tempfile.mkdtemp(prefix="exit_gates_test_")
     try:
         # ------------------------------------------------------------ case 1
@@ -147,6 +199,47 @@ def main():
             report_text = open(os.path.join(proj1, "Reports", reports1[0]), encoding="utf-8").read()
             check("voice_check" in report_text, "case1: report mentions voice_check")
             check("HARD FAIL" in report_text, "case1: report records a HARD FAIL")
+
+        # ------------------------------------------------------------ case 1b
+        # a dirty abstract with NO [END OF ABSTRACT BODY] sentinel -> voice_check prints its
+        # "note: body-end sentinel ... not found" advisory line to stdout BEFORE the JSON.
+        # A hard failure here must still BLOCK, not be downgraded to a non-blocking TOOL ERROR
+        # by a strict json.loads() choking on the leading advisory text.
+        proj1b = os.path.join(tmp_root, "proj1b")
+        os.makedirs(os.path.join(proj1b, "Reports"), exist_ok=True)
+        no_sentinel_path = os.path.join(proj1b, "Reports", "abstract_no_sentinel.md")
+        with open(no_sentinel_path, "w", encoding="utf-8") as fh:
+            fh.write(ABSTRACT_NO_SENTINEL_WITH_VIOLATIONS)
+        transcript1b = os.path.join(tmp_root, "transcript1b.jsonl")
+        write_transcript(transcript1b, [
+            (proj1b, "Write", {"file_path": no_sentinel_path,
+                               "content": ABSTRACT_NO_SENTINEL_WITH_VIOLATIONS}),
+        ])
+
+        proc = run_hook({
+            "session_id": "s1b",
+            "transcript_path": transcript1b,
+            "stop_hook_active": False,
+            "cwd": proj1b,
+            "hook_event_name": "Stop",
+        })
+        check(proc.returncode == 0, "case1b (dirty abstract, no sentinel): hook exits 0")
+        out = proc.stdout.strip()
+        check(bool(out), "case1b: stdout is non-empty (a block decision, not silently allowed)")
+        if out:
+            try:
+                decision = json.loads(out)
+            except (json.JSONDecodeError, ValueError):
+                decision = None
+            check(decision is not None and decision.get("decision") == "block",
+                  "case1b: an em dash + banned transition with no sentinel still BLOCKS "
+                  "(voice_check's advisory line must not downgrade this to a TOOL ERROR)")
+        reports1b = find_reports(proj1b)
+        if reports1b:
+            report_text = open(os.path.join(proj1b, "Reports", reports1b[0]), encoding="utf-8").read()
+            check("**voice_check** — HARD FAIL" in report_text,
+                  "case1b: report records voice_check as a HARD FAIL, not a TOOL ERROR "
+                  "(the advisory line must not break the --json parse)")
 
         # ------------------------------------------------------------ case 2
         # a clean abstract -> allow

@@ -84,8 +84,11 @@ REGISTRY_SEARCH_DEPTH = 8
 
 TOOL_NAMES_WITH_PATH = {"Write": "file_path", "Edit": "file_path", "NotebookEdit": "notebook_path"}
 
-_REDIRECT_RE = re.compile(r'(?:^|[\s;|&])>{1,2}\s*([^\s|;&<>]+)')
-_TEE_RE = re.compile(r'\btee\b(?:\s+-a)?\s+(?!-)([^\s|;&<>]+)')
+# Each pattern tries a double-quoted group, then a single-quoted group, then a bare
+# (unquoted, no-whitespace) token, so `> "/tmp/spaced abstract.md"` and `tee '/tmp/a b.md'`
+# capture the whole target instead of truncating at the first space.
+_REDIRECT_RE = re.compile(r'(?:^|[\s;|&])>{1,2}\s*(?:"([^"]+)"|\'([^\']+)\'|([^\s|;&<>]+))')
+_TEE_RE = re.compile(r'\btee\b(?:\s+-a)?\s+(?!-)(?:"([^"]+)"|\'([^\']+)\'|([^\s|;&<>]+))')
 
 
 # --------------------------------------------------------------------------------------
@@ -96,8 +99,8 @@ def extract_bash_redirect_targets(command: str) -> list[str]:
     """Obvious redirect targets only: `> file`, `>> file`, `tee [-a] file`."""
     if not isinstance(command, str) or not command:
         return []
-    raw = [m.group(1) for m in _REDIRECT_RE.finditer(command)]
-    raw += [m.group(1) for m in _TEE_RE.finditer(command)]
+    raw = [m.group(1) or m.group(2) or m.group(3) for m in _REDIRECT_RE.finditer(command)]
+    raw += [m.group(1) or m.group(2) or m.group(3) for m in _TEE_RE.finditer(command)]
     out = []
     for t in raw:
         t = t.strip().strip("'\"")
@@ -265,6 +268,33 @@ def _base_status(path: Path, linter: str, run: dict) -> tuple[str, str] | None:
     return None
 
 
+def _parse_json_output(stdout: str) -> dict | None:
+    """Parse the JSON object a `--json` linter printed, tolerating an advisory line the
+    linter writes to stdout BEFORE its JSON (e.g. voice_check's body-end-sentinel note) and
+    any trailing text after it. Returns None if no JSON object can be recovered at all.
+
+    Strategy: try a strict parse of the whole (stripped) stdout first — the common, fast
+    case. If that fails, find the first '{' and decode from there with raw_decode, which
+    stops at the end of the first complete JSON value and ignores anything after it,
+    instead of choking on a leading advisory line or trailing noise."""
+    stripped = stdout.strip()
+    if not stripped:
+        return None
+    try:
+        data = json.loads(stripped)
+        return data if isinstance(data, dict) else None
+    except (json.JSONDecodeError, ValueError):
+        pass
+    idx = stdout.find("{")
+    if idx == -1:
+        return None
+    try:
+        obj, _ = json.JSONDecoder().raw_decode(stdout[idx:])
+    except (json.JSONDecodeError, ValueError):
+        return None
+    return obj if isinstance(obj, dict) else None
+
+
 def check_json_linter(path: Path, linter: str, script: Path, cmd: "list[str]", timeout: float) -> dict:
     if not script.is_file():
         return make_result(path, linter, "TOOL ERROR", f"linter script not found: {script}", "")
@@ -272,10 +302,9 @@ def check_json_linter(path: Path, linter: str, script: Path, cmd: "list[str]", t
     early = _base_status(path, linter, run)
     if early:
         return make_result(path, linter, *early, run["stderr"] or run["stdout"])
-    try:
-        data = json.loads(run["stdout"].strip())
-    except (json.JSONDecodeError, ValueError):
-        # Non-JSON output despite --json: e.g. a missing python-docx dependency or a bad
+    data = _parse_json_output(run["stdout"])
+    if data is None:
+        # No JSON object recoverable at all: e.g. a missing python-docx dependency or a bad
         # path calls sys.exit(<string>) before any JSON is emitted. Same exit code as a real
         # hard failure — ambiguous, so this downgrades to a non-blocking tool error.
         note = (run["stderr"].strip() or run["stdout"].strip()
