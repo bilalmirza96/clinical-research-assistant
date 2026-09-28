@@ -57,7 +57,6 @@ Budget: ~130 words per minute. A 7-minute talk carries 800–950 words of notes;
 
 - Transitions: vary them. "We then asked…", "To understand why…", "To quantify this…", "Having
   observed…", "Among patients who…". Do not open three notes with "next".
-- Never open with Furthermore / Moreover / Additionally / Interestingly (house voice ban).
 - Name the analyses in plain language: "clinical factors", "socioeconomic factors", "propensity
   matched"; never "Model A / Model B" aloud.
 - Say "the difference in surgery" or "underwent surgery", not "receipt of surgery".
