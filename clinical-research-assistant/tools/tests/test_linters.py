@@ -247,20 +247,21 @@ def test_L021_results_largest_section():
 
 
 # =====================================================================================
-# L062 - House Academic Voice: no em dashes, no banned transitions, no AI-tell phrases.
+# L062 - House Academic Voice: no em dashes (still a hard failure).
+# L103 - the banned-transition and AI-tell word lists were removed 2026-09-28, so
+#        Furthermore/Moreover/Additionally/Interestingly and words such as "robust",
+#        "highlight" or "utilizing" must NOT fail the gate.
 # =====================================================================================
 def test_L062_house_academic_voice():
     voice = TOOLS / "voice_check.py"
     tmp = Path(tempfile.mkdtemp())
 
-    bad_text = ("Furthermore, the study sought to delve into the mechanism"
-                "—which remained unclear before this analysis.\n")
+    bad_text = ("The study examined the mechanism"
+                "\u2014which remained unclear before this analysis.\n")
     bad_path = write(tmp / "bad_voice.md", bad_text)
     r = run_cli(voice, [str(bad_path)])
-    check(r.returncode == 1, "positive: em dash + banned transition + AI-tell phrase is a hard failure", "L062")
+    check(r.returncode == 1, "positive: an em dash is a hard failure", "L062")
     check("em dash" in r.stdout, "positive: the em dash is flagged", "L062")
-    check("banned transition 'Furthermore'" in r.stdout, "positive: the banned transition is flagged", "L062")
-    check("AI-tell phrase 'delve into'" in r.stdout, "positive: the AI-tell phrase is flagged", "L062")
 
     good_text = ("The study examined the mechanism, which remained unclear before this analysis. "
                 "Patients were followed for two years, and outcomes were recorded prospectively.\n")
@@ -268,6 +269,20 @@ def test_L062_house_academic_voice():
     r = run_cli(voice, [str(good_path)])
     check(r.returncode == 0, "negative: plain compliant prose passes with no hard failures", "L062")
     check("HARD FAILURES" not in r.stdout, "negative: no hard-failure section is printed", "L062")
+
+
+def test_L103_no_word_bans():
+    voice = TOOLS / "voice_check.py"
+    tmp = Path(tempfile.mkdtemp())
+    text = ("Furthermore, the robust association persisted. Moreover, utilizing a second cohort, "
+            "the findings highlight a consistent pattern. Additionally, rates were similar. "
+            "Interestingly, the effect was larger in older patients, which sheds light on selection.\n")
+    path = write(tmp / "formerly_banned.md", text)
+    r = run_cli(voice, [str(path)])
+    check(r.returncode == 0, "negative: formerly banned transitions and AI-tell words no longer fail", "L103")
+    check("banned transition" not in r.stdout and "AI-tell" not in r.stdout,
+          "negative: no word-ban message is printed", "L103")
+    check("robust" not in r.stdout, "negative: 'robust' is not flagged as vague praise", "L103")
 
 
 # =====================================================================================
@@ -380,6 +395,7 @@ def main() -> int:
         test_L071_self_describing_symmetric_keys,
         test_L021_results_largest_section,
         test_L062_house_academic_voice,
+        test_L103_no_word_bans,
         test_L087_analysis_ladder_survival_rung,
         test_L088_cohort_identity_guardrails,
         test_L089_dictionary_audit_cli,
