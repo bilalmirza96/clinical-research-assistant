@@ -1,0 +1,51 @@
+id,age,sex,race_ethnicity,stage,treatment,exposure,time_months,event,comorbidity_index,insurance_type
+SYN001,67,F,Non-Hispanic White,I,1,0,36.5,0,3,Other-TribalHealth
+SYN002,53,F,Other/Unknown,II,0,0,9.3,1,3,Medicare
+SYN003,72,F,Hispanic,I,0,0,31.2,0,,Medicaid
+SYN004,74,F,Non-Hispanic Black,III,0,1,31.6,1,0,Private
+SYN005,43,M,Non-Hispanic White,I,0,1,14.7,1,1,Private
+SYN006,50,F,Non-Hispanic White,III,1,0,39.5,1,4,Private
+SYN007,65,M,Non-Hispanic White,III,0,0,32.6,0,0,Medicare
+SYN008,61,M,Non-Hispanic Asian/Pacific Islander,III,1,1,9.5,1,4,Medicare
+SYN009,64,F,Non-Hispanic White,I,1,0,23.2,1,3,Medicare
+SYN010,55,M,Non-Hispanic White,IV,1,1,12.5,0,1,Medicaid
+SYN011,74,F,Non-Hispanic White,I,0,0,6.2,1,3,Private
+SYN012,73,F,Non-Hispanic Black,I,1,0,10.7,0,,Medicare
+SYN013,65,F,Non-Hispanic White,II,1,1,41.5,0,0,Private
+SYN014,76,F,Hispanic,II,1,0,28.6,0,,Private
+SYN015,69,F,Hispanic,III,0,0,31.9,1,3,Medicare
+SYN016,55,M,Non-Hispanic Black,III,0,0,33.3,1,4,Uninsured
+SYN017,68,M,Non-Hispanic White,II,1,0,22.1,1,0,Medicare
+SYN018,53,M,Non-Hispanic Black,IV,1,0,54.5,0,3,Private
+SYN019,74,M,Non-Hispanic Black,I,0,0,22.6,1,0,Medicare
+SYN020,63,M,Non-Hispanic Black,II,1,0,20.6,0,3,Private
+SYN021,62,F,Non-Hispanic White,I,1,0,25.7,0,3,Medicaid
+SYN022,57,M,Non-Hispanic White,IV,1,1,23.0,0,0,Medicare
+SYN023,77,M,Non-Hispanic White,I,0,1,14.5,0,3,Private
+SYN024,62,M,Non-Hispanic White,I,1,0,14.0,0,4,Private
+SYN025,59,M,Non-Hispanic White,II,0,0,53.0,1,4,Private
+SYN026,60,F,Non-Hispanic White,IV,1,1,29.6,0,0,Uninsured
+SYN027,70,F,Non-Hispanic White,IV,1,1,6.1,1,1,Medicare
+SYN028,68,F,Non-Hispanic Black,III,0,1,19.1,1,1,Medicaid
+SYN029,69,F,Non-Hispanic White,IV,0,0,35.9,0,2,Medicare
+SYN030,69,M,Non-Hispanic Asian/Pacific Islander,IV,1,0,56.6,0,0,Medicare
+SYN031,88,F,Non-Hispanic Black,II,1,0,13.2,1,4,Private
+SYN032,60,M,Non-Hispanic White,II,1,0,31.9,0,3,Medicaid
+SYN033,58,M,Non-Hispanic Black,III,1,1,1.6,1,4,Private
+SYN034,55,M,Non-Hispanic White,III,1,0,59.3,0,0,Medicare
+SYN035,71,F,Non-Hispanic Asian/Pacific Islander,II,1,0,5.4,1,0,Medicare
+SYN036,76,M,Non-Hispanic White,I,1,0,57.4,0,4,Medicare
+SYN037,63,M,Hispanic,III,0,1,3.6,1,1,Medicaid
+SYN038,55,M,Non-Hispanic White,I,0,0,51.9,0,3,Private
+SYN039,55,M,Non-Hispanic White,IV,1,1,7.5,1,4,Medicare
+SYN040,71,F,Non-Hispanic White,I,1,0,12.6,0,0,Medicare
+SYN041,72,M,Non-Hispanic Asian/Pacific Islander,I,0,1,23.8,1,,Medicare
+SYN042,70,M,Non-Hispanic Black,III,1,0,43.0,0,0,Private
+SYN043,57,M,Non-Hispanic White,I,1,1,6.7,0,0,Private
+SYN044,67,F,Non-Hispanic White,I,1,1,27.6,1,0,Private
+SYN045,65,M,Non-Hispanic White,II,1,1,50.6,0,4,Private
+SYN046,66,M,Non-Hispanic White,IV,1,1,21.9,0,3,Medicare
+SYN047,74,M,Non-Hispanic White,I,0,1,30.8,0,4,Medicare
+SYN048,66,F,Non-Hispanic White,II,1,1,2.5,1,4,Medicare
+SYN049,71,F,Hispanic,III,1,1,22.3,0,4,Medicare
+SYN050,65,F,Non-Hispanic Asian/Pacific Islander,IV,1,0,46.0,1,1,Medicare

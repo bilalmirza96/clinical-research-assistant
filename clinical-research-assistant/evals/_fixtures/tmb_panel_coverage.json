@@ -1,0 +1,16 @@
+{
+  "PANEL_A_71gene": [
+    "TP53",
+    "KRAS",
+    "PIK3CA",
+    "APC",
+    "SMAD4",
+    "EGFR"
+  ],
+  "PANEL_B_50gene": [
+    "TP53",
+    "KRAS",
+    "PIK3CA",
+    "EGFR"
+  ]
+}
