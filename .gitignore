@@ -41,3 +41,6 @@ Thumbs.db
 
 # Claude Code local settings & worktrees (per-machine)
 .claude/
+
+# Dated backup copies written beside edited files (e.g. lessons-log.json.bak-YYYY-MM-DD)
+*.bak-*
