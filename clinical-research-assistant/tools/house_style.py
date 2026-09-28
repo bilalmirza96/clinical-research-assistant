@@ -18,6 +18,8 @@ Usage
 -----
     python3 tools/house_style.py FILE [FILE ...]        # fix in place
     python3 tools/house_style.py --check FILE [...]     # report only, exit 1 on violation
+    python3 tools/house_style.py --json FILE [...]      # {"hard","soft","error"}; report-only,
+                                                          # never mutates the file(s)
     python3 tools/house_style.py --reference-doc OUT    # emit a pandoc reference .docx
 
 In matplotlib, call apply_matplotlib() before plotting, or pass the rcParams dict.
@@ -25,7 +27,7 @@ In matplotlib, call apply_matplotlib() before plotting, or pass the rcParams dic
 Companion to tools/voice_check.py (prose voice); this one governs format.
 """
 from __future__ import annotations
-import sys, os
+import json, sys, os
 
 FONT = "Times New Roman"
 FALLBACKS = [FONT, "Liberation Serif", "Nimbus Roman", "DejaVu Serif", "serif"]
@@ -235,11 +237,42 @@ def make_reference_doc(out: str):
 
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
-    check = "--check" in argv
+    as_json = "--json" in argv
+    # Under --json this is a report-only lint call: never mutate the file being checked,
+    # regardless of whether --check was also passed.
+    check = ("--check" in argv) or as_json
+
+    def fail(msg: str) -> int:
+        """Report a tool error (exit code 2). Under --json, emit the one-object JSON
+        contract with "error" set and nothing else on stdout. Without --json, this path
+        is not used - a bad file raises as before (unchanged legacy behavior)."""
+        print(json.dumps({"hard": [], "soft": [], "error": msg}))
+        return 2
+
     if "--reference-doc" in argv:
         print("wrote", make_reference_doc(args[0])); return 0
     if not args:
+        if as_json:
+            print(json.dumps({"hard": [], "soft": [], "error": None}))
+            return 0
         print(__doc__); return 0
+
+    if as_json:
+        hard: list[str] = []
+        for p in args:
+            ext = os.path.splitext(p)[1].lower()
+            if ext not in (".docx", ".xlsx"):
+                continue  # unsupported type: silently skipped, same as non-json mode
+            try:
+                v = enforce_docx(p, check) if ext == ".docx" else enforce_xlsx(p, check)
+            except ImportError as exc:
+                return fail(f"missing dependency for {p}: {exc}")
+            except Exception as exc:
+                return fail(f"failed to read {p}: {exc}")
+            hard.extend(f"{os.path.basename(p)}: {x}" for x in v)
+        print(json.dumps({"hard": hard, "soft": [], "error": None}))
+        return 1 if hard else 0
+
     total = 0
     for p in args:
         ext = os.path.splitext(p)[1].lower()

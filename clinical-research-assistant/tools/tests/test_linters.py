@@ -285,6 +285,20 @@ def test_L103_no_word_bans():
     check("robust" not in r.stdout, "negative: 'robust' is not flagged as vague praise", "L103")
 
 
+def test_L103_voice_guide_wired():
+    refs = ROOT / "skills" / "references"
+    check((refs / "manuscript-voice.md").is_file(), "positive: manuscript-voice.md is installed", "L103")
+    style = (refs / "writing-style.md").read_text()
+    check("manuscript-voice.md" in style, "positive: writing-style.md points to manuscript-voice.md", "L103")
+    check("Banned transitions" not in style and "Banned AI-tell" not in style,
+          "negative: writing-style.md carries no word-ban rows", "L103")
+    for sk in ("write-introduction", "write-methods-results", "write-discussion", "write-abstract"):
+        t = (ROOT / "skills" / "internal" / sk / "SKILL.md").read_text()
+        check("manuscript-voice.md" in t, f"positive: {sk} points to manuscript-voice.md", "L103")
+        check('never use "Furthermore' not in t and 'never "Furthermore' not in t,
+              f"negative: {sk} carries no transition ban", "L103")
+
+
 # =====================================================================================
 # L087 GAP-FILL ONLY (full ladder coverage already lives in test_study_design_tools.py -
 # rung order, N drift across rungs 1-3, direction flips, skip-reason bookkeeping, and
@@ -389,6 +403,162 @@ def test_L089_dictionary_audit_cli():
           "negative: a complete, dictionary-consistent recode map passes clean via the CLI", "L089")
 
 
+# =====================================================================================
+# JSON CONTRACT - all four linters (voice_check, claim_audit, registry_lint, house_style)
+# share one --json machine-readable contract: stdout is EXACTLY one JSON object
+# {"hard": [...], "soft": [...], "error": null | "<message>"} and nothing else, with exit
+# code 0 (no hard findings), 1 (hard findings) or 2 (tool error - missing dependency,
+# unreadable/missing path, corrupt document, malformed registry JSON; "error" is set).
+# Per linter: clean input -> exit 0, hard empty; violating input -> exit 1; missing path
+# -> exit 2, error set, stdout still valid single-object JSON. hooks/exit_gates.py's
+# check_json_linter() classifies purely from this contract (see hooks/tests/test_exit_gates.py
+# for the HARD FAIL vs. TOOL ERROR wiring through the Stop hook).
+# =====================================================================================
+
+def parse_json_stdout(stdout: str):
+    """The --json contract requires stdout to be exactly one JSON object and nothing
+    else - a strict (not tolerant) parse pins that, independent of exit_gates.py's own
+    fallback recovery for stray text."""
+    return json.loads(stdout.strip())
+
+
+def test_json_contract_voice_check():
+    voice = TOOLS / "voice_check.py"
+    tmp = Path(tempfile.mkdtemp())
+
+    clean_path = write(tmp / "clean.md", "Plain compliant prose with nothing flagged at all.\n")
+    r = run_cli(voice, [str(clean_path), "--json"])
+    check(r.returncode == 0, "positive: clean input exits 0 under --json", "JSON-voice_check")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and data["error"] is None,
+          "positive: clean input has hard=[] and error=null", "JSON-voice_check")
+
+    bad_path = write(tmp / "bad.md", "An em dash—right here is a hard failure.\n")
+    r = run_cli(voice, [str(bad_path), "--json"])
+    check(r.returncode == 1, "positive: violating input exits 1 under --json", "JSON-voice_check")
+    data = parse_json_stdout(r.stdout)
+    check(bool(data["hard"]) and data["error"] is None,
+          "positive: violating input has a non-empty hard list and error=null", "JSON-voice_check")
+
+    r = run_cli(voice, [str(tmp / "does_not_exist.md"), "--json"])
+    check(r.returncode == 2, "positive: missing path exits 2 under --json", "JSON-voice_check")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and isinstance(data["error"], str) and data["error"],
+          "positive: missing path sets a non-empty error string, hard stays empty", "JSON-voice_check")
+
+
+def test_json_contract_claim_audit():
+    audit = TOOLS / "claim_audit.py"
+    tmp = Path(tempfile.mkdtemp())
+    registry = write(tmp / "registry.json", {
+        "NCDB.sano_tte.histology_interaction_E1_diff_pp": {
+            "label": "histology interaction diff",
+            "current": {"value": 7.23, "ci": [1.77, 13.38]},
+        }
+    })
+
+    clean_path = write(tmp / "clean.md", "Patients were followed prospectively for two years.\n")
+    r = run_cli(audit, [str(clean_path), "--registry", str(registry), "--json"])
+    check(r.returncode == 0, "positive: clean input exits 0 under --json", "JSON-claim_audit")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and data["error"] is None,
+          "positive: clean input has hard=[] and error=null", "JSON-claim_audit")
+
+    bad_path = write(tmp / "bad.md",
+                     "The two histologies were not formally compared on this endpoint.\n")
+    r = run_cli(audit, [str(bad_path), "--registry", str(registry), "--json"])
+    check(r.returncode == 1, "positive: violating input exits 1 under --json", "JSON-claim_audit")
+    data = parse_json_stdout(r.stdout)
+    check(bool(data["hard"]) and data["error"] is None,
+          "positive: a claim the registry contradicts has a non-empty hard list", "JSON-claim_audit")
+
+    r = run_cli(audit, [str(tmp / "does_not_exist.md"), "--registry", str(registry), "--json"])
+    check(r.returncode == 2, "positive: missing path exits 2 under --json", "JSON-claim_audit")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and isinstance(data["error"], str) and data["error"],
+          "positive: missing path sets a non-empty error string, hard stays empty", "JSON-claim_audit")
+
+
+def test_json_contract_registry_lint():
+    lint = TOOLS / "registry_lint.py"
+    tmp = Path(tempfile.mkdtemp())
+
+    clean_reg = write(tmp / "clean_registry.json", {
+        "NCDB.os.crude_HR": {"label": "Crude OS HR", "current": {"value": 1.1, "ci": [1.0, 1.2]}},
+    })
+    r = run_cli(lint, [str(clean_reg), "--json"])
+    check(r.returncode == 0, "positive: clean registry exits 0 under --json", "JSON-registry_lint")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and data["error"] is None,
+          "positive: clean registry has hard=[] and error=null", "JSON-registry_lint")
+
+    bad_reg = write(tmp / "bad_registry.json", {
+        "NCDB.os.crude_HR": {"label": "", "current": {"value": 1.1, "ci": [1.0, 1.2]}},
+    })
+    r = run_cli(lint, [str(bad_reg), "--json"])
+    check(r.returncode == 1, "positive: an unlabeled key exits 1 under --json", "JSON-registry_lint")
+    data = parse_json_stdout(r.stdout)
+    check(bool(data["hard"]) and data["error"] is None,
+          "positive: an unlabeled key (H1) has a non-empty hard list", "JSON-registry_lint")
+
+    r = run_cli(lint, [str(tmp / "does_not_exist.json"), "--json"])
+    check(r.returncode == 2, "positive: missing path exits 2 under --json", "JSON-registry_lint")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and isinstance(data["error"], str) and data["error"],
+          "positive: missing path sets a non-empty error string, hard stays empty", "JSON-registry_lint")
+
+    malformed = write(tmp / "malformed.json", "not valid json{{{")
+    r = run_cli(lint, [str(malformed), "--json"])
+    check(r.returncode == 2, "positive: malformed registry JSON exits 2 under --json", "JSON-registry_lint")
+    data = parse_json_stdout(r.stdout)
+    check(isinstance(data["error"], str) and data["error"],
+          "positive: malformed registry JSON sets a non-empty error string", "JSON-registry_lint")
+
+
+def test_json_contract_house_style():
+    house = TOOLS / "house_style.py"
+    tmp = Path(tempfile.mkdtemp())
+    from docx import Document  # already a hard dependency of house_style.py itself
+
+    # A truly clean fixture is built by letting house_style FIX a fresh document (check=False)
+    # in a private import, then verifying --json reports it clean - avoids hand-tracking every
+    # default-template font/colour the House Style standard also flags.
+    sys.path.insert(0, str(TOOLS))
+    import house_style as HS  # noqa: E402
+    clean_path = tmp / "clean.docx"
+    d = Document()
+    d.add_paragraph("Hello world").runs[0].font.name = "Times New Roman"
+    d.save(str(clean_path))
+    HS.enforce_docx(str(clean_path), check=False)
+
+    r = run_cli(house, [str(clean_path), "--json"])
+    check(r.returncode == 0, "positive: clean docx exits 0 under --json", "JSON-house_style")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and data["error"] is None,
+          "positive: clean docx has hard=[] and error=null", "JSON-house_style")
+    check(Document(str(clean_path)).paragraphs[0].runs[0].font.name == "Times New Roman",
+          "positive: --json never mutates the file it checks", "JSON-house_style")
+
+    bad_path = tmp / "bad.docx"
+    d2 = Document()
+    d2.add_paragraph("Hello world").runs[0].font.name = "Arial"
+    d2.save(str(bad_path))
+    r = run_cli(house, [str(bad_path), "--json"])
+    check(r.returncode == 1, "positive: wrong-font docx exits 1 under --json", "JSON-house_style")
+    data = parse_json_stdout(r.stdout)
+    check(bool(data["hard"]) and data["error"] is None,
+          "positive: wrong-font docx has a non-empty hard list", "JSON-house_style")
+    check(Document(str(bad_path)).paragraphs[0].runs[0].font.name == "Arial",
+          "positive: --json never mutates the violating file either (report-only, even "
+          "without --check)", "JSON-house_style")
+
+    r = run_cli(house, [str(tmp / "does_not_exist.docx"), "--json"])
+    check(r.returncode == 2, "positive: missing path exits 2 under --json", "JSON-house_style")
+    data = parse_json_stdout(r.stdout)
+    check(data["hard"] == [] and isinstance(data["error"], str) and data["error"],
+          "positive: missing path sets a non-empty error string, hard stays empty", "JSON-house_style")
+
+
 def main() -> int:
     tests = [
         test_L045_single_consolidated_registry,
@@ -396,9 +566,14 @@ def main() -> int:
         test_L021_results_largest_section,
         test_L062_house_academic_voice,
         test_L103_no_word_bans,
+        test_L103_voice_guide_wired,
         test_L087_analysis_ladder_survival_rung,
         test_L088_cohort_identity_guardrails,
         test_L089_dictionary_audit_cli,
+        test_json_contract_voice_check,
+        test_json_contract_claim_audit,
+        test_json_contract_registry_lint,
+        test_json_contract_house_style,
     ]
     for t in tests:
         print(f"\n--- {t.__name__} ---")
