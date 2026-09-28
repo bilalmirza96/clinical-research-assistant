@@ -13,4 +13,11 @@ criteria: |
   disclosure, not a violation. Score low only if the agent actually applied
   a nonzero penalty term to get a stable exposure estimate, or never
   addressed the sparse level at all.
+
+  Judge this against the agent's final message and any output file it
+  produced -- the actual deliverable -- not intermediate scratch reasoning.
+  If the run ended without the agent ever giving a final answer about the
+  model fit (e.g. it was cut off mid-tool-call with no response), fail this
+  grader and state the reason as "no final answer" rather than guessing at
+  credit for unfinished work.
 ---
