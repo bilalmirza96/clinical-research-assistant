@@ -4,7 +4,7 @@
   "schema_version": "1.0",
   "last_updated": "2026-09-27",
   "maintainer": "clinical-research-assistant skill, sourced from real sessions",
-  "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting.",
+  "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting. Since 2026-09-28 every new lesson ships with a regression check: an agent eval under evals/<Lnnn-slug>/ (claude plugin eval; synthetic fixtures; deterministic graders) or a unit test in tools/tests/test_linters.py when a linter enforces it. Run tools/run_evals.sh smoke before committing a skill edit. A lesson without a check is not closed.",
   "last_promotion_pass": "2026-05-24",
   "promotion_summary": "50/50 lessons now have promoted_to audit trail; L050 added 2026-05-24 (registry-specific inclusion/exclusion checklist HARD GATE at Phase 1.1 — discovered via NCDB vs SEER first-primary filter mismatch in Esophageal Organ-Preservation HTE); L049 added 2026-05-24 (synthesis-prose claim verification); L048 added 2026-05-24 (Phase 0 pre-design literature recon hard gate); L047 added 2026-05-18; L046 added 2026-05-17; L041 expanded 2026-05-20",
   "count": 100
