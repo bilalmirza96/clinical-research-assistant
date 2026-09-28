@@ -68,7 +68,7 @@ fi
 # Runtime artifacts that are never part of the plugin payload.
 is_noise() {
   case "$1" in
-    .git|.git/*|*/.git/*|*__pycache__*|*.pyc|*.DS_Store) return 0 ;;
+    .git|.git/*|*/.git/*|*__pycache__*|*.pyc|*.DS_Store|*.bak-*) return 0 ;;
     .in_use|.in_use/*|*/.in_use|*/.in_use/*) return 0 ;;
     *) return 1 ;;
   esac
