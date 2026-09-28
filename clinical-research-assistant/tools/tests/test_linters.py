@@ -607,3 +607,24 @@ def test_L104_decoration_patterns():
                    "three or more consecutive sentences"):
         assert phrase in guide, phrase
 
+
+def test_L105_ama_style_checks(tmp_path):
+    import subprocess, sys as _sys
+    sys_path = str(ROOT / "tools")
+    if sys_path not in _sys.path:
+        _sys.path.insert(0, sys_path)
+    from number_format import fmt_count
+    assert [fmt_count(x) for x in (1000, 9999, 10000, 38976)] == ["1000", "9999", "10 000", "38 976"]
+    draft = tmp_path / "d.md"
+    draft.write_text("Among 38,976 patients, 12 died (eTable 3 in the supplementary material). "
+                     "12 were excluded. The beta coefficient was 0.4.\n")
+    run = lambda *a: subprocess.run([_sys.executable, str(ROOT / "tools" / "voice_check.py"), str(draft), "--json", *a],
+                                    capture_output=True, text=True)
+    soft = json.loads(run().stdout)["soft"]
+    for key in ("comma in a number", "sentence starts with a numeral", "supplementary material", "beta coefficient"):
+        assert any(key in s for s in soft), key
+    assert not json.loads(run("--style", "none").stdout)["soft"]
+    guide = (ROOT / "skills" / "references" / "writing-style.md").read_text()
+    assert "run inside one paragraph, not a paragraph each" in guide
+    assert "Do not signpost with" in guide
+
