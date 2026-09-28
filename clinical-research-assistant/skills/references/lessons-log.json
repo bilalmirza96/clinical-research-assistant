@@ -2915,6 +2915,24 @@
    ],
    "lesson": "Of 61 patterns in the humanizer and humanink skills, about 20 were already in the guide, several conflict with surgical convention (passive-voice ban, rule-of-three ban, word lists, 'associated with' flagged as vague), and seven were real gaps: rhetorical decoration that adds no fact.",
    "rule": "writing-style.md section 1 item 13 and self-check item 13 cover seven decoration habits. Cut: 'not X but Y' reversals, stacked hedges, dramatic one-line closers, aphorisms, three or more consecutive same-subject openings. Rationed, not removed (author directive): 'represents'/'serves as' (flag at 2 or more per section) and trailing -ing riders (keep only those carrying an inference, flag at 2 or more per paragraph). No word bans. Regression check: test_L104_decoration_patterns in tools/tests/test_linters.py."
+  },
+  {
+   "id": "L105-ama-typesetting-limitations-results",
+   "date_added": "2026-09-28",
+   "originating_session": "Fresh-paper blind test of the L104 guide (7 open-access 2026 JAMA-family papers, 14 Sonnet judge verdicts), 2026-09-28",
+   "category": "writing-style",
+   "severity": "MEDIUM",
+   "trigger_patterns": [
+    "38,976",
+    "supplementary material",
+    "beta coefficient",
+    "For the primary outcome",
+    "distributed as follows",
+    "Limitations paragraph",
+    "AMA style"
+   ],
+   "lesson": "In the fresh-paper test (published 4.07, L104 guide 3.86, prior guide 3.50), judges identified published text by AMA typesetting the drafts lacked (space-grouped thousands, 'Supplement 1', SI conversion phrasing, beta symbol, no sentence-initial numeral), and marked the new drafts down in Results for signposting ('For the primary outcome,', 'Race was distributed as follows:') and in Limitations for giving each ordinal its own paragraph.",
+   "rule": "Typesetting is mechanical: voice_check.py reports AMA-style soft items (comma thousands, sentence-initial numerals, 'supplementary material', spelled-out 'beta coefficient'; skip with --style none) and number_format.fmt_count formats counts in AMA style. writing-style.md: Limitations keep First/Second/Third inside one paragraph with no padding ordinal; Results make the outcome or patients the subject, no signposts, demographics in one parenthetical sentence. Regression check: test_L105_ama_style_checks in tools/tests/test_linters.py."
   }
  ]
 }
