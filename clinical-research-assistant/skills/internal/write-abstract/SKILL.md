@@ -14,7 +14,7 @@ You are an experienced clinical-research mentor whose job is to enforce a single
 
 Before drafting or auditing any abstract:
 
-1. **`../../references/writing-style.md`** — voice and tone guide (sentence architecture, hedging patterns, transition words, banned AI-tell phrases). Its final section, **"House Academic Voice — Universal Standard (ALL CRA prose)"**, is the binding voice contract and overrides anything that conflicts with it. After drafting, run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root; it mechanically enforces the em-dash prohibition, banned transitions, AI-tell phrases, section weight, and venue character limits. Hard failures block submission-ready status.
+1. **`../../references/writing-style.md`** — the only CRA writing guide (L103); read it in full. The five examples below guide abstract architecture and length only. After drafting, run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root; it mechanically enforces the em-dash prohibition, section weight, and venue character limits. Hard failures block submission-ready status.
 
 **Claim-audit gate (L073, NON-NEGOTIABLE).** Also run `python3 tools/claim_audit.py <draft> --registry <MASTER_ANALYSIS_REGISTRY.json>`. It catches assertions of ABSENCE - "was not formally compared", "was never tested", "is not recorded" - that a registered result contradicts. `registry_lint` H8 traces numbers that are PRESENT and is structurally blind to these. Non-zero exit blocks submission-ready status. Two standing rules behind it: never assert a negative about the analysis state from memory (grep the registry first, including in conversational answers), and never treat generated prose - a draft, a summary, an earlier turn - as evidence of what an analysis found. When a hedge is genuinely warranted, write it as a positive statement of what WAS done, naming the key, rather than a bare negative.
 2. **`../../references/biomedagent-methodology.md`** — three-phase pipeline (Plan → Execute → Verify) and task-classification rules. An abstract is a *deliverable* of Phase 3 (Verify), not a Phase 2 artefact.
@@ -244,7 +244,7 @@ Run the 12-point gate:
 
 ## Reference Example Abstracts — Bilal's preferred style (canonical templates)
 
-Five author-approved abstracts in `examples/` define the target voice. **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and read the other four to re-absorb the common voice. The cross-abstract patterns are distilled in `../../references/writing-style.md` → "Collective Abstract Style — Extracted From the Five Reference Abstracts"; apply that section together with the 12 principles. The five examples and their registers:
+Five author-approved abstracts in `examples/` define abstract architecture and length; sentence-level voice comes from `../../references/writing-style.md`. **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and the other four for range. Apply `../../references/writing-style.md` together with the 12 principles. The five examples and their registers:
 
 *Surgical / registry-outcomes register:*
 - **`examples/example_crpopf_surgical-outcomes.md`** — single-registry surgical-outcomes abstract (NSQIP). Template for **surgical-meeting abstracts (SSO / ASC / AATS / WSA)**.
@@ -264,7 +264,7 @@ Distilled patterns to replicate (these are *how Bilal likes abstracts*, on top o
 5. **Conclusions interpret and name the dominant driver/mechanism, then END on the concrete highest-leverage clinical lever** (surveillance target, referral pathway, trial-enrollment priority). Keep causal language hedged ("supporting an access-driven mechanism", "markers predicting", "in this cohort").
 6. **No em dashes** (commas/semicolons/parentheses; en dash only inside compounds like Black-White). Database names allowed; spell out non-standard abbreviations at first use.
 
-When the user asks for an abstract, open all five examples (the matching one most closely), apply the "Collective Abstract Style" section of `writing-style.md`, mirror the architecture and density, then run the 12-point gate.
+When the user asks for an abstract, open all five examples (the matching one most closely), apply `writing-style.md`, mirror the architecture and density, then run the 12-point gate.
 
 This full-read requirement is scoped the same way as the required reading above: it binds drafting and any rewrite touching more than about one sentence or claim, not a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) of an existing draft — see the scope clarification under "Required reading at session start."
 
