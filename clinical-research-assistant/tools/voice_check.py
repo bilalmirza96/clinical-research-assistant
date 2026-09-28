@@ -40,20 +40,13 @@ from pathlib import Path
 EM_DASH = "—"          # — never permitted
 EN_DASH = "–"          # – allowed only inside compounds / ranges
 
-BANNED_TRANSITIONS = ["Furthermore", "Moreover", "Additionally", "Interestingly"]
+# The banned-transition list (Furthermore, Moreover, Additionally, Interestingly) and the
+# AI-tell vocabulary list were removed at author direction on 2026-09-28 (lessons-log L103):
+# published surgical prose uses these words, and word bans did not make drafts read as
+# human-written in blinded tests. Voice is taught by skills/references/writing-style.md.
 
-AI_TELL_PHRASES = [
-    "delve into", "shed light on", "sheds light on", "pave the way", "paves the way",
-    "in the realm of", "a myriad of", "it's important to note", "it is important to note",
-    "leveraging", "utilizing", "plays a crucial role", "plays a key role",
-    "underscores the importance", "highlights the importance", "a testament to",
-]
-
-# Banned as vague self-praise, but legitimate in fixed statistical terms. Reported SOFT
-# with context so a human can clear "robust standard errors" while catching "robust data".
+# "significant" outside a statistical sense misstates a result. Reported SOFT with context.
 CONTEXT_DEPENDENT = {
-    "robust": ["robust standard error", "robust variance", "robust to ", "robustness"],
-    "comprehensive": ["Comprehensive Cancer", "comprehensive genomic profiling"],
     "significant": ["statistically significant", "significance", "significantly"],
 }
 
@@ -173,21 +166,11 @@ def main() -> int:
     for i in find_all(prose, EM_DASH):
         hard.append(f"em dash: {context(prose, i)}")
 
-    # --- HARD 2: banned transitions ----------------------------------------------------
-    for w in BANNED_TRANSITIONS:
-        for i in find_all(prose, w):
-            hard.append(f"banned transition '{w}': {context(prose, i)}")
-
-    # --- HARD 3: AI-tell phrases -------------------------------------------------------
-    for p in AI_TELL_PHRASES:
-        for i in find_all(prose, p):
-            hard.append(f"AI-tell phrase '{p}': {context(prose, i)}")
-
     # --- SOFT: context-dependent words -------------------------------------------------
     for w, exceptions in CONTEXT_DEPENDENT.items():
         for i in find_all(prose, w):
             if not excused(prose, i, exceptions):
-                soft.append(f"vague-praise word '{w}' (clear it or cut it): {context(prose, i)}")
+                soft.append(f"non-statistical '{w}' (clear it or cut it): {context(prose, i)}")
 
     secs = split_sections(prose)
     sec_chars = {k: len(v) for k, v in secs.items()}
