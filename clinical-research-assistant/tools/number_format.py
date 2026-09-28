@@ -81,6 +81,16 @@ def fmt(value, dp: int) -> str:
     return f"{d:.{dp}f}"
 
 
+def fmt_count(n) -> str:
+    """Format an integer count in AMA style: no separator below 10 000, a space between digit
+    groups from five digits up (1000, 38 976, 1 204 311). Lessons-log L105."""
+    n = int(n)
+    s = str(abs(n))
+    if len(s) >= 5:
+        s = " ".join(s[max(0, i - 3):i] for i in range(len(s), 0, -3)[::-1])
+    return ("-" if n < 0 else "") + s
+
+
 def fmt_estimate(point, lo, hi, dp: int | None = None, default_dp: int = DEFAULT_DP) -> dict:
     """Format a point estimate and its two CI limits at ONE shared precision (L097): the fewest
     decimals held by any of the three stored values, but never below `default_dp` (the main-text
