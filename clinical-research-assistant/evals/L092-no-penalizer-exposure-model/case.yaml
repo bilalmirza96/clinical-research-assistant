@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: L092-no-penalizer-exposure-model
+context:
+  scaffold_script: setup.sh
