@@ -121,6 +121,8 @@ PYEOF
 }
 
 COMMON=(--trust-plugin --no-publish --scaffold --keep-temp --allow-tools Bash Write Edit --json "$OUT_JSON")
+# Extra arguments after the tier pass straight through, e.g. --case 'L005*' to rerun only failures.
+COMMON+=("${@:2}")
 
 case "$TIER" in
   load)
