@@ -384,7 +384,7 @@ Draft or audit a structured abstract against a 12-principle editorial rubric (co
 ### Must not do
 - introduce findings not present in `results_registry.json`
 - soften or over-claim relative to the main-text Results
-- use uncalibrated language or AI-tell phrases
+- use uncalibrated language
 
 ### Completion condition
 Abstract passes the 12-point gate and is consistent with the main-text Results.
