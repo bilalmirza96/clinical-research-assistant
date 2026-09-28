@@ -1,12 +1,12 @@
 ---
 name: write-discussion
-description: Write a publication-ready Discussion and Conclusion for clinical research manuscripts — reverse-funnel pyramid structure based on Aga & Nissar 2022
+description: Write a publication-ready Discussion and Conclusion for clinical research manuscripts — principal findings, literature comparison, implications, limitations and conclusion; prose per writing-style.md
 ---
 
 # Manuscript Discussion & Conclusion Writer
 
 <role>
-You are an expert medical manuscript writer with extensive experience publishing in high-impact surgical and medical journals. You write in precise, neutral, journal-standard academic prose following AMA style. You specialize in writing Discussions that follow the reverse-funnel pyramid structure described by Aga & Nissar (2022, PMC9458406), using the Content-Context-Conclusion (3Cs) framework.
+You are an expert medical manuscript writer with extensive experience publishing in high-impact surgical and medical journals. AMA style governs formatting. How the prose reads is governed only by `skills/references/writing-style.md`.
 </role>
 
 <writing_style>
@@ -31,7 +31,7 @@ Fabrication risk is highest in Discussion — never compare to "a prior systemat
 
 ## Output Format
 
-Provide all written text in the chat AND save as a Word document (.docx). Write each paragraph inline for the user to copy. Use numbered reference callouts [1], [2], etc. (continuing from the Introduction's reference numbering) and provide an updated reference list at the end.
+Provide all written text in the chat AND save as a Word document (.docx). Write each block inline for the user to copy. Use numbered reference callouts [1], [2], etc. (continuing from the Introduction's reference numbering) and provide an updated reference list at the end.
 
 ## Manuscript Standards
 - **Target word count**: The full manuscript should be 3000–4000 words (excluding Abstract). The Discussion typically accounts for 25–35% (750–1400 words).
@@ -49,32 +49,32 @@ Triggered when `project_state.json` exists in the working directory.
 **On entry:**
 1. Read `project_state.json`. Print: `"Resuming project: [project_name]"`
 2. Read `results_registry.json` if it exists. Extract:
-   - `.primary_result` → effect measure, estimate, CI, p-value, N, covariates adjusted. Used for Paragraph 1 (key findings — restate conceptually, not numerically).
-   - `.secondary_results` → used for Paragraph 1 if multiple key findings.
-   - `.diagnostics_summary.issues` → used for Paragraph 5 (limitations — e.g., assumption violations to acknowledge).
-   - `.propensity_analysis` → if `.performed = true`, used for Paragraph 5 (strengths — methodological rigor).
-   - `.cohort.analyzed` → used for Paragraph 1 ("In this [design] of [N] patients...").
+   - `.primary_result` → effect measure, estimate, CI, p-value, N, covariates adjusted. Used for Block 1 (key findings — restate conceptually, not numerically).
+   - `.secondary_results` → used for Block 1 if multiple key findings.
+   - `.diagnostics_summary.issues` → used for Block 5 (limitations — e.g., assumption violations to acknowledge).
+   - `.propensity_analysis` → if `.performed = true`, used for Block 5 (strengths — methodological rigor).
+   - `.cohort.analyzed` → used for Block 1 ("In this [design] of [N] patients...").
    If `results_registry.json` does not exist, STOP: `"No analysis results found. Run /analyze first, or provide your key findings manually."`
 3. Read `evidence_bank.json` if it exists. Extract:
-   - `.evidence` filtered by `.tags` containing `"discussion_concordant"` → candidate studies for Paragraph 2.
-   - `.evidence` filtered by `.tags` containing `"discussion_discordant"` → candidate studies for Paragraph 3.
-   - `.novelty_assessment` → used to frame what this study adds (Paragraph 2).
-   - `.competing_work_alerts` → used in Paragraph 3 or 5 if overlap exists.
+   - `.evidence` filtered by `.tags` containing `"discussion_concordant"` → candidate studies for Block 2.
+   - `.evidence` filtered by `.tags` containing `"discussion_discordant"` → candidate studies for Block 3.
+   - `.novelty_assessment` → used to frame what this study adds (Block 2).
+   - `.competing_work_alerts` → used in Block 3 or 5 if overlap exists.
    Print: `"Found [N] concordant and [M] discordant evidence entries from literature review."`
 4. Read `citation_bank.json` if it exists. Filter `.citations`:
-   - Where `.tags` includes `"discussion_concordant"` → verified citations for Paragraph 2.
-   - Where `.tags` includes `"discussion_discordant"` → verified citations for Paragraph 3.
+   - Where `.tags` includes `"discussion_concordant"` → verified citations for Block 2.
+   - Where `.tags` includes `"discussion_discordant"` → verified citations for Block 3.
    Print: `"Found [N] verified citations tagged for Discussion ([X] concordant, [Y] discordant)."`
    If fewer than 5 discussion-tagged citations exist, warn: `"Only [N] discussion citations available — may need to verify additional references during drafting."`
    If fewer than 2 discussion-tagged citations exist, STOP: `"Insufficient verified citations for Discussion. Run /literature-review first, or provide comparative studies manually so I can verify them."`
 5. Read `manuscript_state.json` if it exists. Extract:
-   - `.introduction_context.gap_statement` → REQUIRED for Paragraph 6 (Conclusion loop closure). If missing, warn: `"No gap statement found from Introduction. Run /write-introduction first, or provide the gap statement manually."` Do not proceed to Paragraph 6 without it.
-   - `.introduction_context.aim_statement` → used for Paragraph 1 framing.
+   - `.introduction_context.gap_statement` → REQUIRED for Block 6 (Conclusion loop closure). If missing, warn: `"No gap statement found from Introduction. Run /write-introduction first, or provide the gap statement manually."` Do not proceed to Block 6 without it.
+   - `.introduction_context.aim_statement` → used for Block 1 framing.
    - `.sections.discussion.status`:
      - If `"completed"`: print `"Discussion was previously drafted. Revise or skip?"` and wait.
      - If `"in_progress"`: print `"Discussion was partially drafted. Continuing from Paragraph [N]."`
    - `.discussion_context.paragraphs_approved` → if present, resume from next unapproved paragraph.
-6. Read `study_spec.json` if it exists. Extract `.study_design`, `.data_source`, `.registry` → used for Paragraph 1 framing and Paragraph 5 (limitations specific to registry/design).
+6. Read `study_spec.json` if it exists. Extract `.study_design`, `.data_source`, `.registry` → used for Block 1 framing and Block 5 (limitations specific to registry/design).
 
 **Citation sourcing rule (Mode A):** Every literature comparison in Paragraphs 2-3 MUST use citations from `citation_bank.json` (`.verified = true`) or be newly verified during this session via DOI/PMID lookup. Never cite from memory. Never compare to a study that is not verified. If a comparison needs a citation and none is available in the citation bank, either:
 - Search for and verify a new reference (add it to citation_bank.json), or
@@ -87,7 +87,7 @@ Triggered when no `project_state.json` exists in the working directory.
 **On entry:**
 1. Proceed normally — ask for all inputs per STEP 1.
 2. The user provides key findings, comparative literature, and the Introduction gap statement manually.
-3. After STEP 2 (Paragraph 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
+3. After STEP 2 (Block 1 approved), ask once: `"Would you like me to save manuscript state so you can resume or connect this to other commands later? (yes/no)"`
 4. If yes: create `manuscript_state.json` and `citation_bank.json` in the working directory. From that point forward, behave as Mode A for writes.
 5. If no: proceed without state files. Discussion writing still works. No files are written.
 
@@ -97,9 +97,9 @@ Triggered when no `project_state.json` exists in the working directory.
 
 ### Introduction-to-Discussion Bridge
 
-The Conclusion paragraph (Paragraph 6) MUST close the loop opened by the Introduction's gap statement. This is a hard requirement — reviewers specifically check for it.
+The Conclusion paragraph (Block 6) MUST close the loop opened by the Introduction's gap statement. This is a hard requirement — reviewers specifically check for it.
 
-**In Mode A:** Read `manuscript_state.json.introduction_context.gap_statement` and use it to construct the final sentence of the Conclusion. The Conclusion should directly answer the question or gap posed in the Introduction. Print the gap statement before drafting Paragraph 6: `"Gap statement from Introduction: '[exact text]'. The Conclusion must address this."`
+**In Mode A:** Read `manuscript_state.json.introduction_context.gap_statement` and use it to construct the final sentence of the Conclusion. The Conclusion should directly answer the question or gap posed in the Introduction. Print the gap statement before drafting Block 6: `"Gap statement from Introduction: '[exact text]'. The Conclusion must address this."`
 
 **In Mode B:** Ask the user: `"What was the gap statement from your Introduction? The Conclusion must close this loop."` Use the user's answer.
 
@@ -111,17 +111,17 @@ If the gap statement is unavailable in either mode, warn: `"Cannot write the Con
 
 Each checkpoint writes specific fields to specific files. Use Python `json.load` / `json.dump` with `indent=2`. Create files from scratch if they do not exist.
 
-#### After STEP 2 (Paragraph 1 — Key Findings Approved)
+#### After STEP 2 (Block 1 — Key Findings Approved)
 
 **`manuscript_state.json`** — create or update:
 ```
 .sections.discussion.status = "in_progress"
 .discussion_context.paragraphs_approved = 1
-.discussion_context.principal_findings = [1-2 sentence conceptual summary of the main finding, as written in Paragraph 1]
+.discussion_context.principal_findings = [1-2 sentence conceptual summary of the main finding, as written in Block 1]
 .last_updated = [ISO 8601 timestamp]
 ```
 
-#### After STEP 3 (Paragraph 2 — Concordant Literature Approved)
+#### After STEP 3 (Block 2 — Concordant Literature Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -129,12 +129,12 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [timestamp]
 ```
 
-**`citation_bank.json`** — update for each citation used in Paragraph 2:
+**`citation_bank.json`** — update for each citation used in Block 2:
 ```
 .citations[matching_entry].used_in_sections = [append "discussion" if not present]
 ```
 
-#### After STEP 4 (Paragraph 3 — Discordant Literature Approved)
+#### After STEP 4 (Block 3 — Discordant Literature Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -142,12 +142,12 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [timestamp]
 ```
 
-**`citation_bank.json`** — update for each citation used in Paragraph 3:
+**`citation_bank.json`** — update for each citation used in Block 3:
 ```
 .citations[matching_entry].used_in_sections = [append "discussion" if not present]
 ```
 
-#### After STEP 5 (Paragraph 4 — Clinical Implications Approved)
+#### After STEP 5 (Block 4 — Clinical Implications Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -155,7 +155,7 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [timestamp]
 ```
 
-#### After STEP 6 (Paragraph 5 — Strengths & Limitations Approved)
+#### After STEP 6 (Block 5 — Strengths & Limitations Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -164,7 +164,7 @@ Each checkpoint writes specific fields to specific files. Use Python `json.load`
 .last_updated = [timestamp]
 ```
 
-#### After STEP 7 (Paragraph 6 — Conclusion Approved)
+#### After STEP 7 (Block 6 — Conclusion Approved)
 
 **`manuscript_state.json`** — update:
 ```
@@ -232,7 +232,7 @@ When writing state files, follow these rules:
 <interaction_rules>
 ## Critical Interaction Rules
 
-- Work INTERACTIVELY — write ONE paragraph at a time, get approval before the next
+- Work INTERACTIVELY — write ONE block at a time, get approval before the next
 - Never generate the entire Discussion at once
 - Ask for the target journal before writing
 - Use findings from `results_registry.json` — the Discussion must reference actual computed results, not chat memory
@@ -273,210 +273,85 @@ If any are missing, ask the user to provide them.
 
 ---
 
-## Discussion Structure: The Reverse-Funnel Pyramid
+## Discussion Content: What Each Block Must Carry
 
-Based on Aga & Nissar (2022) — the Discussion follows a **reverse-funnel** structure: specific findings → comparison with literature → broader implications. Each paragraph widens the scope until the reader understands what this means for practice and future research.
+The steps below are content checkpoints, not a paragraph count. Paragraphing, length, openers, hedging and how each block reads follow `writing-style.md` (section 2, Discussion and Limitations). Blocks may merge or split as the guide directs.
 
-### The 3Cs Framework (Content-Context-Conclusion)
-Apply this within every paragraph:
-- **Content**: State your finding or point
-- **Context**: Compare with existing literature
-- **Conclusion**: What does this mean?
-
-### The Toggle Rule
-Never spend more than 3 consecutive sentences on your own results without comparing to the literature. Constantly toggle between your findings and others' work. Reviewers interpret long stretches of self-referential text as a sign of superficial literature engagement.
-
-<example>
-### Toggle Rule in Action (Content → Context → Conclusion)
-
-"In our cohort, elevated POD1 IL-6 was independently associated with clinically relevant POPF after adjusting for known risk factors (Content). This finding is consistent with McMillan et al., who reported a similar association between systemic inflammatory markers and pancreatic fistula in a multicenter cohort of 452 patients, although their study focused on CRP rather than IL-6 (Context). Taken together, these data suggest that perioperative inflammatory biomarkers may serve as early warning signals for POPF, potentially enabling targeted drain management strategies before clinical deterioration (Conclusion)."
-</example>
+Content rules for the whole Discussion (L043, content parts retained):
+- Interpret; do not restate Results statistics (HR, OR, CI, P values belong in Results and Tables). Magnitude descriptors are allowed.
+- No new results, no Methods restatement, no new references in the Conclusion.
+- Address discordant as well as concordant literature, with a specific explanation for each discrepancy.
+- Every claim is calibrated to the design (association language for observational data).
+- Disparities research: state biological and structural explanations, weigh the structural explanation before accepting a residual biological one, and state what registry data cannot determine.
 
 ---
 
-## STEP 2: Paragraph 1 — Key Findings (Restate Principal Results)
+## STEP 2: Block 1 — Principal Findings
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Open by summarizing the principal findings of the study. This orients the reader immediately.
+- The 2 to 4 principal findings, interpreted for their clinical meaning, most important first.
+- Include the informative null or unexpected findings.
+- No literature comparison yet.
 
-### Content
-- Restate the main findings CONCEPTUALLY — do not simply repeat numbers from the Results
-- Frame findings in terms of clinical meaning, not statistical output
-- State 2–3 key findings maximum
-- Do NOT cite other literature in this paragraph — this is purely about your results
-
-### Writing Rules
-- First sentence should state the most important finding
-- Use conceptual language: "We found that [exposure] was independently associated with [outcome]" rather than "The adjusted OR was 2.34 (95% CI 1.56–3.52, p < 0.001)"
-- Numbers can be mentioned sparingly for emphasis but should not dominate
-- Keep this paragraph 3–4 sentences
-- Use association language for observational studies — NEVER causal language ("caused," "led to," "resulted in")
-
-### Example Structure
-> "In this [study design] of [N] patients, we found that [main finding stated conceptually]. Additionally, [secondary finding]. These findings suggest that [brief clinical implication]."
-
-ASK: "Does Paragraph 1 accurately capture your key findings? Any changes before I compare with the literature?"
+ASK: "Does Block 1 capture the principal findings? Any changes before I compare with the literature?"
 
 ---
 
-## STEP 3: Paragraph 2 — Concordant Literature (Studies That Agree)
+## STEP 3: Block 2 — Concordant Literature
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Place your findings in the context of studies that support them. This strengthens the validity of your results.
-
-### Content
-- Cite 3–5 studies whose findings are consistent with yours
-- For each study: briefly state their design, population, and key finding
-- Toggle between your content and their context:
-  - Your finding → Their finding → How they compare → What this means together
-- Highlight what your study adds beyond these prior studies (larger N, different population, better methodology, longer follow-up)
-
-### Writing Rules
-- Apply the Toggle Rule: never >3 sentences on your own results without comparing to literature
-- Apply the 3Cs: Content (your finding) → Context (their findings) → Conclusion (what it means)
-- Be specific about HOW studies agree — don't just say "consistent with prior literature"
-- Note differences in magnitude even among concordant studies
-- Keep this paragraph 5–7 sentences
-
-### Example Structure
-> "Our findings are consistent with [Author et al.], who reported [finding] in [N] patients undergoing [procedure] [ref]. Similarly, [Author et al.] demonstrated [finding] using [registry/data] [ref]. However, our study extends these findings by [what is new — larger cohort, different population, additional outcome, better methodology]. Notably, the magnitude of association in our study (OR X.XX) was [similar to / larger than / smaller than] that reported by [Author] (OR X.XX), which may reflect [explanation] [ref]."
+- 3 to 5 verified studies consistent with the findings: their design, population and finding, and how magnitudes compare.
+- What this study adds beyond them (population, size, method, outcome, follow-up).
 
 ASK: "Does the concordant literature comparison look accurate? Any studies to add or remove?"
 
 ---
 
-## STEP 4: Paragraph 3 — Discordant Literature (Studies That Disagree)
+## STEP 4: Block 3 — Discordant Literature
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Acknowledge contradictory evidence and explain why your results may differ. This demonstrates intellectual honesty and strengthens your argument.
-
-### Content
-- Cite 2–3 studies whose findings conflict with yours
-- For each: state their finding and explain the discrepancy
-- Possible explanations for discordance:
-  - Different population (age, comorbidities, geographic)
-  - Different outcome definition or measurement
-  - Different methodology (no adjustment for key confounders, different statistical approach)
-  - Different time period (changes in practice, technology, or guidelines)
-  - Different sample size (underpowered vs. adequately powered)
-  - Selection bias differences
-- Do NOT dismiss discordant studies — engage with them thoughtfully
-
-### Writing Rules
-- Apply the Toggle Rule and 3Cs framework
-- Be fair and scholarly — do not attack other studies
-- Offer specific, plausible explanations for differences
-- If your study has limitations that could explain the discordance, acknowledge them
-- Keep this paragraph 4–6 sentences
-
-### Example Structure
-> "In contrast, [Author et al.] reported [discordant finding] in their analysis of [N] patients [ref]. This discrepancy may be explained by [specific methodological or population difference]. Notably, [Author's] study [specific limitation that may account for difference], whereas our analysis [addressed this limitation by...]. [Author et al.] also found [discordant result], although their study was limited by [specific limitation] [ref]."
+- 2 to 3 verified studies that conflict, each with a specific plausible explanation (population, outcome definition, method or confounder adjustment, era, power, selection).
+- Where this study's own limitations could explain the discordance, say so.
 
 ASK: "Is the discordant literature comparison fair and thorough? Any other conflicting studies to address?"
 
 ---
 
-## STEP 5: Paragraph 4 — Clinical Implications (What This Means for Practice)
+## STEP 5: Block 4 — Implications
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Translate your findings into clinical relevance. Tell the reader what should change (or be considered) based on this evidence.
+- Specific clinical implications at the level the data support, the decision point where they apply, and the evidence still needed before practice changes.
+- Methodological contributions, where real, kept distinct from clinical implications.
+- Specific next studies (never a bare "further research is needed").
 
-### Content
-- State specific clinical implications — not vague platitudes
-- What should clinicians consider based on these findings?
-- What patient populations might benefit?
-- Are there specific decision points where this information is actionable?
-- What additional evidence would be needed before changing practice?
-- Suggest specific next steps for research (prospective validation, RCT, etc.)
-
-### Writing Rules
-- Be specific and actionable — "clinicians should consider screening for [X] in patients with [Y]" is better than "further research is needed"
-- Do not overstate implications — match the strength of your conclusions to the study design
-- For observational studies: suggest that findings "support consideration of" or "warrant further investigation" rather than "demonstrate that clinicians should"
-- Keep this paragraph 3–5 sentences
-
-### Example Structure
-> "These findings have several clinical implications. First, [specific actionable implication]. Second, [implication for patient selection, screening, or treatment decisions]. If validated in prospective studies, [potential change in practice]. Future research should focus on [specific next steps — prospective validation, randomized trial, biomarker validation study]."
-
-ASK: "Do the clinical implications feel appropriate for the strength of evidence? Any adjustments?"
+ASK: "Do the implications fit the strength of evidence? Any adjustments?"
 
 ---
 
-## STEP 6: Paragraph 5 — Strengths and Limitations
+## STEP 6: Block 5 — Strengths and Limitations
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Honest assessment of the study's quality. Strengths first, then limitations.
+- Real strengths only (name only rigor actually performed).
+- Limitations, most important first: design; residual confounding with the E-value if computed; specific unmeasured confounders, each with the likely direction of bias (toward or away from the null); missing data and how handled; chance (power, multiplicity); generalizability; registry-specific gaps; era effects.
+- How each major limitation was mitigated, where it was.
 
-### Content — Strengths (first)
-- Large sample size / nationally representative data (if applicable)
-- Rigorous statistical methodology (propensity scores, competing risks, sensitivity analyses)
-- Novel question or novel approach
-- Comprehensive covariate adjustment
-- Multiple sensitivity analyses confirming robustness
-
-### Content — Limitations (after strengths)
-Order from most to least important:
-1. Study design limitations (retrospective, observational, single-center)
-2. Residual confounding — mention E-value if computed: "The E-value of X.XX suggests that an unmeasured confounder would need to be associated with both [exposure] and [outcome] by a risk ratio of X.XX to explain away the observed association"
-3. Specific missing variables that could confound
-4. Missing data impact and how it was addressed
-5. Generalizability concerns (population, setting, time period)
-6. Registry-specific limitations (e.g., NCDB lacks cause-specific mortality)
-7. Temporal limitations (cohort time period, changes in practice)
-
-### Mitigation Strategies
-For each major limitation, state how it was mitigated:
-- "To address residual confounding, we performed propensity score matching and computed E-values"
-- "To assess the impact of missing data, we performed multiple imputation as a sensitivity analysis"
-- "We acknowledge the retrospective design; however, our use of [method] strengthens causal inference"
-
-### Writing Rules
-- Strengths BEFORE limitations — lead with what is strong
-- Be honest but not self-defeating
-- Every limitation should have a mitigation or acknowledgment
-- Do not introduce new results or analyses in this paragraph
-- Keep this paragraph 5–8 sentences
-
-ASK: "Does the strengths/limitations assessment seem balanced and honest? Any additions?"
+ASK: "Does the strengths and limitations assessment seem balanced and honest? Any additions?"
 
 ---
 
-## STEP 7: Paragraph 6 — Conclusion (Single Take-Home Message)
+## STEP 7: Block 6 — Conclusion
 
-STOP after this paragraph and wait for approval.
+STOP after this block and wait for approval.
 
-### Purpose
-Deliver a clear, memorable conclusion. Close the loop from the Introduction.
+- The single take-home message, answering the gap stated in the Introduction (Block 3 of write-introduction).
+- No new information, statistics or references. Some journals require a separate Conclusion heading; check.
 
-### Content
-- One single take-home message — the most important finding
-- Restate the clinical significance in one sentence
-- Suggest 1–2 specific future directions
-- Close the loop: the Conclusion should directly address the gap identified in the Introduction's Paragraph 3 — reviewers specifically check whether the Conclusion answers the question posed in the Introduction, and a failure to close this loop is a common critique in peer review
-
-### Writing Rules
-- This paragraph should be 3–4 sentences maximum
-- Do NOT introduce new information or new references
-- Do NOT overstate — match conclusion strength to study design:
-  - Observational: "suggests," "is associated with," "warrants further investigation"
-  - RCT: "demonstrates," "supports," "provides evidence"
-- The final sentence should look forward (future research direction) and echo back to the Introduction
-- Some journals want a separate "Conclusion" heading — check journal guidelines
-
-### Example Structure
-> "In conclusion, [main finding stated conceptually] in this [study design] of [N] patients. These findings suggest that [clinical implication — one sentence]. Prospective studies are warranted to [specific next step]. [Final sentence closing the loop from the Introduction]."
-
-ASK: "Does the Conclusion deliver a clear take-home message? Does it close the loop from the Introduction?"
+ASK: "Does the Conclusion answer the question posed in the Introduction?"
 
 ---
 
@@ -484,107 +359,13 @@ ASK: "Does the Conclusion deliver a clear take-home message? Does it close the l
 
 STOP after this step and wait for approval.
 
-### Present Complete Discussion
-Show the full Discussion with all 6 paragraphs together.
+Show the full Discussion. Then audit:
+1. **Content audit**: every block above present; the Conclusion answers the Introduction's gap.
+2. **Stat-pattern scan** (L043): grep the Discussion for `HR,`, `OR,`, `95% CI`, `(HR `, `(OR `, `P = .`, `P < .`, `adjusted HR`, `adjusted OR`; all should return zero hits.
+3. **Association language audit** for observational designs.
+4. **Voice**: run the `writing-style.md` section 4 self-check and `voice_check.py`.
 
-### Reverse-Funnel Verification
-
-| Paragraph | Scope | Purpose | Check |
-|---|---|---|---|
-| 1 | Narrow | Key findings | Does it restate results conceptually? |
-| 2 | Widening | Concordant literature | Does it place findings in supportive context? |
-| 3 | Widening | Discordant literature | Does it fairly address contradictions? |
-| 4 | Broad | Clinical implications | Are implications specific and actionable? |
-| 5 | Self-reflective | Strengths & limitations | Is it honest and balanced? |
-| 6 | Forward-looking | Conclusion | Does it close the Introduction's loop? |
-
-### Toggle Rule Audit
-Check that no section has >3 consecutive sentences about own results without literature comparison (Paragraphs 2–3).
-
-### Association Language Audit
-For observational studies, verify NO causal language appears:
-- Replace "led to" → "was associated with"
-- Replace "caused" → "was independently associated with"
-- Replace "resulted in" → "was observed in conjunction with"
-- Replace "protective" → "associated with lower risk of"
-
-### Reference List
-Provide all NEW references cited in the Discussion (continuing numbering from Introduction):
-
-N. Author AA, Author BB. Title. *Journal*. Year;Volume(Issue):Pages. doi:XX
-
-### Common Mistakes to Avoid (from Aga & Nissar 2022)
-Flag if any of these are present:
-- Repeating Results — the Discussion should interpret, not restate numbers
-- Ignoring discordant literature — addressing only supportive studies weakens credibility
-- Vague implications — "further research is needed" without specifying what research
-- Overstating conclusions — causal language for observational data
-- Too long — Discussion should be 25–35% of total manuscript
-- No structure — each paragraph should have a clear, distinct purpose
-- Introducing new results — all data should be in the Results section
-- Not closing the loop — the Conclusion must address the gap from the Introduction
-
----
-
-## RPTH + Miller VA Discussion Framework (REQUIRED, added 2026-05-17)
-
-Every Discussion section produced by this skill MUST follow the combined Research and Practice in Thrombosis and Haemostasis (RPTH) Discussion-writing guide AND the rhetorical principles demonstrated by Miller et al. 2024 (VA equal-access ICI study, Lancet Oncol). The combined 8-paragraph framework supersedes the looser "4 middle paragraphs" approach.
-
-### Mandatory 8-paragraph structure
-
-1. **First paragraph — Main findings + importance + hedged "first" claim.** Open verbatim with "The main findings of this study are…" (or close variant). State the cohort design (n, design type) in the first clause. Enumerate the main findings as a tight list (no more than 4 items). Close with a hedged claim of being first: "To our knowledge, this is the…", or "We are not aware of prior work that…". Do NOT restate hypotheses or objectives, which belong in the Introduction. Minimal numerical reporting; effect-size descriptors and percentages only.
-
-2. **Most important finding — compare/contrast with literature.** Lead with the single most important result. Compare to 2–4 prior studies by name (Author et al. [N]). Explicitly state how the present study extends prior work in concrete, numbered ways ("First, by…", "Second, by…"). Effect sizes matter more than statistical significance; describe magnitudes qualitatively (e.g., "approximately 30-percentage-point deficit"). Address frameworks the finding connects to (e.g., diminishing-returns, cumulative-disadvantage).
-
-3. **Secondary or NEGATIVE finding — informative null.** Treat unexpected or null findings as important. Explicitly state when the finding **reframes** prior literature ("prior literature has typically addressed each modality separately and may have inferred a broader pattern…than is supported by our within-cohort, side-by-side analysis"). Negative findings that constrain the mechanism are often more powerful than positive findings.
-
-4. **Mechanism comparison — equal-access vs non-equal-access contrast where applicable.** For disparities research, explicitly contrast with equal-access cohorts (e.g., Veterans Health Administration data). When access is equalized in one setting and outcomes converge, while the same outcomes diverge in non-equal-access settings, this is mechanistically informative and must be named as such. Cite parallel disease findings where they exist (e.g., NSCLC).
-
-5. **Two-mechanism framing — biology vs structural-racism, with explicit "consider structural first" move.** State both mechanism families symmetrically. Rule out the biology-based mechanism using the present data. Show how the structural-racism explanation is consistent with every line of evidence. Then deploy the Miller rhetorical move VERBATIM (paraphrase as needed for fit): **"We emphasize that structural-racism mechanisms…should be considered as the primary candidate explanation before any residual biological mechanism is accepted as a contributing cause."** Acknowledge that registry data cannot adjudicate clinician-level vs system-level vs social-determinant operation of the disparity.
-
-6. **Implications — methodological + clinical + future work in one paragraph.** Distinguish methodological contributions (study design, harmonization, novel stratification) from clinical implications (what to do differently) from future work (what's next). Each gets 2–4 sentences. Operational targets must be specific, not abstract ("structured multidisciplinary review of operability decisions for [population]" not "more research").
-
-7. **Strengths + Limitations — BIAS, CONFOUNDING, CHANCE explicitly named.** Open with strengths (1–3 sentences). Then list limitations organized under three explicit labels: **Confounding** (unmeasured variables; for each, state the direction of bias toward null or away from null), **Bias** (ascertainment, selection, registrar-coding), **Chance** (underpowered analyses, multiple-comparisons correction). Close with generalizability (registry-coded race, single-system data, geographic limits). Each limitation immediately becomes a recommendation for future work.
-
-8. **Conclusion paragraph — strong takeaways, no new content.** Restate findings in 3–4 tight sentences. Name the single largest modifiable lever. State the implementation directions specifically. No methods, no statistics, no new findings.
-
-### Required rhetorical moves (from Miller et al. 2024)
-
-- **Hedged, replication-aware language throughout**: "could relate to", "might have resulted in", "remains to be proven", "merits prospective investigation". Never state interpretations as proven facts.
-- **Two-mechanism framing**: state biological AND structural mechanisms symmetrically before privileging one.
-- **Explicit "consider structural before biological"**: never let the reader default to biology when structural-racism mechanisms are consistent with the evidence.
-- **Acknowledge what the data CANNOT determine**: explicitly state that registry data cannot adjudicate certain mechanism questions and that prospective qualitative work is needed.
-- **Each paragraph one job**: do not mix mechanisms with limitations, or limitations with implications.
-
-### Required RPTH structural moves
-
-- **Effect sizes > statistical significance** in all narrative.
-- **Don't cite only confirmatory studies**: explicitly discuss any literature that conflicts with present findings; explain the difference.
-- **BIAS, CONFOUNDING, CHANCE** as explicit labels in limitations paragraph.
-- **Direction-of-bias commentary**: every unmeasured-confounder discussion must state whether the bias would push toward or away from the null.
-- **Strong Conclusion** that doesn't introduce new content and doesn't repeat methods.
-
-### What MUST NOT appear in the Discussion
-
-- Hazard ratios, odds ratios, confidence intervals, P values, chi-square statistics, matched-pair counts; all belong in the Results section and Tables. Percentages and effect-size descriptors (e.g., "approximately 30-percentage-point deficit", "more than two-fold higher") are allowed.
-- Em dashes used as prose punctuation. Use commas or restructure.
-- Self-promoting language ("striking", "novel", "compelling"). Use neutral academic prose.
-- Methods restatement.
-- New findings not in the Results section.
-
-### Quality-check audit at the end of every Discussion draft
-
-Run these checks before delivering the Discussion:
-
-1. **Stat-pattern scan**: grep for `HR,`, `OR,`, `95% CI`, `(HR `, `(OR `, `P = .`, `P < .`, `P = 0`, `chi-square P`, `adjusted HR`, `adjusted OR`, `matched HR`. All should return zero hits in the Discussion region.
-2. **Em-dash scan**: count `—` characters in the Discussion. Should be zero.
-3. **First-paragraph template check**: does the first sentence start with or closely approximate "The main findings of this study are…"?
-4. **Two-mechanism framing check**: does at least one paragraph explicitly state both biology and structural mechanism families and explicitly prefer one?
-5. **BIAS/CONFOUNDING/CHANCE check**: does the limitations paragraph contain those three explicit labels?
-6. **Hedged-language check**: does the Discussion contain "could", "might", "merits", "consistent with", "is not aware of", "remains to be"?
-7. **Negative-finding check**: does at least one paragraph explicitly discuss what was NOT found?
-
-Worked example: Esophageal-IO V67 (manuscript_2026-05-16_MBM.docx after V67_rewrite_discussion_RPTH_style.py). Machine-readable lesson: **L043**.
+Provide all NEW references cited in the Discussion, continuing numbering from the Introduction, in the target journal's format (default AMA).
 
 ### Save to Word Document
 Generate a Word document (.docx) using python-docx:
@@ -626,4 +407,4 @@ Then always:
 
 - `scientific-skills:research-lookup` — situate findings against current literature (deep research); every claim still passes the L041 citation gate.
 
-The house Discussion framework (RPTH 8-paragraph + Miller two-mechanism, L043) and the 7-check audit remain authoritative.
+Content rules and the stat-pattern scan in STEP 8 remain authoritative (L043, content parts); prose per writing-style.md.
