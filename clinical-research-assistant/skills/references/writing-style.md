@@ -1,494 +1,190 @@
-# Author Writing Style Reference
+# CRA Writing Guide: Scientific Prose That Reads as Published
 
-> **START HERE — the binding contract is the last section of this file: "House Academic Voice — Universal Standard (ALL CRA prose)".** It governs every prose deliverable produced through CRA and overrides any section-specific guidance below that conflicts with it. Verify mechanically with `python3 tools/voice_check.py <draft>`.
+> **Binding for every scientific prose deliverable produced through CRA**: abstracts, introductions,
+> methods, results, discussions, full manuscripts, literature-review synthesis, cover letters,
+> responses to reviewers, and grant text. On 2026-09-28, at the author's direction, this guide
+> replaced the earlier author-style reference, the collective abstract style and the House
+> Academic Voice sections (lessons-log L103). It is the only writing guide in CRA. Where any
+> skill's own style notes conflict with it, this file wins.
+>
+> It was learned from 18 surgical-journal papers (15 JAMA Network surgical originals, 1 JTCVS
+> Open, 2 thoracic guidelines) and validated blind. On two sets of 7 unseen paragraphs, drafts
+> written with it beat the prior CRA voice (2.86 vs 2.36, then 3.21 vs 2.43, of 5). Two
+> alternative revisions scored lower and were rejected. Published originals still scored 4.5 to
+> 5, so the self-check in section 4 is not optional.
 
+## How to use it (every writing task)
 
-This file defines the author's unique writing voice. All writing skills (`/write-introduction`, `/write-methods-results`, `/write-discussion`, `/write-manuscript`) MUST read and apply these patterns when drafting manuscript text. The goal is prose that reads as human-written, matches the author's published style, and avoids generic AI phrasing.
+1. Read this whole file before drafting.
+2. Draft fluently from the facts. Do not copy source wording or flatten the argument.
+3. Run the section 4 self-check and revise.
+4. Run the mechanical gate from the plugin root: `python3 tools/voice_check.py <draft> [--venue X] [--sections]`.
+   It hard-fails on em dashes, structured-abstract section weight (Results the largest section)
+   and venue character limits, and flags non-statistical "significant". A draft with hard
+   failures is not deliverable.
+5. Abstracts only: also run the 12-point editorial gate in `write-abstract/SKILL.md` and use the
+   venue-matched example in `write-abstract/examples/` for architecture and length.
 
----
+A bounded mechanical edit of an existing draft (terminology swap, registry-sourced number
+correction, typo fix) may skip step 1 but still runs `voice_check.py` and `claim_audit.py` (L101).
 
-# Writing Style Reference
+Scope: original investigations for JAMA Surgery and JTCVS-level journals. Built from blinded-judge comparisons of model drafts against published paragraphs, a close read of the surgical corpus, and measured corpus norms (section lengths, sentence lengths, hedge and first-person rates, section order), summarized in section 2. This guide covers what those numbers miss: how the prose moves.
 
-## Purpose
+House rules carried over, and only these:
+- No em dashes. Use commas, parentheses, colons or a new sentence.
+- Give numerator and denominator with every percentage when the data provide them.
+- No claim stronger than the design supports.
+- Never invent a number. A missing quantity is flagged UNSOURCED; never derive a numerator from a percentage or back-calculate P from a CI.
+- Name only the analyses actually run.
 
-This document defines the default writing style for academic manuscripts. It is intended to guide drafting and revision across sections while preserving section-appropriate variation. The goal is not a rigid template, but a consistent authorial identity: sophisticated, analytically controlled, clinically grounded, and publication-ready.
-
-The prose # Author Writing Style Reference
-
-This file defines the author's manuscript-writing style for academic and clinical research writing. All writing skills should apply these patterns across drafting and revision. The goal is prose that is professional, publication-ready, clinically grounded, and recognizably human. The writing should sound like a strong academic manuscript, not a generic template.
-
----
-# Author Writing Style Reference
-
-This file defines the author's manuscript-writing style for academic and clinical research writing. All writing skills should apply these patterns across drafting and revision. The goal is prose that is professional, publication-ready, clinically grounded, and recognizably human. The writing should sound like a strong academic manuscript, not a generic template and not an opinion piece.
-
----
-
-## Core Voice
-
-The default voice should be:
-
-- formal
-- professional
-- academic
-- clinically anchored
-- data-led
-- interpretive in a controlled way
-- sophisticated without ornament
-- assertive, but not inflated
-
-The prose should read like a polished manuscript written by a clinician-investigator with command of the data and the literature. It should not sound conversational, literary, promotional, or editorialized.
-
----
-
-## Global Principles
-
-### 1. Start from the clinical problem
-The writing should usually begin with the clinical problem, management challenge, or disparity of interest before moving into the mechanistic, molecular, or methodological detail.
-
-### 2. Keep interpretation tethered to data
-Interpretive lift is acceptable and often desirable, but it must follow directly from the observed findings. Do not widen beyond what the data can support.
-
-### 3. Prefer structured argument over stylistic display
-The prose should feel well built. Paragraphs should progress logically and each paragraph should have a clear function. Sophistication should come from reasoning, sequencing, and sentence control rather than ornament.
-
-### 4. Maintain manuscript authority
-The tone should be confident and publication-ready. Avoid flat, over-defensive prose. At the same time, do not sound promotional or overstated.
-
-### 5. Never use em dashes
-Em dashes are not permitted. Replace them with commas, semicolons, colons, or parentheses as appropriate. Rewrite the sentence if needed.
+No transition or vocabulary word is banned. Use Furthermore, Moreover, Additionally, Interestingly, Notably or Importantly where these authors would, which is occasionally and for a real addition or emphasis. No fixed rhetorical phrase is required either. Do not reach for a stock gap line, a stock pivot or a stock opener for the main findings.
 
 ---
 
-## Sentence Architecture
+## 1. What gives a model away
 
-### Default pattern
-- Prefer medium-length sentences as the baseline.
-- Use longer sentences when synthesizing findings, discussing mechanisms, or connecting results to broader clinical meaning.
-- Use shorter, cleaner sentences when presenting data or making a direct point.
+Ranked by how often the judges cited the pattern. Each item is a pair: model habit -> what published authors do.
 
-### Rhythm
-- Rhythm should remain controlled and section-appropriate.
-- Discussion and Introduction may carry slightly more syntactic lift.
-- Results should be tighter and more direct.
-- Methods should be formal and readable, but not mechanical.
+**1. Wrong sentence packing for the section.** Model drafts do one of two things. Either they chain several findings into one long sentence with semicolons and "and", or they chop connected ideas into uniform one-fact sentences. -> Published authors pack by function. A limitation and its consequence share one sentence ("Because X was unavailable, Y..."). A concession and its main claim share one "Although" sentence. Separate results (mortality, then complications, then readmission) each get their own short sentence. Methods run one step per sentence. The rhythm is uneven because the content is uneven. A model that is even in either direction gets caught.
 
-### Clause structure
-The author often uses layered sentences with multiple linked clauses, especially in Interpretation and Discussion. This is acceptable as long as the logic remains easy to follow.
+**2. Too many tidy paragraphs.** Drafts split patient flow into four or five paragraphs, give a sensitivity check its own closing paragraph, and cut a Discussion into many short blocks. -> Published sections use fewer, denser paragraphs. Screening, exclusions, crossovers and the analyzed count run as one block. A sensitivity or stratification check is folded into the end of the paragraph it belongs to. A Discussion often has a summary paragraph and then one long paragraph that works through prior studies.
 
----
+**3. Over-explaining and restating.** Drafts restate the denominator on every count, spell out abbreviations again in Results after Methods defined them, coin acronyms for terms used twice, announce the design before doing it ("The analysis was conducted in 2 stages"), justify routine choices, and add modifiers that context already supplies ("procedural efficiency", "of the technology"). -> Published authors say a thing once and trust the reader. They go straight into the work ("In the first part of the study, we estimated..."), define an abbreviation once and use it bare afterward, and leave obvious context implied.
 
-## Diction
+**4. Aims written as Methods, and the gap in the wrong place.** Drafts write the objective as a report of completed work ("We described trends, assessed outcomes and compared costs") or pack it into one colon sentence with (1), (2), (3). They also open a new paragraph with the gap. -> Published Introductions end the background paragraph on the gap, then give the aims a short paragraph of their own. The aim is framed as a question or purpose ("we sought to determine whether", "The goal of this study was to evaluate"), not as a list of things already done. Several aims may be posed as separate short questions.
 
-### Preferred diction
-- elevated but precise
-- formal and exact
-- academically mature
-- clinically literate
+**5. Swapped field terms.** Drafts replace the standard term with a synonym ("arm" for group, "refused" for declined, "present age" for current age, "capped" for truncated, "internal body clock" for circadian clock). They also inflate plain words ("expenditures", "driver", "facilitate", "yield") or slip into conversation ("right away", "run the model"). -> Published authors use the field's own term every time, even when it repeats. Their register is plain and technical at once: "costs", "often", "support", "declined to participate".
 
-### Avoid
-- generic filler
-- empty intensifiers
-- self-congratulatory novelty language
-- vague abstractions detached from the data
-- overly literary phrasing
-- commentary-style flourishes
+**6. Certainty set at the wrong level.** Drafts state prior evidence as settled, state the gap too flatly ("is unknown"), add an interpretive pivot inside Results, and close with claims the data do not carry ("these priorities follow from our findings"). -> Published authors let prior studies "suggest" an association, frame the gap as limited or not well characterized, report Results without interpretation, and end on a modest statement ("remains a priority", "may support"). Hedges cluster in the Discussion and Conclusions; Results carry almost none.
 
-### Important note
-Do not overcorrect into blandness. Standard academic phrases are acceptable when they perform real argumentative work and fit the context.
+**7. Connectives at the head of every sentence.** Drafts stack sentence-initial transitions ("Together", "Despite this", "Yet", "In contrast", "Likewise") and turn each inference into its own "therefore" sentence. They also drop the one turn that matters. -> Published authors carry most logic inside the sentence: a fronted "Because" or "Although" clause, a "despite" phrase, a trailing participle ("suggesting that...", "leaving open whether..."). They keep one explicit marker, such as "However" or "Accordingly", where the argument actually turns, usually where endorsement or practice meets the gap.
+
+**8. Abstract nouns as subjects.** Drafts make the exposure, the scenario, the model or "the data" the grammatical subject, and they use modeling jargon for people ("decedents", "risk set", "carriers" throughout). -> Published authors keep patients and the study team in subject position: "patients who underwent repair", "women were followed from", "we stratified". In a Limitations sentence, the analysis is the subject and the consequence trails ("our estimates may therefore understate...").
+
+**9. First person removed from the Discussion, or used in the abstract Objective.** Drafts write "this cohort" and "these data" in the Discussion but "We assessed" in the structured-abstract Objective. -> Published Discussions and Limitations say "our study", "our cohort", "our data". The abstract Objective opens with an infinitive ("To evaluate...").
+
+**10. Parallelism that is too perfect.** Drafts write paired estimates as two matched sentences, reorder lists by frequency, and make every list item grammatically identical. -> Published authors join paired values in one sentence with "vs" or "respectively", keep lists in their own (often protocol) order, and tolerate small irregularities: a list whose items are not parallel, "included" where a model would write "were", one verb governing two objects.
+
+**11. Reordered moves.** Drafts put the citation before the claim, move a statement of the reporting standard into the middle of a paragraph, or report crossovers after both groups instead of inside the group they affected. -> Published order is claim, then support. Crossovers and conversions sit inside that group's narrative, and the reporting-standard sentence closes the paragraph that introduces the model.
+
+**12. Stock endings.** Drafts close the Discussion or Conclusions with a future-research agenda or a two-verb flourish ("facilitate adoption and support translation"). -> Published Conclusions run two to four sentences with no statistics. They restate the finding in the design's own words and end on one calibrated implication or a short statement that a question remains.
 
 ---
 
-## Tone
+## 2. How these authors sound
 
-The ideal tone is:
+### Introduction (two to three paragraphs, about 180 to 360 words)
+1. Open on the clinical stake: burden, volume, standard of care or cost. Plain declarative, often with "remains" or a rate. No gap and no aim in sentence 1.
+2. Add what is known, sometimes as a short history (an old method, its limits, what replaced it). Attribute findings with soft verbs such as suggest, report or has been associated with.
+3. Where guidance or enthusiasm exists, set it against the evidence: the endorsement in one sentence, then the turn ("However, ...") and the gap as the close of that paragraph. Name what is missing (a design, a population, a comparison), not a vague "little is known".
+4. Last paragraph: the aim, briefly. "We sought to...", "The goal of this study was to...", or a few direct questions. No results and no hypothesis unless the study was powered to test one.
+Sentences are long here (about 30 words on average) and subordinated. Participial openers and "While" clauses are common.
 
-- more professional than conversational
-- more authoritative than tentative
-- less inflated than high-impact promotional prose
-- less flat than hyper-restrained copyediting
+### Methods (median about 640 words)
+- Subsections: design and population; exposure or intervention and data sources; outcomes with operational definitions; statistical analysis last.
+- One step per sentence, about 18 to 25 words. Mostly passive for data handling; "we" for choices the team owns ("We excluded...", "We assumed..."). Repeat "We assumed" for each assumption rather than merging them.
+- Define terms where they first appear, in the same sentence, by parenthesis or apposition.
+- State a method without defending it unless the choice is unusual. Name the reporting guideline once, in the sentence that introduces the design or model.
+- Numbered end-of-follow-up events or eligibility criteria are fine, and they need not be perfectly parallel.
 
-The writing should sound like a strong clinical manuscript, not a press release and not a neutralized rewrite.
+### Results (median about 600 words, near-zero hedges)
+- Paragraph 1: flow of participants in one dense block (screened, excluded with reasons in protocol order, crossovers inside the group they affected, analyzed N), then baseline characteristics with a table pointer.
+- Then the primary outcome, secondary outcomes and subgroups, in the order the Methods set out.
+- Each distinct result gets a short sentence. Paired values sit together: "(18/212 [8.5%] vs 31/208 [14.9%])". Give the denominator compactly in the parenthesis and do not rebuild "of the N patients" frames around every count.
+- No literature, no mechanism and no "Despite" pivots. A single trailing participle ("suggesting that...") is the most interpretation this section allows, and many papers use none.
 
----
+### Discussion (median about 660 words, the most hedges and first person)
+1. First sentence: "In this [design] of [population], [main finding]." Keep the adjustment set inside that sentence ("independent of age, ... and ...") rather than in a second sentence.
+2. Prior work, run as a continuous argument: agreement with a named study, then disagreement with a named reason (a different population, definition or approach), linked by "Similarly", "In contrast" or a "despite prior reports" phrase inside a sentence.
+3. Mechanism, hedged with may, likely or could, in sentences of ordinary length. Technical terms stay technical.
+4. An anticipated objection answered in the authors' voice ("our data suggest", "we favor").
+5. An implication for a named group of patients or surgeons, framed as decision support.
 
-## Point of View
+### Limitations
+- A headed block, usually opened by "This study has several limitations." or a close variant. Strengths, if given, come first as design features.
+- "First", "Second" and "Third" are common. Each limitation is one or two sentences: the fact, then its consequence in a trailing clause. Name the excluded population or the unmeasured outcome. Keep examples in a trailing parenthetical "(eg, ...)".
+- Say "a single state" or "a single center" before naming it. Use "likely", not "probably".
 
-- Prefer an impersonal academic register by default.
-- Use first-person constructions selectively and only when they improve clarity.
-- The emphasis should remain on the study, findings, cohort, clinical problem, or literature rather than on the authors.
+### Conclusions (one paragraph, about 55 words, two sentences)
+- Sentence 1 repeats the design and the main association without numbers.
+- Sentence 2 gives one implication at the level the design supports, with "may" or "should consider". Stop there.
 
----
-
-## Section-Specific Guidance
-
-## Introduction
-
-### Function
-The Introduction should establish the clinical importance of the question, narrow progressively, define the specific gap, and end in a focused study objective.
-
-### Structure
-- Open with the broader clinical problem.
-- Narrow in logical layers.
-- Use the literature to frame the gap, not merely to summarize background.
-- Build toward the precise unresolved question.
-
-### Tone
-- formal
-- clinically motivated
-- evidence-rich
-- controlled in emphasis
-
-### Citation style
-Use dense citation support in the Introduction when building a clinical or scientific problem. Prefer high-quality evidence, including major trials, high-impact studies, seminal field-defining papers, and strong meta-analyses.
-
----
-
-## Methods
-
-### Function
-Methods should read as precise, formal, and readable.
-
-### Tone
-- technical
-- disciplined
-- not robotic
-
-### Preferred style
-- clear definitions
-- orderly presentation
-- no unnecessary stylistic flourish
-
-Even in Methods, the prose should remain polished.
+### Structured abstract
+- Importance: one or two sentences, the stake and the gap in the field's own phrasing.
+- Objective: an infinitive ("To compare...").
+- Design, Setting, and Participants: dense, dates included.
+- Interventions or Exposures: a verbless noun phrase is acceptable.
+- Results: participants first, then outcomes in terse, nearly list-like sentences. State the denominator once and pair values with "vs" or "respectively". No pivots and no interpretation.
+- Conclusions and Relevance: two sentences with no statistics; name the design, end with a hedged implication, spell out terms in full, and do not redefine abbreviations.
 
 ---
 
-## Results
+## 3. Worked contrasts (invented studies)
 
-### Function
-Results should present findings directly and efficiently.
+**1. Aim written as Methods (Introduction, inguinal hernia).**
+Before: "We therefore used a statewide registry to (1) describe trends in robotic inguinal hernia repair, (2) compare 1-year recurrence, and (3) estimate hospital costs."
+After: "Therefore, using a statewide registry, we sought to answer 3 questions. How has the use of robotic repair changed over the past decade? Is robotic repair associated with a different rate of recurrence at 1 year? And what does it cost hospitals?"
 
-### Tone
-- data-forward
-- lean
-- minimally interpretive
+**2. Gap in its own paragraph, stated too flatly (appendicitis).**
+Before: "[Paragraph 3] Despite these advantages, the effect of antibiotic-first management on return to work is unknown."
+After: End paragraph 2: "Several societies now endorse an antibiotic-first approach for uncomplicated appendicitis. However, despite these recommendations, data on how this strategy affects return to work are limited." Paragraph 3 then carries only the aim.
 
-### Preferred style
-- shorter sentences than Introduction and Discussion
-- let the data lead
-- use framing only when it genuinely helps the reader follow the sequence of findings
+**3. Chopped Methods with a separate "therefore" (trauma triage).**
+Before: "Prehospital times were missing after 2019. Therefore, we imputed them. Imputation used chained equations. Twenty data sets were created."
+After: "Because prehospital times were not recorded after 2019, we imputed them with chained equations across 20 data sets."
 
-Avoid excessive narration of what the results "mean" inside the Results section.
+**4. Stacked Results sentence (thyroidectomy).**
+Before: "Transient hypocalcemia occurred in 41 patients (9.8%); permanent hypoparathyroidism occurred in 6 (1.4%), and recurrent laryngeal nerve palsy was seen in 9 (2.1%), while 30-day readmission was 3.3%."
+After: "Transient hypocalcemia occurred in 41 of 418 patients (9.8%) and permanent hypoparathyroidism in 6 (1.4%). Recurrent laryngeal nerve palsy occurred in 9 patients (2.2%). The 30-day readmission rate was 3.3% (14/418)."
 
----
+**5. Interpretive pivot inside Results (splenic injury).**
+Before: "Despite higher injury grades, patients who underwent angioembolization had lower rates of splenectomy, indicating the effectiveness of this approach."
+After: "Splenectomy was required in 12 of 164 patients (7.3%) who underwent angioembolization and 29 of 171 (17.0%) managed with observation alone, although injury grade was higher in the embolization group."
 
-## Discussion
+**6. Adjustment split off and impersonal voice (Discussion, ventral hernia).**
+Before: "Preoperative smoking was associated with mesh infection in this cohort. This association held after adjustment for BMI, diabetes and wound class."
+After: "In this cohort of patients undergoing open ventral hernia repair, current smoking was associated with mesh infection, independent of body mass index, diabetes and wound class. Our data suggest that..."
 
-### Function
-The Discussion should interpret the findings, compare them with prior literature, explain plausible reasons for concordance or discordance, define the clinical implications, and acknowledge limitations.
+**7. Stacked connectives and an overclaiming close (Discussion, appendicitis).**
+Before: "Together, these findings are striking. Yet prior trials reported higher failure rates. In contrast, our failure rate was low. Consequently, antibiotic-first care should be the default."
+After: "Although earlier trials reported failure rates near 30%, those trials enrolled patients with appendicolith, whom we excluded, and this difference may explain the lower rate in our cohort. Whether antibiotic-first care should be the default for patients without appendicolith remains a question for a trial designed to answer it."
 
-### Preferred structure
-The author strongly favors a conventional manuscript Discussion structure:
+**8. Limitation with a coined acronym and a separate consequence (cost study, trauma).**
+Before: "Our analysis was restricted to hospitals in Ohio. Hospitals in the Midwest Trauma Network (MTN) were excluded. This limits generalizability. The MTN uses a different accounting method."
+After: "First, the analysis was limited to a single state, and hospitals in its largest trauma network were excluded because they use a different accounting method, which may reduce the generalizability of our estimates."
 
-1. open with the principal findings
-2. define why the question matters clinically
-3. compare with supportive prior literature
-4. address conflicting literature
-5. offer plausible explanation or mechanism
-6. define clinical implications
-7. discuss strengths
-8. discuss limitations
-9. close with a disciplined conclusion
+**9. Too-perfect parallel sentences (Results, thyroidectomy).**
+Before: "Voice change at 2 weeks was reported by 22% of patients with nerve monitoring. Voice change at 2 weeks was reported by 27% of patients without nerve monitoring."
+After: "Voice change at 2 weeks was reported by 44 of 200 patients (22.0%) with nerve monitoring and 55 of 204 (27.0%) without it."
 
-### Tone
-- formal
-- assertive
-- structured
-- interpretive, but not editorial
-
-### Paragraph style
-Discussion paragraphs often turn on a hinge:
-- result
-- why it matters
-- what may explain it
-- how it fits with prior literature
-
-This is a core feature of the author's style and should be preserved.
-
-### Mechanistic discussion
-Mechanistic explanation is welcome when plausible and relevant, but should be framed as explanation or interpretation rather than fact.
-
-### Clinical implications
-Clinical implications may be stated explicitly. However, they should arise from the findings and should not read like advocacy.
+**10. Swapped terms and a two-verb conclusion (abstract, hernia).**
+Before: "Conclusions: The robotic arm showed improved procedural efficiency, which may facilitate wider adoption of the technology and support RA integration."
+After: "Conclusions and Relevance: In this randomized clinical trial, robotic repair was associated with shorter length of stay than laparoscopic repair. These findings may support broader adoption in centers with established robotic programs."
 
 ---
 
-## Abstracts
-
-### Function
-The abstract should be compact, polished, and high-information.
-
-### Preferred style
-- direct opening
-- clear statement of question, methods, principal findings, and conclusion
-- concise but not skeletal
-- professional, not overstated
-
-The abstract may include a modest degree of interpretive framing, but must remain anchored to the data.
-
----
-
-## Claim Strength and Hedging
-
-### Findings
-State observed findings directly.
-
-### Interpretation
-Use careful interpretive language when moving beyond the data, especially for:
-- mechanism
-- causality
-- generalizability
-- implications for practice
-- policy-level or system-level conclusions
-
-### Rule
-Do not hedge everything. The prose should not sound timid. Hedge where the inference requires it.
-
----
-
-## Transitions
-
-Transitions should be clear and conventional, but not mechanical. The prose should move like a manuscript, not like a list.
-
-Acceptable transitions include standard academic phrases when they support structure and flow. Avoid over-stylized connective language.
-
----
-
-## Paragraph Endings
-
-Paragraph endings should usually:
-- land clearly
-- carry forward the argument
-- provide slight conceptual or clinical lift when appropriate
-
-Do not end paragraphs with empty wrap-up lines.
-
----
-
-## Literature Comparison
-
-A recurring and preferred move in the author's writing is to compare the present findings with prior literature in a structured way:
-- first, studies that align with the findings
-- then, studies that differ
-- then, possible explanation for the discrepancy
-
-This pattern should be preserved, especially in Discussion sections.
-
----
-
-## What to Avoid
-
-Do not produce prose that is:
-- too flat
-- too generic
-- too cautious
-- too literary
-- too editorial
-- too obviously AI-smoothed
-- too eager to advertise importance
-
-Do not convert the manuscript into a commentary. Keep it within the rhetorical norms of a strong academic paper.
-
----
-
-## Revision Priorities
-
-When revising, prioritize:
-
-1. clarity of logic
-2. professional academic tone
-3. sharper paragraph structure
-4. removal of grammatical mistakes and awkward phrasing
-5. restraint in overstated lines
-6. preservation of manuscript authority
-
----
-
-## Final Style Target
-
-The ideal prose should feel:
-
-- professional and academic
-- clinically grounded
-- structured and manuscript-like
-- data-led
-- interpretive in a controlled way
-- sophisticated but not ornate
-- assertive without sounding like an opinion piece
-- unmistakably human
-
-
----
-
-# Collective Abstract Style — Extracted From the Five Reference Abstracts
-
-> **Standing instruction (added 2026-06-29 at author request):** Whenever drafting OR auditing an abstract, reference **all five** canonical example abstracts in `write-abstract/examples/`, not only the one matching the venue. Read the venue-matched example most closely for architecture, but treat the patterns below — distilled across all five — as the author's load-bearing abstract voice. These patterns sit on top of, and never override, the 12-principle editorial rubric.
-
-The five sources span the author's full range: CR-POPF surgical-outcomes (NSQIP), esophageal disparities (SEER/NCDB/GENIE, mediation), glutamine-antagonism CPM (scRNA-seq + TCGA + in vivo), divergent epithelial states (descriptive scRNA-seq), and GZMK+ T-cells (clinical-trial scRNA + bulk biomarker). What is common to all five — across registry, translational, descriptive, and biomarker registers — is the durable style. What varies is noted as register-conditional.
-
-## 1. Opening move (Objective / Introduction)
-
-Every abstract opens on the **clinical or biological stake**, then narrows to the **specific unaddressed gap**, then closes the opening on an **explicit objective in first-person active voice**.
-
-- Stake first: "POPF remains the most concerning complication following distal pancreatectomy"; "over 70% of patients do not respond"; "Tumor heterogeneity… is a key determinant of treatment outcomes and survival."
-- Gap second, signposted with a "remains" construction: "the true burden… remains underexplored"; "site-specific heterogeneity… remains unknown"; "genomic determinants remain poorly defined."
-- Objective last, first-person: "This study aims to evaluate…"; "We assessed whether…"; "We evaluated the therapeutic potential of…"; "we offer novel insights into…".
-- For **registry / disparities / determinant** questions, sharpen the objective into a **two-alternative question** ("whether residual disparity reflects tumor biology or inequitable access"; "whether tumor genotype is associated with not only the site but the timing"). The two-alternative framing is the author's signature for outcomes/registry work; bench-translational openers are declarative rather than dichotomous.
-
-## 2. Methods — dense, specific, only-real-rigor
-
-- **Name the data source and N up front**, in the first clause: "2019-2022 NSQIP Pancreas PUF"; "SEER (n=32,820), NCDB (n=114,633)"; "25 tumor samples from 19 patients"; "4 and 28 HNSCC patients… pre- and post-treatment."
-- **List the actual covariates / stratification**, not "adjusted for confounders" alone — enumerate them ("age, sex, diagnosis era, histology, stage, anatomic site, comorbidity, facility type, insurance, area-level socioeconomic measures").
-- **Name each analytic move and only the rigor steps actually performed**: multivariable logistic regression, propensity-score matching, inverse-probability weighting, causal mediation, E-value, competing-risks/cause-specific hazards, Kaplan-Meier, Bonferroni, the specific computational function (`scanpy.tl.score_gene`). Never advertise a sensitivity analysis that was not run.
-- **Name external validation explicitly**, with identifier when present ("external HNSCC cohort treated with Pembrolizumab, NCT03238365"; "validated… in independent datasets").
-- **Name instruments / readouts** for experimental work (IVIS optical imaging, tumor weight, multiplex imaging).
-
-## 3. Results — the dominant section, prose, fully quantified
-
-- **Largest section, always flowing prose, never bullets.** Long multi-clause sentences that layer several estimates each.
-- **Every comparison carries its full statistical triplet**: count as **n (%) with explicit numerator**, **effect size with 95% CI**, and **exact P**. Models: "943 (13.3%)"; "17.6% vs 3.4%, p<0.01"; "OR 2.98, 95% CI 2.35-3.78, p<0.01"; "adjusted HR, 1.29; 95% CI, 1.23-1.36." No bare proportion (always its n/N) and no bare effect size (always its CI and P).
-- **Report null and no-difference findings honestly**, in line with the positives: "without a difference in postoperative acute pancreatitis (14.5% vs 14%, p=0.98)"; "mortality was not significantly impacted (1% vs 0.7%, p=0.76)." Honest nulls strengthen rather than dilute.
-- **Report within-stratum robustness and ranges** where available: "robust within every stage and histology… (OR range, 0.48-0.61; E-value, 3.41)."
-- **Biologist-grade specificity** (Principle 5): name genes (ASCL2, AXIN2, OLFM4, CDX2; ANXA1, S100A4, TROP2; GZMK, GZMB), cell types (tumor-associated macrophages, CD8+ effector T-cells, cytotoxic T lymphocytes), and subtypes (iCMS2/iCMS3, CMS4) rather than abstracted categories.
-- **The "Despite [A], [B]" pivot appears exactly once**, to mark the single key tension: "Despite these complications, mortality was not significantly impacted"; "Despite both representing adverse tumor-suppressor losses, TP53 and SMAD4 were associated with metastasis to opposite compartments"; "Despite favorable tumor biology predicting greater ICI benefit…". One pivot per abstract — using it more than once spends its force.
-
-## 4. Conclusions — interpret, name the driver, land on the lever
-
-- **Open by interpreting, not recapping**; state what the findings mean and name the dominant driver or mechanism.
-- **Carry the key contrast forward** from Results (the access-driven mechanism; the opposite-compartment dichotomy; the responder/non-responder split).
-- **End on the single highest-leverage, concrete clinical lever**: a surveillance target ("intensified liver imaging in TP53-mutated disease"), a referral pathway ("equitable referral to high-volume surgical centers"), a trial-enrollment priority ("prioritized inclusion of Black patients in ICI trials"), a therapeutic strategy ("glutamine antagonism… combined with immune checkpoint blockade"), or a prevention/management need.
-- **Keep causal language calibrated** to design (Principles 3, 7, 9): "supporting an access-driven mechanism"; "potential biomarkers"; "may represent a promising therapeutic strategy"; "suggesting distinct cellular origins"; "warrant prospective validation." Reserve "mediates" for an actual mediation analysis. Use strong novelty claims ("for the first time") sparingly and only when literally true.
-
-## 5. Cross-cutting mechanics (all five)
-
-- **No em dashes**, ever. Commas, semicolons, colons, parentheses; en dash only inside compounds (Black-White, pre-/post-treatment).
-- **First-person active voice is welcome** and used throughout ("We conducted", "We identified", "we discovered", "We validated").
-- **Database names are allowed** in the body (NSQIP, SEER, NCDB, AACR Project GENIE, TCGA); spell out non-standard abbreviations at first use (POPF, DGE, iCMS, CTL).
-- **Structural label is register-conditional**: surgical/registry and descriptive single-cell work use an **Introduction**-led header; bench-translational mechanism-to-therapy work uses an **Objective**-led header. Match the example closest to the study type.
-- **Section weight** (Principle 6) holds in all five: Results dominates; Methods is the minimum needed to establish rigor; Conclusions is interpretation, not summary.
-
-## How to use this section
-
-Before drafting any abstract: (1) read the venue/study-type-matched example in `examples/` for architecture, (2) read the other four quickly to re-absorb the common voice, (3) draft against the five-part shape above, (4) run the 12-point gate. When auditing, check the submitted draft against both the 12-point gate and the five points here, and quote the matching reference pattern when proposing a fix.
-
-Scope clarification (author-approved 2026-09-28): steps (1)-(2) apply to drafting and to any audit-rewrite touching more than about one sentence or claim, not to a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) — see the fuller statement under "House Academic Voice" below.
-
----
-
-# House Academic Voice — Universal Standard (ALL CRA prose)
-
-> **Standing rule (2026-08-06, author request): "always use the same writing style for academic
-> writing using the CRA."** This section is the single canonical voice contract. It governs every
-> prose deliverable produced through this plugin, not only abstracts: introductions, methods,
-> results, discussion, full manuscripts, literature-review synthesis, cover letters, responses to
-> reviewers, and grant text. Where a section-specific rule earlier in this file conflicts with this
-> section, **this section wins.**
-
-## How to apply it (every writing task, no exceptions)
-
-1. Read this section.
-2. Read all five canonical abstracts in `write-abstract/examples/` — the venue/register-matched one
-   closely for architecture, the other four quickly to re-absorb the voice. Do this even when the
-   deliverable is not an abstract; they are the only author-approved samples of the target voice.
-3. Draft.
-4. Run the mechanical gate: `python3 tools/voice_check.py <draft> [--venue X] [--sections]`.
-   It exits non-zero on any hard failure. A draft with hard failures is not deliverable.
-5. For abstracts, additionally run the 12-point editorial gate in `write-abstract/SKILL.md`.
-
-**Scope clarification (author-approved 2026-09-28).** Steps 1-2 above (read this section; read all
-five canonical abstracts) apply to drafting and to any rewrite that changes more than about one
-sentence or any claim in an existing draft. They do not apply to a bounded mechanical edit of an
-existing draft — a terminology swap, a number correction sourced from the registry, or a typo fix.
-Such a bounded edit may proceed directly to steps 3-5: draft (edit) it, then run `voice_check.py`
-and `claim_audit.py` on the result exactly as on a full draft. Only the upfront full-reference-read
-in steps 1-2 is scoped down; the mechanical and claim-audit gates are never skipped.
-
-## A. Hard mechanical rules (enforced by `tools/voice_check.py`)
-
-| Rule | Detail |
-|---|---|
-| **No em dashes, ever** | Use commas, semicolons, colons, parentheses. En dash only inside compounds and ranges (Black-White, pre-/post-treatment, 1.04-1.63). This is absolute and is the most frequently violated rule. |
-| **Banned transitions** | Never "Furthermore", "Moreover", "Additionally", "Interestingly". Use "Indeed", "Notably", "Nevertheless", "As such", "Together with", "Consistent with these reports". |
-| **Banned AI-tell phrases** | "delve into", "shed light on", "pave the way", "in the realm of", "a myriad of", "it's important to note", "plays a crucial role", "underscores the importance", "a testament to", "leveraging", "utilizing" (write "using"). |
-| **Vague self-praise** | "robust", "comprehensive", "significant" as standalone praise. Permitted only as fixed technical terms (robust standard errors, comprehensive genomic profiling, statistically significant). |
-| **Structured-abstract section weight** | Results is the largest section, at least twice Methods and at least twice Conclusions. |
-| **No bullets in any abstract or manuscript body** | Prose only. One analytic move per sentence, accumulating into an arc. |
-
-## B. Architecture (register-independent)
-
-- **Opening move, three beats: stake → gap → objective.** Open on the clinical or biological stake,
-  narrow to the specific unaddressed gap signposted with a "remains" construction ("remains
-  unknown", "remains underexplored", "remain poorly defined"), then close on an explicit objective
-  in first-person active voice ("We assessed", "We aimed to", "This study aims to").
-- **Two-alternative framing is the signature for outcomes, registry, and determinant questions.**
-  Pose the objective as a fork: "whether X reflects A or B". Bench-translational openers are
-  declarative instead. Match the register.
-- **The "Despite [A], [B]" pivot appears exactly once**, marking the single key tension. Using it
-  twice spends its force.
-- **Report honest nulls in line with the positives.** They strengthen rather than dilute.
-- **Conclusions interpret; they never recap.** Name the dominant driver, carry the key contrast
-  forward from Results, and land on the single highest-leverage concrete lever: a surveillance
-  target, a referral pathway, a trial-enrollment priority, a therapeutic strategy. The closing
-  construction "… are the highest-leverage modifiable targets" is house-preferred.
-- **Never close on "further research is warranted."**
-- **Literature comparison, in order:** studies that align, then studies that differ, then the
-  explanation for the discrepancy. Preserve this especially in Discussion.
-
-## C. Quantification discipline
-
-- **Name the data source and N in the first clause of Methods.**
-- **Enumerate covariates by name.** Never "adjusted for confounders" alone.
-- **Name only the rigor actually performed.** Never advertise a correction, sensitivity analysis,
-  or validation that was not run. This outranks any impulse toward completeness.
-- **Full statistical triplet:** count as n (%) with explicit numerator, effect size with 95% CI,
-  and exact P. No bare proportion without its n/N; no bare effect size without its CI.
-- **Where a quantity is not in the project's registry, it is `UNSOURCED`, not derived.** Do not
-  multiply a percentage by a denominator to manufacture a numerator, and do not back-calculate P
-  from a confidence interval. Report the denominator you have and flag the gap.
-
-## D. Calibration (principles 3, 7, 9)
-
-Verbs that assert more than most designs earn, and must be justified or downgraded: *refutes,
-characterizes, independent of, predicts, drives, establishes, demonstrates, proves, confirms.*
-Cross-sectional and registry associations support a **rationale for testing**, never **prediction
-of treatment benefit**. Add the cohort qualifier ("in this cohort", "among adults 65 or older")
-rather than deleting the claim. When honesty and impact conflict, honesty wins.
-
-## E. Voice mechanics
-
-- **First-person active is welcome and expected**: "We conducted", "We identified", "We assessed".
-- **Register-conditional header**: surgical, registry, and descriptive single-cell work is
-  **Introduction**-led; bench-translational mechanism-to-therapy work is **Objective**-led.
-- **Database names are permitted** in the body (NSQIP, SEER, NCDB, AACR Project GENIE, TCGA).
-  Spell out non-standard abbreviations at first use.
-- **Naming specificity throughout**: databases with version, software with version, FDR method,
-  generic drug names, classification systems defined inline.
-- **Sentence architecture varies by section** — short and single-purpose in Results, long and
-  compound in Discussion — but the em-dash prohibition holds in every section.
-
-## Resolved conflict (2026-08-06)
-
-`write-discussion/SKILL.md` previously instructed "chain ideas with dashes and commas", which
-contradicted the absolute em-dash prohibition extracted from the five author-approved abstracts.
-The prohibition wins; that line now reads "commas, semicolons, and colons". Recorded as lesson
-**L062**.
+## 4. Pre-delivery self-check
+
+Run each item against your own draft before delivery. Fix the draft rather than explaining the choice.
+
+1. Punctuation: no em dashes, no curly quotes. Each semicolon joins two halves of one idea, never two separate results.
+2. Rhythm: do sentence lengths vary within each paragraph? In Methods, is each step its own sentence? In Results, is each distinct finding its own sentence? In the Introduction and Discussion, are concessions and causes held inside one subordinated sentence?
+3. Paragraphs: is patient flow one block? Are checks folded into their parent paragraph? Is any paragraph just one or two sentences with no reason to stand alone?
+4. Introduction: is the gap the last sentence of the background paragraph? Is the aim a purpose or a question, not a list of completed actions?
+5. Terms: is every field term the standard one, used the same way throughout (group, declined, current age, truncated)? Are there inflated or conversational words? Is each abbreviation defined once, used bare afterward, and not coined for a term used only once or twice?
+6. Restatement: delete repeated denominators in running text (keep n/N inside the parenthesis), justifications for routine methods, design announcements, and modifiers that context already supplies.
+7. Certainty: do prior studies "suggest"? Is the gap soft but specific? Are Results free of pivots and interpretation? Are Conclusions free of statistics, and is no claim stronger than the design?
+8. Connectives: count sentence-initial transitions per paragraph. More than two is a tell. Keep the one real turn and move the rest into subordinate clauses or trailing participles.
+9. Subjects and voice: are patients, surgeons or "we" the subjects wherever possible? Does the Discussion use "our study" and "our data"? Does the abstract Objective begin "To..."?
+10. Parallelism: are paired estimates in one sentence? Are lists in protocol order rather than re-sorted?
+11. Numbers: does every percentage have its numerator and denominator where the data give them? Is every number traceable to the analysis registry, and is anything else flagged UNSOURCED?
+12. Ending: do the Conclusions stop on one calibrated implication, without an agenda and without a flourish?
 
 ---
 
 # House Document Formatting — Universal Standard (ALL CRA deliverables)
 
-*Added 2026-08-20 per author instruction. Binding, same status as the House Academic Voice section
-above. Recorded as lesson **L070**.*
+*Added 2026-08-20 per author instruction. Binding, same status as the writing guide above. Recorded as lesson **L070**.*
 
 ## Tables are black and white. Always.
 
