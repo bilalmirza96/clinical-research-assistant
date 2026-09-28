@@ -88,6 +88,9 @@ def cohort_n(registry, expected_by_group: dict, keys_by_group: dict | None = Non
     components (the same substring convention tools/registry_lint.py uses for arm parity);
     exactly one match per (group, rung) is required, or the gate fails rather than guess.
     """
+    if not expected_by_group:
+        return False, ("no expected groups: expected_by_group is empty - a gate wired before "
+                       "any group is registered must not show green")
     R = _results(registry)
     problems: list[str] = []
     rungs = LT.CONSTANT_N  # ["crude", "modelA", "modelB"]
@@ -158,6 +161,8 @@ def denominator_named(registry):
     A result with no `current` block (UNSOURCED) is not judged here - that is registry_lint's
     job."""
     R = _results(registry)
+    if not R:
+        return False, "no results to check: registry is empty"
     missing = []
     for key, entry in R.items():
         cur = entry.get("current") or {}
@@ -203,6 +208,8 @@ def dictionary_labels(registry, dossier):
     if not allowed:
         return False, "dossier has no categories, code definitions, or labels to check against"
     R = _results(registry)
+    if not R:
+        return False, "no results to check: registry is empty"
     problems = []
     for key, entry in R.items():
         val = (entry.get("current") or {}).get("value")
@@ -228,6 +235,8 @@ def two_adjusted_models(registry):
     vocabulary (RUNG_ORDER only ever has "modelA" and "modelB" as adjusted-covariate rungs) to
     flag any registry key implying a third one, e.g. "..._modelC_..." or "..._model3"."""
     R = _results(registry)
+    if not R:
+        return False, "no results to check: registry is empty"
     bad = []
     for key in R:
         for m in _MODEL_TAG_RE.finditer(key):

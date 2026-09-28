@@ -67,6 +67,12 @@ ok, msg = G.cohort_n(REG_COHORT_AMBIGUOUS, {"nhb": 5000},
                      keys_by_group={"nhb": {"crude": "os_nhb_crude"}})
 check(ok, f"cohort_n: an explicit keys_by_group mapping resolves an otherwise-ambiguous match (msg: {msg})")
 
+# an empty expected_by_group must not pass vacuously - a gate wired before any group is
+# registered must not show green
+ok, msg = G.cohort_n(REG_COHORT_OK, {})
+check(not ok and "no expected groups" in msg,
+      f"cohort_n: an empty expected_by_group fails rather than passing vacuously (msg: {msg})")
+
 # ================================================================== denominator_named
 REG_DENOM_OK = {"results": {
     "surg_nhb": {"label": "NCDB surgery receipt (NHB)", "current": {"value": "0.487 (0.451-0.525)", "n": 5000}},
@@ -88,6 +94,12 @@ REG_DENOM_UNSOURCED = {"results": {"flagged": {"label": "not yet computed", "cur
 ok, msg = G.denominator_named(REG_DENOM_UNSOURCED)
 check(ok, "denominator_named: an entry with no current block (UNSOURCED) is skipped, not failed")
 
+# an empty registry must not pass vacuously - a gate wired before the registry is populated
+# must not show green
+ok, msg = G.denominator_named({"results": {}})
+check(not ok and "no results to check" in msg,
+      f"denominator_named: an empty registry fails rather than passing vacuously (msg: {msg})")
+
 # ================================================================== dictionary_labels
 DOSSIER = {"variables": {
     "histology": {"item": "NAACCR 522", "storage": "alphanumeric", "categories": ["Adenocarcinoma", "Squamous"]},
@@ -108,6 +120,11 @@ REG_DICT_BAD = {"results": {
 ok, msg = G.dictionary_labels(REG_DICT_BAD, DOSSIER)
 check(not ok and "Other" in msg, f"dictionary_labels: a level ('Other') absent from the dossier fails (msg: {msg})")
 
+# an empty registry must not pass vacuously
+ok, msg = G.dictionary_labels({"results": {}}, DOSSIER)
+check(not ok and "no results to check" in msg,
+      f"dictionary_labels: an empty registry fails rather than passing vacuously (msg: {msg})")
+
 # ================================================================== two_adjusted_models
 REG_LADDER_OK = {"results": {
     "os_nhb_crude": {"current": {"value": "1.30"}},
@@ -126,6 +143,11 @@ REG_LADDER_BAD = {"results": {
 }}
 ok, msg = G.two_adjusted_models(REG_LADDER_BAD)
 check(not ok and "modelC" in msg, f"two_adjusted_models: a third adjusted model (modelC) fails (msg: {msg})")
+
+# an empty registry must not pass vacuously
+ok, msg = G.two_adjusted_models({"results": {}})
+check(not ok and "no results to check" in msg,
+      f"two_adjusted_models: an empty registry fails rather than passing vacuously (msg: {msg})")
 
 # ================================================================== no_penalizer
 tmp = tempfile.mkdtemp()
