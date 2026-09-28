@@ -132,7 +132,7 @@ patterns to copy:
 1. Slide 7 "All P<.001" at 24 pt (floor is 28).
 2. Slide 12 "Race × stage interaction P=.01" at 24 pt.
 3. Slide 4 note calls NCDB "population database" (NCDB is hospital-based).
-4. Slide 8 note opens with "Furthermore" (banned transition).
+4. Slide 8 note opened with "Furthermore" (was a banned transition; the ban was retired 2026-09-28, L103).
 5. Slide 15 carries a leftover rotated "Cancer-specific survival (%)" label parked off the right
    edge (residue of cloning the two-panel KM slide into a one-panel slide).
 
