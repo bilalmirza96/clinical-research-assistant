@@ -130,7 +130,8 @@ agent via the Agent tool (`subagent_type: cra-red-team`) — a genuine fresh-con
 not an in-context re-read of Checks 1–17. Hand it the project path, the registry
 (`MASTER_ANALYSIS_REGISTRY.json` / `results_registry.json`), the manuscript + abstract +
 Excel workbook as deliverable paths, and `analysis_plan.json`. It re-derives numbers from
-source and returns `Reports/red_team_<date>.md` with a SHIP / FIX FIRST verdict. This is the
+source and returns its review (SHIP / FIX FIRST verdict) in its response; it is read-only, so
+manuscript-qc saves that review to `Reports/red_team_<date>.md`. This is the
 same fresh-context reviewer `/analyze` Phase 6 uses — a manuscript can pass every native check
 here and still carry an error the drafting session could not see in its own text (the class of
 error this checklist exists to catch is upstream mis-derivation, not just prose-vs-table drift).
