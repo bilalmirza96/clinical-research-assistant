@@ -654,7 +654,7 @@ Both are reported in calibrated language ("mediation analysis suggests about hal
 | Statistical (diagnostics, multiple-testing) | The fresh-context `cra-red-team` agent (clinical checklist in `red-team-brief.md`) |
 | Biological-plausibility (sign reversals, clinical sanity) | The fresh-context `cra-red-team` agent (clinical checklist) |
 
-Output: the agent writes `Reports/red_team_<date>.md` (tiered CRITICAL/HIGH/MEDIUM/LOW, SHIP/FIX FIRST verdict); analyze copies this into `audit_report.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR) so downstream references below are unchanged.
+Output: the agent is read-only and returns its review in its response; analyze saves it verbatim to `Reports/red_team_<date>.md` (tiered CRITICAL/HIGH/MEDIUM/LOW, SHIP/FIX FIRST verdict); analyze copies this into `audit_report.md` with severity-graded findings (CRITICAL / HIGH / MODERATE / MINOR) so downstream references below are unchanged.
 
 **If any CRITICAL finding → trigger 6-phase remediation pipeline** (per **L028**):
 1. Surgical text/numerical fixes
