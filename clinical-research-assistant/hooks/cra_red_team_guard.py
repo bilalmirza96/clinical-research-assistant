@@ -14,9 +14,10 @@ Contract (Claude Code PreToolUse event, matcher "Bash"):
   To block: print a short reason to stderr, exit 2 (Claude Code shows stderr to the model
   and blocks the tool call).
   To allow: exit 0, print nothing.
-  Fail open on anything that isn't a clear, confident block: malformed stdin, a caller that
-  isn't cra-red-team, an unparseable command -> exit 0. This hook must never be the reason a
-  legitimate command from a different agent or the main session fails.
+  A command from the identified red-team agent is default-deny. Calls from other agents and
+  malformed hook input fail open so this plugin-wide hook does not block unrelated work. The
+  hook recognizes the host identity fields `agent_type`, `subagent_type`, and `agent_name`;
+  if the host removes all of them, this hook cannot identify the caller (see agent instructions).
 
 WHAT THIS ENFORCES (only when agent_type == "cra-red-team")
 -------------------------------------------------------------
@@ -26,9 +27,11 @@ agent's frontmatter still grants the Bash tool (it has to run python3, git log, 
 so "read-only" has to be enforced at the command level:
 
 ALLOWED (read-only re-derivation and linting):
-  - `python3 <path under this plugin's tools/ or skills/**/scripts/> [args...]`
-  - cat, head, tail, wc, ls, grep, rg, find (without -delete/-exec/-ok), jq, sort, uniq,
-    diff, awk (without output redirection), git log/show/diff/status
+  - only exact plugin paths for `registry_lint.py`, `claim_audit.py`, `dictionary_audit.py`,
+    and `ladder_table.py`; output options are refused
+  - cat, head, tail, wc, ls, grep, rg, find (without -delete/-exec/-ok), jq, sort (without
+    output/temp/external-program options), uniq, diff, git log/show/diff/status (without
+    output-file or external-diff options)
 
 BLOCKED:
   - Any redirect (`>`, `>>`), `tee`
@@ -38,7 +41,7 @@ BLOCKED:
   - git commit/push/checkout/reset/stash
   - Command chaining (&&, ||, ;, |, backticks, $(...)) where ANY segment is itself blocked
   - find -delete / -exec / -ok
-  - awk with output redirection
+  - awk (it can execute arbitrary commands through `system()`)
 
 Everything not explicitly recognized as safe is refused (default deny for this agent only),
 since a prompt-injected instruction inside a reviewed deliverable only has to find one
@@ -50,16 +53,22 @@ import json
 import re
 import shlex
 import sys
+from pathlib import Path
 
 TARGET_AGENT_TYPE = "cra-red-team"
+PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+CALLER_CWD = Path.cwd()
 
 # Commands cra-red-team may run at all. `python3`/`python` are handled separately (path +
 # args must be a script under tools/ or skills/**/scripts/, never -c or a bare stdin script).
 READ_ONLY_COMMANDS = {
     "cat", "head", "tail", "wc", "ls", "grep", "rg", "find",
-    "jq", "sort", "uniq", "diff", "awk",
+    "jq", "sort", "uniq", "diff",
 }
 PYTHON_COMMANDS = {"python3", "python"}
+READ_ONLY_PYTHON_SCRIPTS = {
+    "registry_lint.py", "claim_audit.py", "dictionary_audit.py", "ladder_table.py",
+}
 GIT_READ_SUBCOMMANDS = {"log", "show", "diff", "status"}
 
 # Never allowed regardless of position in a pipeline/chain.
@@ -154,6 +163,9 @@ def _check_git(args):
     if not args:
         _block("bare `git` with no subcommand is not recognized as read-only")
     sub = args[0]
+    if any(a == "--output" or a.startswith("--output=") or a in {"-o", "--ext-diff", "--textconv"}
+           for a in args[1:]):
+        _block("git output files and external diff/text conversion are blocked")
     if sub in BLOCKED_GIT_SUBCOMMANDS:
         _block(f"`git {sub}` is a write/history-mutating subcommand")
     if sub not in GIT_READ_SUBCOMMANDS:
@@ -171,19 +183,24 @@ def _check_python(cmd, args):
         _block(f"`{cmd} {script}` (flag before a script path) is not recognized as read-only")
     if not script.endswith(".py"):
         _block(f"`{cmd} {script}` is not a .py script path")
+    script_name = script.rsplit("/", 1)[-1].lower()
+    if script_name not in READ_ONLY_PYTHON_SCRIPTS:
+        _block(f"`{cmd} {script}` is not an approved read-only audit script")
+    expected_dir = "tools" if script_name in {"registry_lint.py", "claim_audit.py"} else "skills/internal/analyze/scripts"
+    expected = PLUGIN_ROOT / expected_dir / script_name
+    expanded = script.replace("${CLAUDE_PLUGIN_ROOT}", str(PLUGIN_ROOT)).replace(
+        "$CLAUDE_PLUGIN_ROOT", str(PLUGIN_ROOT))
+    resolved = (CALLER_CWD / expanded).resolve() if not Path(expanded).is_absolute() else Path(expanded).resolve()
+    if resolved != expected.resolve():
+        _block(f"`{cmd} {script}` does not resolve to this plugin's approved audit script")
+    if any(a == "--out" or a.startswith("--out=") or a in {"--write", "--output"}
+           or a.startswith("--write=") or a.startswith("--output=") for a in args[1:]):
+        _block(f"`{cmd} {script}` has an output/write option")
     parts = script.replace("\\", "/").split("/")
     if ".." in parts:
         _block(f"`{cmd} {script}` contains a `..` path segment")
-    # Accept a relative or absolute path as long as one of its directory components is
-    # literally "tools" or "scripts" (covers tools/foo.py, skills/internal/x/scripts/foo.py,
-    # ./tools/foo.py, /abs/path/.../tools/foo.py). Not merely a substring check, so a path
-    # like "toolsmith/foo.py" does not slip through.
-    dirs = parts[:-1]
-    if "tools" not in dirs and "scripts" not in dirs:
-        _block(
-            f"`{cmd} {script}` must be a script under this plugin's tools/ or "
-            "skills/**/scripts/, not an arbitrary path"
-        )
+    # Exact path comparison above prevents a same-named project or /tmp script from being
+    # substituted for the plugin's audited script.
 
 
 def _check_find(args):
@@ -192,9 +209,15 @@ def _check_find(args):
             _block(f"`find ... {bad}` can modify the filesystem or run arbitrary commands")
 
 
-def _check_awk(command_segment: str):
-    if _has_redirect(command_segment):
-        _block("`awk` with output redirection is blocked")
+def _check_sort(args):
+    for arg in args:
+        if (arg in {"-o", "--output", "-T", "--temporary-directory", "--compress-program"}
+                or arg.startswith(("--output=", "--temporary-directory=", "--compress-program="))):
+            _block("`sort` output files, temporary directories, and external programs are blocked")
+        if arg.startswith("-o") and arg != "-o":
+            _block("`sort -oFILE` output is blocked")
+        if arg.startswith("-T") and arg != "-T":
+            _block("`sort -T DIR` temporary directories are blocked")
 
 
 def _check_segment(segment: str):
@@ -229,10 +252,8 @@ def _check_segment(segment: str):
             _block(f"`{base}` is not on the read-only allowlist")
         _check_find(args)
         return
-    if base == "awk":
-        _check_awk(segment)
-        if base not in READ_ONLY_COMMANDS:
-            _block(f"`{base}` is not on the read-only allowlist")
+    if base == "sort":
+        _check_sort(args)
         return
     if base not in READ_ONLY_COMMANDS:
         _block(f"`{base}` is not on the read-only allowlist")
@@ -249,13 +270,16 @@ def _read_payload():
 
 
 def main():
+    global CALLER_CWD
     payload = _read_payload()
     if payload is None:
         _fail_open()
         return
 
-    agent_type = payload.get("agent_type")
-    is_red_team = agent_type == TARGET_AGENT_TYPE
+    CALLER_CWD = Path(payload.get("cwd") or Path.cwd())
+    agent_identities = [payload.get(key) for key in ("agent_type", "subagent_type", "agent_name")
+                        if isinstance(payload.get(key), str)]
+    is_red_team = TARGET_AGENT_TYPE in agent_identities
 
     if not is_red_team:
         # Not cra-red-team (main session, another subagent, or agent_type missing/unknown on

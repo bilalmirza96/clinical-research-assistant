@@ -17,6 +17,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOOK = os.path.join(HERE, "..", "cra_red_team_guard.py")
+PLUGIN_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(HOOK)))
 
 FAILS = []
 
@@ -68,15 +69,15 @@ ALLOWED_COMMANDS = [
     "sort data/raw/cohort.csv",
     "uniq -c data/raw/cohort.csv",
     "diff a.csv b.csv",
-    "awk '{print $1}' data/raw/cohort.csv",
-    "python3 tools/registry_lint.py Reports/MASTER_ANALYSIS_REGISTRY.json",
-    "python3 skills/internal/analyze/scripts/cohort_flow.py --project .",
+    f"python3 {PLUGIN_ROOT}/tools/registry_lint.py Reports/MASTER_ANALYSIS_REGISTRY.json",
+    f"python3 {PLUGIN_ROOT}/skills/internal/analyze/scripts/dictionary_audit.py --dossier specs/data_dictionary_dossier.json --data data/raw/cohort.csv",
+    f"python3 {PLUGIN_ROOT}/skills/internal/analyze/scripts/ladder_table.py",
     "git log --oneline -10",
     "git show HEAD",
     "git diff HEAD~1",
     "git status",
     "cat a.csv | grep foo | sort | uniq -c",
-    "python3 tools/claim_audit.py --registry Reports/MASTER_ANALYSIS_REGISTRY.json && git status",
+    f"python3 {PLUGIN_ROOT}/tools/claim_audit.py --registry Reports/MASTER_ANALYSIS_REGISTRY.json && git status",
 ]
 
 
@@ -104,6 +105,9 @@ BLOCKED_COMMANDS = [
     "mkdir Archives/new",
     "sed -i 's/foo/bar/' Reports/MASTER_ANALYSIS_REGISTRY.json",
     "python3 -c \"import os; os.remove('x')\"",
+    f"python3 {PLUGIN_ROOT}/skills/internal/analyze/scripts/cohort_flow.py --project .",
+    f"python3 {PLUGIN_ROOT}/skills/internal/analyze/scripts/analysis_registry.py upsert",
+    f"python3 {PLUGIN_ROOT}/skills/internal/analyze/scripts/dictionary_audit.py --dossier dossier.json --out Reports/audit.md",
     "python3 << EOF\nimport os\nEOF",
     "curl https://example.com/data.csv -o data.csv",
     "wget https://example.com/data.csv",
@@ -112,6 +116,9 @@ BLOCKED_COMMANDS = [
     "git checkout main -- Reports/MASTER_ANALYSIS_REGISTRY.json",
     "git reset --hard HEAD~1",
     "git stash",
+    "sort -o Reports/sorted.csv data/raw/cohort.csv",
+    "git diff --output=Reports/diff.patch",
+    "awk 'BEGIN { system(\"rm -rf /tmp/x\") }'",
     "cat file.txt && rm -rf /tmp/x",
     "cat file.txt&&rm -rf /tmp/x",
     "find . -name '*.tmp' -delete",
@@ -170,6 +177,18 @@ def test_missing_agent_type_field():
     )
 
 
+def test_agent_type_alias_and_script_path_allowlist():
+    payload = {
+        "cwd": HERE,
+        "subagent_type": "cra-red-team",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 /tmp/tools/registry_lint.py registry.json"},
+    }
+    proc = run_hook(json.dumps(payload))
+    check(proc.returncode == 2,
+          "subagent_type alias is recognized and a same-named external script is refused")
+
+
 def test_non_bash_tool_ignored():
     payload = {
         "session_id": "test-session",
@@ -220,6 +239,7 @@ def main():
     test_blocked()
     test_non_red_team_never_blocked()
     test_missing_agent_type_field()
+    test_agent_type_alias_and_script_path_allowlist()
     test_non_bash_tool_ignored()
     test_malformed_stdin_exits_zero()
 
