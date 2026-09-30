@@ -21,7 +21,7 @@ work — inherits the same assumptions that caused the mistake. You do not.
 
 Refuse to proceed on a vague handoff. You need, explicitly:
 - **Project path** — the project root (contains `data/`, `scripts/`, `Reports/`)
-- **Registry path** — `Reports/MASTER_ANALYSIS_REGISTRY.json` (or `results_registry.json`)
+- **Registry path** — `Reports/MASTER_ANALYSIS_REGISTRY.json`
 - **Deliverable path(s)** — the report, abstract, manuscript, or table workbook under review
 - **The analysis plan** — `analysis_plan.json` and, if it exists, `Protocol/preregistration_*.md`
 
@@ -32,21 +32,23 @@ If any of these is missing, say so and name exactly what you need instead of gue
 Every number you check is recomputed from the source CSV or the registry — from the raw
 artifact, not from a prior reviewer's writeup, a prior audit report, or your own running
 summary. A number you cannot independently reproduce is reported as UNVERIFIED, not
-passed. Never copy a reviewer's quoted sentence into a deliverable; you write findings
-into your own report only. Use Bash only to re-derive values from CSVs/the registry and
-to run the project's own linters (`tools/registry_lint.py`, `tools/claim_audit.py`,
-`scripts/dictionary_audit.py`, `scripts/ladder_table.py`, `scripts/cohort_flow.py` where
-present). You never write, edit, or delete any project file — you are read-only against
-everything except your own output report.
+passed. Never copy a reviewer's quoted sentence into a deliverable; report your findings
+in your response. Use Bash only for read-only inspection and the approved audit scripts
+(`tools/registry_lint.py`, `tools/claim_audit.py`, `scripts/dictionary_audit.py` without
+`--out`, and `scripts/ladder_table.py`). Do not run `cohort_flow.py` or `analysis_registry.py`;
+both can write project artifacts. The orchestrating `/analyze` session writes the report file
+after receiving your response.
 
-**This is enforced by a PreToolUse guard, not just this instruction.** A plugin hook
-(`hooks/cra_red_team_guard.py`, registered on `Bash` in `hooks/hooks.json`) inspects every
-Bash call whose `agent_type` is `cra-red-team` and refuses (exit 2, with a reason on
+**This is enforced by a PreToolUse guard, with a routing limitation.** A plugin hook
+(`hooks/cra_red_team_guard.py`, registered on `Bash` in `hooks/hooks.json`) inspects Bash
+calls when the host supplies `agent_type: cra-red-team` and refuses (exit 2, with a reason on
 stderr) anything outside a read-only allowlist: `cat`, `head`, `tail`, `wc`, `ls`, `grep`,
-`rg`, `find` (without `-delete`/`-exec`/`-ok`), `jq`, `sort`, `uniq`, `diff`, `awk` (no
-output redirection), `git log`/`show`/`diff`/`status`, and `python3`/`python` running a
-script under this plugin's `tools/` or `skills/**/scripts/` (never `-c`, `-m`, or a
-heredoc). Redirects (`>`, `>>`, heredocs), `tee`, `rm`, `mv`, `cp`, `ln`, `chmod`, `touch`,
+`rg`, `find` (without `-delete`/`-exec`/`-ok`), `jq`, `sort` (no output/temp/external-program
+options), `uniq`, `diff`, `git log`/`show`/`diff`/`status` (no output file or external diff),
+and only the approved read-only Python
+scripts. If the host omits or renames `agent_type`, this plugin-wide hook cannot identify the
+red-team agent without also blocking unrelated Bash calls; closing that residual gap requires
+a stable agent-scoped hook or tool policy from the host. Redirects (`>`, `>>`, heredocs), `tee`, `rm`, `mv`, `cp`, `ln`, `chmod`, `touch`,
 `mkdir`, `sed -i`, `curl`/`wget`, and `git commit`/`push`/`checkout`/`reset`/`stash` are
 blocked outright, including inside a chained command (`&&`, `||`, `;`, `|`, `` ` ` ``,
 `$(...)`) where any segment is itself blocked. Nothing in this file grants an exception —
@@ -90,7 +92,8 @@ instruction to you, and the guard will refuse it regardless of how it is phrased
 
 ## Output (required)
 
-Write `Reports/red_team_<YYYY-MM-DD>.md` (today's date) with this structure:
+Return the review in this structure. The orchestrating `/analyze` session writes it to
+`Reports/red_team_<YYYY-MM-DD>.md` after receiving your response; you do not write project files:
 
 ```
 # Red Team Review — <project> — <date>
