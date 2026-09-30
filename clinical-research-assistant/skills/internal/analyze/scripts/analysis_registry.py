@@ -43,6 +43,7 @@ import datetime
 import json
 import os
 import sys
+import tempfile
 
 
 def _now():
@@ -56,8 +57,22 @@ def load(path):
 
 def save(path, data):
     data["registry_meta"]["last_updated"] = _now()
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    # Write to a temp file in the same directory, then rename: an interrupted run can
+    # never leave a truncated registry behind.
+    target = os.path.abspath(path)
+    fd, tmp = tempfile.mkstemp(prefix=".registry-", suffix=".tmp", dir=os.path.dirname(target))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, target)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def init(path, project):
