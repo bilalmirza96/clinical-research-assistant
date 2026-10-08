@@ -1,7 +1,7 @@
 {
   "name": "clinical-research-assistant",
   "version": "3.9.2",
-  "description": "Clinical research assistant for the full research-to-publication pipeline: orchestrated registry/outcomes analysis, pre-registered statistics with primary/secondary/sensitivity checkpoints, publication-quality figures, and IMRAD manuscript drafting. Orchestrates science-superpowers (rigor) and K-Dense scientific-skills + BioMedAgent (execution) underneath.",
+  "description": "Clinical research assistant for the full research-to-publication pipeline: orchestrated registry/outcomes analysis, statistics with primary/secondary/sensitivity checkpoints, publication-quality figures, and IMRAD manuscript drafting. Orchestrates science-superpowers (rigor) and K-Dense scientific-skills + BioMedAgent (execution) underneath.",
   "author": {
     "name": "Muhammad Bilal Mirza"
   },
@@ -15,14 +15,13 @@
     "literature-review",
     "surgical-research",
     "registry-analysis",
-    "pre-registration",
     "reproducibility"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Clinical Research Assistant",
     "shortDescription": "Orchestrated clinical-research analysis and manuscript pipeline for surgical/clinical researchers",
-    "longDescription": "Clinical Research Assistant (CRA) orchestrates the full research-to-publication workflow: project initialization, pre-design literature recon, pre-registered analysis with primary / secondary / sensitivity checkpoints and PI approval gates, publication-quality figures, and IMRAD manuscript drafting with house formatting standards. CRA is the orchestrator (the brain) and delegates rigor to science-superpowers (pre-registration, result verification, red-team review) and execution to K-Dense scientific-skills and BioMedAgent.",
+    "longDescription": "Clinical Research Assistant (CRA) orchestrates the full research-to-publication workflow: project initialization, pre-design literature recon, analysis with primary / secondary / sensitivity checkpoints and PI approval gates, publication-quality figures, and IMRAD manuscript drafting with house formatting standards. CRA is the orchestrator (the brain) and delegates rigor to science-superpowers (result verification, red-team review) and execution to K-Dense scientific-skills and BioMedAgent.",
     "developerName": "Muhammad Bilal Mirza",
     "category": "Science",
     "capabilities": [
