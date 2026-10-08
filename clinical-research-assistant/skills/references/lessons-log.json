@@ -2,7 +2,7 @@
  "_meta": {
   "purpose": "Machine-readable memory log of clinical-research analytic patterns. Modeled on BioMedAgent's Redis memory cache. Read at the start of every session; append after every session that surfaces a new pattern.",
   "schema_version": "1.0",
-  "last_updated": "2026-09-28",
+  "last_updated": "2026-10-05",
   "maintainer": "clinical-research-assistant skill, sourced from real sessions",
   "usage": "Scan trigger_patterns at session start. If any current-task pattern matches, apply the action directly without re-deriving. Append new entries with date + originating_session + trigger_patterns + lesson + action. Mark superseded entries deprecated rather than deleting. Since 2026-09-28 every new lesson ships with a regression check: an agent eval under evals/<Lnnn-slug>/ (claude plugin eval; synthetic fixtures; deterministic graders) or a unit test in tools/tests/test_linters.py when a linter enforces it. Run tools/run_evals.sh smoke before committing a skill edit. A lesson without a check is not closed.",
   "last_promotion_pass": "2026-05-24",
@@ -518,7 +518,7 @@
     "Conclusions summarizes results rather than interpreting them"
    ],
    "lesson": "Section weight signals priority. Results should be the largest section by character count — at least twice Methods and twice Conclusions. Methods compresses to the minimum that establishes rigor. Objective frames the question and prior hypothesis. Conclusions states what findings mean and what comes next, not a recap.",
-   "action": "If Methods or Conclusions approaches the size of Results, the abstract is mis-weighted. Trim Methods to its rigor essentials (pre-registration, FDR control, key analytic move). Re-write Conclusions as interpretation, not recap. See write-abstract/SKILL.md Principle 6.",
+   "action": "If Methods or Conclusions approaches the size of Results, the abstract is mis-weighted. Trim Methods to its rigor essentials (FDR control, key analytic move). Re-write Conclusions as interpretation, not recap. See write-abstract/SKILL.md Principle 6.",
    "deprecated": false,
    "promoted_to": [
     {
@@ -2933,6 +2933,83 @@
    ],
    "lesson": "In the fresh-paper test (published 4.07, L104 guide 3.86, prior guide 3.50), judges identified published text by AMA typesetting the drafts lacked (space-grouped thousands, 'Supplement 1', SI conversion phrasing, beta symbol, no sentence-initial numeral), and marked the new drafts down in Results for signposting ('For the primary outcome,', 'Race was distributed as follows:') and in Limitations for giving each ordinal its own paragraph.",
    "rule": "Typesetting is mechanical: voice_check.py reports AMA-style soft items (comma thousands, sentence-initial numerals, 'supplementary material', spelled-out 'beta coefficient'; skip with --style none) and number_format.fmt_count formats counts in AMA style. writing-style.md: Limitations keep First/Second/Third inside one paragraph with no padding ordinal; Results make the outcome or patients the subject, no signposts, demographics in one parenthetical sentence. Regression check: test_L105_ama_style_checks in tools/tests/test_linters.py."
+  },
+  {
+   "id": "L106-two-x-section-ratio-is-review-not-hard",
+   "date_added": "2026-10-05",
+   "originating_session": "SSO 2027 PDAC organotropism abstract revision, 2026-10-05",
+   "category": "abstract-writing",
+   "severity": "MEDIUM",
+   "trigger_patterns": [
+    "section weight",
+    "2x Methods",
+    "2x Conclusions",
+    "Results < 2x",
+    "Results 50-66%"
+   ],
+   "lesson": "voice_check --sections hard-failed a venue-compliant SSO abstract because Results was under 2x Methods. The author directed that the 2x ratios stop being hard failures. Venue share rules (SSO 2027: Results 50-66% of the abstract) are the binding constraint where a venue states one.",
+   "rule": "Hard gate: Results is the single largest section (L021, unchanged). Results >= 2x Methods and >= 2x Conclusions is a review target reported as a soft item, not a hard failure. Where the venue sets a Results share, meet it. Regression check: test_L106_two_x_ratio_is_review_not_hard in tools/tests/test_linters.py."
+  },
+  {
+   "id": "L107-no-single-gene-cell-state",
+   "date_added": "2026-10-05",
+   "originating_session": "HCC-CRLM-TAM: onco-fetal FOLR2+ macrophage paired test (pre-registration Amendment 5)",
+   "category": "Reproducibility: standardized cell-state taxonomy for scRNA myeloid analysis",
+   "trigger_patterns": [
+    "FOLR2+ macrophages",
+    "fetal-like / onco-fetal TAM",
+    "calling a cell state from one marker gene",
+    "marker-positive fraction as a cell-state proportion",
+    "X+ cells defined as expression > 0",
+    "single-gene gate for macrophage subsets",
+    "Kupffer vs fetal-like vs monocyte-derived"
+   ],
+   "lesson": "A cell state was called from one gene: the July HCC-CRLM onco-fetal result counted FOLR2 > 0 macrophages as fetal-like TAMs. FOLR2 is also a resident Kupffer-cell gene, so a single-gene gate cannot separate onco-fetal reprogramming from Kupffer retention, and single-gene detection is dropout- and depth-sensitive. Sharma 2020 (Cell, PMID 32976798) itself defines the fetal-like TAM1 by a multi-gene phenotype (FOLR2high/CD163high/CD206high, HES1, a HES1/SPIC/NR1H3/MAF regulon), not by FOLR2 alone.",
+   "action": "Never call a TAM or myeloid state from a single gene. Every state or ontogeny program is a sourced panel of at least 3 genes in the standardized taxonomy module (templates/tam-taxonomy), scored with TAX.score_panel / TAX.score_ontogeny / TAX.score_states, and at least 3 of its genes must be present in the dataset or the program is reported untestable. Ontogeny is read as three programs side by side: tissue_resident_TRM and monocyte_derived_MDM (Casanova-Acebes 2021) and onco_fetal_FTAM (Sharma 2020). State the overlap between related programs (onco-fetal shares 4 of 7 genes with resident). A single gene may be reported only as a descriptive gene-level column, never as a state label or a decision-rule readout. The module enforces this: check_panel raises ValueError on a panel with fewer than 3 genes.",
+   "deprecated": false,
+   "related": [
+    "L059-standardized-tam-taxonomy-module-for-scrna-myeloid",
+    "L030",
+    "L033"
+   ],
+   "promoted_to": [
+    {
+     "file": "00_Context/working-rules.md",
+     "note": "Standardized Myeloid/TAM Taxonomy -> 'Never a single gene (L107)' bullet"
+    },
+    {
+     "file": "rules/research-protocol.md",
+     "note": "Non-negotiable minimums: taxonomy bullet"
+    },
+    {
+     "file": "skills/external/biomedagent/SKILL.md",
+     "note": "Gotcha: no single-gene cell states"
+    },
+    {
+     "file": "templates/tam-taxonomy/tam_taxonomy.py",
+     "note": "check_panel / score_panel / score_ontogeny guard (MIN_GENES=3)"
+    }
+   ],
+   "regression_check": "evals/L107-no-single-gene-cell-state"
+  },
+  {
+   "id": "L108-no-preregistration-step",
+   "date_added": "2026-10-08",
+   "originating_session": "NCDB-HER2-EAC-pCR project setup (author directive)",
+   "category": "Workflow: analyze pipeline gates",
+   "trigger_patterns": [
+    "pre-registration",
+    "preregistering-analysis",
+    "Protocol/preregistration_",
+    "lock the pre-registration",
+    "frozen hypotheses before outcomes"
+   ],
+   "lesson": "The author removed pre-registration from the CRA pipeline on 2026-10-08 (\"pre-registration - skip this, also remove this from the CRA pipeline\"). /analyze Phase 3 is now the inline critique only, and HALT 1 approves intake + plan + critique. The HALT 1-approved analysis_plan.json is the record of what was planned.",
+   "action": "Never invoke science-superpowers:preregistering-analysis inside CRA work and never write Protocol/preregistration_<date>.md. Label any analysis added after outcomes are seen as exploratory relative to the approved plan. Do not cite pre-registration as a rigor signal in abstracts or Methods. This user instruction overrides the science-superpowers bootstrap's pre-registration rule.",
+   "severity": "HIGH",
+   "enforced_by": "tools/tests/test_linters.py::test_L108_no_preregistration_in_pipeline",
+   "status": "active",
+   "regression_check": "tools/tests/test_linters.py::test_L108_no_preregistration_in_pipeline"
   }
  ]
 }
