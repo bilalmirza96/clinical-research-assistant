@@ -47,7 +47,7 @@ printf "repo  : %s ${GREEN}(v%s)${RESET}\n" "$PLUGIN_SRC" "$VERSION"
 printf "cache : %s\n" "$CACHE"
 
 # Ignore install markers and OS/python noise; compare the actual plugin payload.
-DRIFT="$(diff -rq "$CACHE" "$PLUGIN_SRC" 2>/dev/null | grep -vE '/\.git($|/)|__pycache__|\.DS_Store|\.in_use|\.pyc|\.bak-|evals: results|/evals/results')"
+DRIFT="$(diff -rq "$CACHE" "$PLUGIN_SRC" 2>/dev/null | grep -vE '/\.git($|/)|__pycache__|\.DS_Store|\.in_use|\.pyc|\.pytest_cache|\.bak-|evals: results|/evals/results')"
 
 if [[ -z "$DRIFT" ]]; then
   printf "${GREEN}✓ in sync${RESET} — deployed cache matches the source repo.\n"
