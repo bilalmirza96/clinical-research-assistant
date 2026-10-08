@@ -18,7 +18,7 @@ answered with the ladder and a one-line summary of it.
 | 5 | IPTW (and PSM) | Does a design-based estimator that balances covariates agree with the outcome models? | Every non-randomized comparison | `.iptw`, `.psm` |
 | 6 | E-values | How strong would unmeasured confounding need to be to explain the estimate away? | Every adjusted estimate reported as a finding | `.evalue` |
 | 7 | Causal mediation | How much of the difference runs through a measured intermediate (treatment received, stage at diagnosis)? | The question asks why or through what, and a mediator is measured after the exposure and before the outcome | `.mediation.<mediator>` |
-| 8 | ML or other novel methods | What can the ladder not show: heterogeneity, non-linearity, decomposition, a target-trial emulation? | It answers a question rungs 1-7 cannot; exploratory unless pre-registered | `.<method>` |
+| 8 | ML or other novel methods | What can the ladder not show: heterogeneity, non-linearity, decomposition, a target-trial emulation? | It answers a question rungs 1-7 cannot; exploratory unless pre-specified in the approved plan | `.<method>` |
 
 ## Covariate sets (proposed in the plan, locked at HALT 2A)
 
@@ -105,7 +105,7 @@ robust estimation (AIPW, TMLE, boosted-tree IPTW); target-trial emulation (L069)
 quantitative bias analysis. These never replace rungs 1-7. Variable importance (SHAP) is
 association, not cause. Seed 42 and honest validation (cross-fitting or held-out data) are
 mandatory, and results enter the registry under their own keys, labelled exploratory unless
-pre-registered.
+pre-specified in the HALT 1-approved analysis plan.
 
 ## Common mistakes
 
