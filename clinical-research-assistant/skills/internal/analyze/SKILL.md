@@ -27,7 +27,7 @@ Phase 0 PRE-DESIGN  pre-analysis literature recon — auto-invokes /literature-r
    ✋ HALT 0        PI signs off on differentiation: novel | replication-with-extension | pivot | abandon
 Phase 1 INTAKE      data-dictionary dossier (L089) → curated inclusion/exclusion (L050, L088) → lock dataset_spec, variable_spec, table_layouts (denominators named, L090), figure_intent
 Phase 2 PLAN        produce analysis_plan.json (analysis ladder, L087) + manuscript_shopping_list
-Phase 3 CRITIQUE    INLINE plan-sanity (Methodologist/Skeptic/Editor/Lessons run inline, no panel) + LOCK pre-registration (SP preregistering-analysis)
+Phase 3 CRITIQUE    INLINE plan-sanity (Methodologist/Skeptic/Editor/Lessons run inline, no panel); no pre-registration step (removed 2026-10-08, L108)
    ✋ HALT 1        user approves intake + plan + critique (bundle or section-by-section)
 Phase 4 PRIMARY     resource check → cohort assembly (cohort_flow.py, CONSORT by exposure group) → build Master Excel shells → rung 1 UNADJUSTED → fills Table_1 (bold p<0.05) → diagnostics
    ✓ CHECKPT A     INLINE verify (SP verifying-results-before-claiming): re-run, read estimate+CI, confirm reproduction
@@ -395,7 +395,7 @@ Generate a complete plan from locked specs:
 | `adjustment_covariates[]` (proposed) | Candidate covariates for multivariable adjustment (Cox / logistic / linear), each tagged with its `ladder_role`: `clinical` (Model A, carried into Model B), `model_b` (added in Model B: socioeconomic, access, facility and any other non-clinical confounder), or `mediator` (rung 7 only, never adjusted in Model A or B). Each entry: same fields as `matching_variables[]` with `proposed_for_adjust` boolean. **Locked at HALT 2A**. Distinct from `matching_variables[]` — overlap allowed but not required; a variable may be matched-but-not-adjusted (and vice versa). |
 | `secondary[]` | **Ladder rungs 2-5** per locked objective (per L051 terminology, ordered per L087): Model A clinical and Model B fully adjusted (HALT 2A-approved covariate sets), adjusted survival for time-to-event outcomes, IPTW, and PSM (HALT 2A-approved `matching_variables`). All fit on one cohort. **Delegation pointer** + populates `Table_2` tab. |
 | `sensitivity[]` | E-values for every adjusted estimate (rung 6; per L005, formula by measure and outcome frequency per L087), missing-data, caliper sensitivity (per L040), selection sensitivity for any differential exclusion (per L088), alternative specs, alternative cohort definitions. Populates `Sensitivity` tab in Master Excel Workbook. |
-| `explanatory[]` | Rung 7 causal mediation (pre-specified mediators, counterfactual method, scale) and rung 8 ML / novel methods (the question each answers that rungs 1-6 cannot; exploratory unless pre-registered). **(per L087)** |
+| `explanatory[]` | Rung 7 causal mediation (pre-specified mediators, counterfactual method, scale) and rung 8 ML / novel methods (the question each answers that rungs 1-6 cannot; exploratory unless pre-specified in the HALT 1-approved plan). **(per L087)** |
 | `subgroups[]` | pre-specified subgroups + power justification (per L009). Populates `Supplementary_*` tabs. |
 | `diagnostics` | required per method (per `references/diagnostics-checklist.md`) |
 | `multiple_testing` | BH-FDR within families; Bonferroni for primary (per L006, L032). **Bolding rule (per L051):** bold cells where p<0.05 in `Table_1`; bold cells where BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*` tabs. |
@@ -405,9 +405,9 @@ Each analysis step has a `delegation` field naming the executing K-Dense or BioM
 
 ---
 
-## PHASE 3 — CRITIQUE (inline, no panel) + PRE-REGISTRATION
+## PHASE 3 — CRITIQUE (inline, no panel)
 
-**Mechanic (revised 2026-05-30 — token reduction):** Run the four critique lenses below INLINE against the locked specs + plan, using the question checklist in `references/critique-panel.md`. Do NOT spawn a 4-agent panel. Write findings to `plan_audit_report.md`. Escalate to ONE `science-superpowers:requesting-red-team-review` subagent ONLY if an inline lens surfaces a CRITICAL plan flaw. Then LOCK THE PRE-REGISTRATION with `science-superpowers:preregistering-analysis`: freeze hypotheses, directional predictions, decision rules, and the confirmatory/exploratory split for every objective BEFORE any outcome is seen → write `Protocol/preregistration_<date>.md`. Inline cost ~2–3K tokens vs. ~15K for the old panel.
+**Mechanic (revised 2026-05-30 — token reduction):** Run the four critique lenses below INLINE against the locked specs + plan, using the question checklist in `references/critique-panel.md`. Do NOT spawn a 4-agent panel. Write findings to `plan_audit_report.md`. Escalate to ONE `science-superpowers:requesting-red-team-review` subagent ONLY if an inline lens surfaces a CRITICAL plan flaw. There is no pre-registration step (author directive 2026-10-08, L108): do not invoke `science-superpowers:preregistering-analysis` and do not write `Protocol/preregistration_<date>.md`. The HALT 1-approved `analysis_plan.json` is the record of what was planned, and any analysis added after outcomes are seen is labelled exploratory. Inline cost ~2–3K tokens vs. ~15K for the old panel.
 
 | Agent | Question | Output |
 |---|---|---|
@@ -420,14 +420,13 @@ Each analysis step has a `delegation` field naming the executing K-Dense or BioM
 
 ---
 
-## ✋ HALT 1 — Approve intake + plan + critique + pre-registration
+## ✋ HALT 1 — Approve intake + plan + critique
 
 Present, in this order:
 1. Locked specs: `dataset_spec`, `variable_spec`, `table_layouts`, `figure_intent`
 2. Plan (`analysis_plan.json` rendered as readable markdown)
 3. Plan audit report (`plan_audit_report.md`) + critique findings + revised plan
 4. Lesson hits (severity ≥ HIGH by default)
-5. **Pre-registration** (`Protocol/preregistration_<date>.md`) — frozen hypotheses, directional predictions, decision rules, confirmatory/exploratory split (per `science-superpowers:preregistering-analysis`)
 
 Ask the user how to approve:
 - **Bundle approval** (default): single yes/no covering all four artifacts
@@ -635,7 +634,7 @@ every objective, each of these rungs is either run or recorded in `ladder.skippe
 - **Rung 8, ML or other novel methods**, only for a question rungs 1-7 cannot answer
   (heterogeneity, non-linearity, gap decomposition, doubly robust estimation, target-trial
   emulation, competing risks, quantitative bias analysis). Seed 42, honest validation, own registry
-  keys, labelled exploratory unless pre-registered. They never replace the ladder.
+  keys, labelled exploratory unless pre-specified in the HALT 1-approved plan. They never replace the ladder.
 
 Both are reported in calibrated language ("mediation analysis suggests about half...", never
 "explains"), and both are tiered at HALT 3 like every other result (L035).
@@ -644,7 +643,7 @@ Both are reported in calibrated language ("mediation analysis suggests about hal
 
 ## PHASE 6 — AUDIT (one fresh-context red-team; replaces the 5-agent panel)
 
-**Mechanic (revised 2026-09-28 — fresh-context reviewer):** Numerical re-check, code-reproducibility replay, and completeness are already done INLINE at Checkpoints A and B via `science-superpowers:verifying-results-before-claiming`. Phase 6 therefore invokes exactly ONE subagent — the `cra-red-team` agent, dispatched via the **Agent tool** (`subagent_type: cra-red-team`), which runs in its own fresh context window, separate from the session that produced the analysis. Every error this lab has actually caught in production (GENIE off-panel genes coded wild-type, the HNSCC 4-critical/8-high audit, the REPEAT DISPARITIES penalizer and era-trend artifacts) was found by a reviewer who did not share the blind spots of the context that made the mistake — an in-context critique inherits the same assumptions that caused the error. Hand the agent, explicitly: the project path, `results_registry.json` / `MASTER_ANALYSIS_REGISTRY.json`, every deliverable path under review, and `analysis_plan.json` (+ pre-registration if present). The agent's own brief (`agents/cra-red-team.md`, distilled from `references/red-team-brief.md`) carries CRA's clinical checklist: lessons-log L-rules, diagnostics thresholds, registry cautions, multiple-testing policy, observational-language rule. It attacks confounds, leakage, assumption violations, multiplicity, and over-claiming, and re-derives every number it checks rather than transcribing it. Cost ~3–5K tokens vs. ~17K for the old panel.
+**Mechanic (revised 2026-09-28 — fresh-context reviewer):** Numerical re-check, code-reproducibility replay, and completeness are already done INLINE at Checkpoints A and B via `science-superpowers:verifying-results-before-claiming`. Phase 6 therefore invokes exactly ONE subagent — the `cra-red-team` agent, dispatched via the **Agent tool** (`subagent_type: cra-red-team`), which runs in its own fresh context window, separate from the session that produced the analysis. Every error this lab has actually caught in production (GENIE off-panel genes coded wild-type, the HNSCC 4-critical/8-high audit, the REPEAT DISPARITIES penalizer and era-trend artifacts) was found by a reviewer who did not share the blind spots of the context that made the mistake — an in-context critique inherits the same assumptions that caused the error. Hand the agent, explicitly: the project path, `results_registry.json` / `MASTER_ANALYSIS_REGISTRY.json`, every deliverable path under review, and `analysis_plan.json`. The agent's own brief (`agents/cra-red-team.md`, distilled from `references/red-team-brief.md`) carries CRA's clinical checklist: lessons-log L-rules, diagnostics thresholds, registry cautions, multiple-testing policy, observational-language rule. It attacks confounds, leakage, assumption violations, multiplicity, and over-claiming, and re-derives every number it checks rather than transcribing it. Cost ~3–5K tokens vs. ~17K for the old panel.
 
 | Old audit agent | Now handled by |
 |---|---|
