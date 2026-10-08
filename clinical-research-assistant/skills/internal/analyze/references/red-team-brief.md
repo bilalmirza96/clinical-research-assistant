@@ -1,6 +1,6 @@
 # Red-Team Reviewer Brief (clinically augmented)
 
-> Added 2026-05-30. This is the brief handed to the SINGLE `science-superpowers:requesting-red-team-review` subagent at `/analyze` Phase 6 (and on a tripped checkpoint). It augments SP's generic reviewer with CRA's clinical checklist so one reviewer carries all the rigor the old 5-agent panel did. The reviewer receives the frozen pre-registration, the analysis_plan, results_registry.json, the Master Excel tabs, and the commit range — never the full session history.
+> Added 2026-05-30. This is the brief handed to the SINGLE `science-superpowers:requesting-red-team-review` subagent at `/analyze` Phase 6 (and on a tripped checkpoint). It augments SP's generic reviewer with CRA's clinical checklist so one reviewer carries all the rigor the old 5-agent panel did. The reviewer receives the HALT 1-approved analysis_plan, results_registry.json, the Master Excel tabs, and the commit range — never the full session history.
 
 ## Generic attack vectors (from SP requesting-red-team-review)
 Confounds & alternative explanations; assumption violations; data leakage; researcher degrees of freedom (p-hacking / HARKing / post-hoc choices); multiplicity (uncorrected comparisons); reproducibility (does it reproduce from raw + seed?); over-claiming (causal language from observational data, generalizing beyond the sample).
