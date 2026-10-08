@@ -3,7 +3,7 @@
 > Added 2026-05-30. Defines exactly where each `science-superpowers` (SP) skill fires inside `/analyze`, and the precedence between the SP bootstrap, the generic `superpowers` bootstrap, and the CRA session-start. SP is the RIGOR layer of the three-layer architecture (see `DELEGATION_RULES.md` §E).
 
 ## Three layers
-1. **Rigor — science-superpowers.** Pre-registration, inline verification, red-team, anomaly root-cause.
+1. **Rigor — science-superpowers.** Inline verification, red-team, anomaly root-cause. (`preregistering-analysis` is not used: removed 2026-10-08, L108.)
 2. **Orchestration — CRA (the brain).** `/analyze` decides WHAT/WHEN; owns clinical method selection, registry cautions, halts, Master Excel, the 16-section report.
 3. **Execution — K-Dense `scientific-skills` + `biomedagent`.** Validated how-to references. Standard tabular biostatistics runs natively in CRA against the relevant `scientific-skills:*` reference; omics/ML/non-tabular → `biomedagent`.
 
@@ -11,7 +11,6 @@
 | /analyze point | SP skill | Mode | Replaces |
 |---|---|---|---|
 | Phase 0 (lit recon) | `surveying-prior-work` (optional) | inline / via `/literature-review` | — |
-| Phase 3 (after PLAN) | `preregistering-analysis` | inline — writes `Protocol/preregistration_<date>.md` | formalizes the old "locked specs" |
 | Phase 3 (only on CRITICAL plan flaw) | `requesting-red-team-review` | 1 subagent | escalation only |
 | Checkpoint A (end of PRIMARY) | `verifying-results-before-claiming` | INLINE, no subagent | old Numerical + Code-repro + Completeness audit agents |
 | Checkpoint B (end of SECONDARY) | `verifying-results-before-claiming` + concordance | INLINE | same |
