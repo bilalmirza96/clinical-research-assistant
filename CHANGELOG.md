@@ -2,6 +2,12 @@
 
 All notable changes to the clinical-research-assistant plugin will be documented in this file.
 
+## [Unreleased]
+
+### Removed — pre-registration step (L108, 2026-10-08)
+
+- Author directive: pre-registration is removed from the CRA pipeline. `/analyze` Phase 3 is now the inline critique only (no `science-superpowers:preregistering-analysis`, no `Protocol/preregistration_<date>.md`); HALT 1 approves intake + plan + critique, and the HALT 1-approved `analysis_plan.json` is the record of what was planned. Analyses added after outcomes are seen are labelled exploratory relative to that plan. Pre-registration references removed from the analysis ladder, quick tier, SP integration map, red-team brief and agent, gates comment, write-abstract rigor signals, Codex manifest and DELEGATION_RULES. Regression check: `tools/tests/test_linters.py::test_L108_no_preregistration_in_pipeline`.
+
 ## [3.9.3] - 2026-07-02
 
 ### Fixed — delegation namespace resolution + deploy-version discipline (L058)
