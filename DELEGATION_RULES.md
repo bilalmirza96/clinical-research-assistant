@@ -4,7 +4,7 @@ This document defines when and how `clinical-research-assistant` delegates work 
 
 1. **BioMedAgent** — for execution-heavy modality-specific workflows (omics, ML, non-tabular)
 2. **K-Dense scientific-skills** — for citation integrity, peer-review-style audits, quality scoring, Zotero sync, and systematic-search execution (v3.3+)
-3. **science-superpowers** — the RIGOR layer: pre-registration, inline result verification, red-team review, anomaly root-cause (v3.8+; see §E and `skills/internal/analyze/references/sp-integration.md`)
+3. **science-superpowers** — the RIGOR layer: inline result verification, red-team review, anomaly root-cause (v3.8+; see §E and `skills/internal/analyze/references/sp-integration.md`)
 
 The core rule is the same for both:
 
@@ -376,7 +376,7 @@ If it becomes specialized, execution-heavy, or modality-specific, delegate to Bi
 **Principle — maximal delegation to the specialized, validated layers; CRA stays the brain.** Delegate execution and rigor to validated tools as much as possible. CRA orchestrates (decides WHAT/WHEN, owns clinical judgment, halts, reporting) and never freelances statistics from memory.
 
 **Three layers**
-1. **Rigor — `science-superpowers`.** `preregistering-analysis` (freeze predictions + decision rules + confirmatory/exploratory split before outcomes), `verifying-results-before-claiming` (inline, at every checkpoint), `requesting-red-team-review` (one adversarial reviewer), `investigating-anomalous-results` (root-cause).
+1. **Rigor — `science-superpowers`.** (`preregistering-analysis` is not used: removed 2026-10-08, L108.) `verifying-results-before-claiming` (inline, at every checkpoint), `requesting-red-team-review` (one adversarial reviewer), `investigating-anomalous-results` (root-cause).
 2. **Orchestration — CRA.** `/analyze` + `/write-*` + `/visualize` + `/literature-review` + `/manuscript-qc` + `/project-init`.
 3. **Execution — K-Dense `scientific-skills` + `biomedagent`.** Standard tabular biostatistics runs natively in CRA against the relevant `scientific-skills:*` reference loaded at runtime; omics/ML/non-tabular → `biomedagent`.
 
