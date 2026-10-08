@@ -628,3 +628,80 @@ def test_L105_ama_style_checks(tmp_path):
     assert "run inside one paragraph, not a paragraph each" in guide
     assert "Do not signpost with" in guide
 
+
+
+def test_L106_two_x_ratio_is_review_not_hard(tmp_path):
+    import subprocess, sys as _sys
+    # Results is the largest section but under 2x Methods: review item, exit 0.
+    draft = tmp_path / "d.md"
+    draft.write_text(
+        "Introduction: Short background.\n\n"
+        "Methods: Retrospective cohort study with adjusted logistic regression and competing-risks models.\n\n"
+        "Results: Of 1090 patients, 605 had localized disease. Mutation was associated with liver "
+        "metastasis (OR, 2.60; 95% CI, 1.88-3.60; P<.001).\n\n"
+        "Conclusions: Mutation was associated with liver metastasis.\n")
+    r = subprocess.run([_sys.executable, str(ROOT / "tools" / "voice_check.py"), str(draft), "--sections", "--json"],
+                       capture_output=True, text=True)
+    out = json.loads(r.stdout)
+    assert r.returncode == 0, r.stdout
+    assert not any("section weight" in h for h in out["hard"])
+    assert any("2x Methods" in s for s in out["soft"])
+    # Results not the largest section stays a hard failure.
+    draft.write_text("Introduction: Short.\n\nMethods: " + "Long methods text. " * 20 +
+                     "\n\nResults: Short result.\n\nConclusions: Short.\n")
+    r = subprocess.run([_sys.executable, str(ROOT / "tools" / "voice_check.py"), str(draft), "--sections", "--json"],
+                       capture_output=True, text=True)
+    assert r.returncode == 1
+    assert any("not the largest section" in h for h in json.loads(r.stdout)["hard"])
+
+
+def test_registry_lint_legacy_entry_shapes(tmp_path):
+    import subprocess, sys as _sys
+    # Pre-standard registries keep metadata as top-level strings/lists ("project",
+    # "last_updated", "analyses": [...]). registry_lint used to crash on e.get();
+    # it must report each as H0 (review), lint the real entries, and emit valid JSON.
+    reg = tmp_path / "MASTER_ANALYSIS_REGISTRY.json"
+    reg.write_text(json.dumps({
+        "project": "legacy-demo",
+        "analyses": [{"id": "a1"}],
+        "flags": None,
+        "NCDB.os.crude_HR": {"label": "", "current": "1.10 (1.00-1.20)"},
+    }))
+    lint = str(ROOT / "tools" / "registry_lint.py")
+    r = subprocess.run([_sys.executable, lint, str(reg), "--json", "--warn-only"],
+                       capture_output=True, text=True)
+    assert "Traceback" not in r.stderr, r.stderr
+    out = json.loads(r.stdout)
+    assert r.returncode == 0 and out["error"] is None
+    for k in ("project", "analyses", "flags"):
+        assert any(s.startswith(f"H0 legacy entry shape: {k} ") for s in out["soft"]), out
+    # the dict entry is still linted (no label), and a string `current` does not crash H2
+    assert any("H1 no label: NCDB.os.crude_HR" in h for h in out["hard"])
+    # without --warn-only the H1 still fails the run; H0 alone never does
+    r = subprocess.run([_sys.executable, lint, str(reg), "--json"], capture_output=True, text=True)
+    assert r.returncode == 1
+    # plain-text mode does not crash either
+    r = subprocess.run([_sys.executable, lint, str(reg), "--warn-only"], capture_output=True, text=True)
+    assert r.returncode == 0 and "legacy, not linted" in r.stdout, r.stdout + r.stderr
+
+
+def test_L108_no_preregistration_in_pipeline():
+    # Author directive 2026-10-08: pre-registration is removed from the CRA pipeline.
+    # No internal skill, reference, agent or plugin manifest may instruct a
+    # pre-registration step or cite it as a rigor signal; only the L108 removal notes may
+    # name it. External pasted skills (skills/external/) are third-party text and exempt.
+    import re
+    paths = [p for p in (ROOT / "skills" / "internal").rglob("*") if p.suffix in (".md", ".py", ".json")]
+    paths += list((ROOT / "agents").glob("*.md")) + [ROOT / ".codex-plugin" / "plugin.json",
+                                                     ROOT / "skills" / "clinical-research-assistant" / "SKILL.md"]
+    pat = re.compile(r"pre-?regist", re.I)
+    offenders = []
+    for p in paths:
+        if "changelog" in p.name.lower() or "__pycache__" in p.parts:
+            continue
+        for i, line in enumerate(p.read_text(errors="ignore").splitlines(), 1):
+            if pat.search(line) and "L108" not in line and "removed 2026-10-08" not in line:
+                offenders.append(f"{p.relative_to(ROOT)}:{i}: {line.strip()[:120]}")
+    assert not offenders, "pre-registration still referenced:\n" + "\n".join(offenders)
+    lessons = json.loads((ROOT / "skills" / "references" / "lessons-log.json").read_text())["lessons"]
+    assert any(e["id"].startswith("L108-") for e in lessons)
