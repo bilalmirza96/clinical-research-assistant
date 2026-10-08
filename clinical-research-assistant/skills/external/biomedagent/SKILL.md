@@ -742,3 +742,7 @@ These entries include failure histories documenting real issues and their fixes.
    use it as a shortcut — skip redundant tool scoring and workflow design. After a
    successful analysis, always append the new pattern to the memory log so future runs
    benefit. This is how BioMedAgent gets faster over time.
+
+## Gotchas
+
+- **No single-gene cell states (L107, 2026-10-05).** Never label a myeloid/TAM state from one marker (e.g. FOLR2 > 0 as fetal-like TAM). Use a sourced panel of at least 3 genes from the standardized taxonomy module (`templates/tam-taxonomy`; `TAX.score_panel`, `TAX.score_ontogeny`, `TAX.score_states`), read ontogeny as tissue-resident, monocyte-derived and onco-fetal programs side by side, and report a single gene only as a descriptive column. FOLR2 is also a resident Kupffer gene, so a FOLR2 gate cannot separate onco-fetal reprogramming from Kupffer retention.
