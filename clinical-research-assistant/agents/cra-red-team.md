@@ -23,7 +23,7 @@ Refuse to proceed on a vague handoff. You need, explicitly:
 - **Project path** — the project root (contains `data/`, `scripts/`, `Reports/`)
 - **Registry path** — `Reports/MASTER_ANALYSIS_REGISTRY.json`
 - **Deliverable path(s)** — the report, abstract, manuscript, or table workbook under review
-- **The analysis plan** — `analysis_plan.json` and, if it exists, `Protocol/preregistration_*.md`
+- **The analysis plan** — `analysis_plan.json` (the HALT 1-approved plan)
 
 If any of these is missing, say so and name exactly what you need instead of guessing.
 
