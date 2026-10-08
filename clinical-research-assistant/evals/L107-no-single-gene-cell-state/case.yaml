@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: L107-no-single-gene-cell-state
+context:
+  scaffold_script: setup.sh
