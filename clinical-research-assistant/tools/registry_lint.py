@@ -30,6 +30,11 @@ CHECKS (hard failures)
   H6  pooled-scope keys carry a scope annotation naming their stratified counterparts
   H7  no orphan results: values in result JSONs that were never registered (--results-dir)
   H8  every number in a deliverable traces to a registry value (--deliverable)
+
+REVIEW-ONLY (soft)
+  H0  legacy entry shape: a top-level value that is not an entry object (a string, list,
+      number - e.g. "project", "last_updated" in a pre-standard registry) is reported and
+      skipped, never linted and never a crash
 """
 from __future__ import annotations
 import argparse, json, re, sys
@@ -52,6 +57,18 @@ def load(p: Path):
     return d["results"] if isinstance(d, dict) and "results" in d else d
 
 
+def cur_of(entry) -> dict:
+    """The entry's `current` block, or {} when it is missing or not an object."""
+    c = entry.get("current")
+    return c if isinstance(c, dict) else {}
+
+
+def label_of(entry) -> str:
+    """The entry's label, or "" when it is missing or not a string."""
+    lab = entry.get("label")
+    return lab if isinstance(lab, str) else ""
+
+
 def ann_text(entry) -> str:
     """All annotation/flag text attached to an entry, however the tool stored it."""
     out = []
@@ -62,7 +79,7 @@ def ann_text(entry) -> str:
                 out.append(x if isinstance(x, str) else json.dumps(x))
         elif isinstance(v, str):
             out.append(v)
-    cur = entry.get("current", {})
+    cur = cur_of(entry)
     for fld in ("note", "reason", "status"):
         if isinstance(cur.get(fld), str):
             out.append(cur[fld])
@@ -131,26 +148,38 @@ def main() -> int:
     def add(bucket: list[str], check: str, msg: str) -> None:
         if not ignored(check, msg):
             bucket.append(f"{check} {msg}")
+
+    # ---- H0 legacy entry shapes: lint only key -> object entries, report the rest
+    n_keys = len(R) if isinstance(R, (dict, list)) else 1
+    if not isinstance(R, dict):
+        add(soft, "H0", f"legacy registry shape: top level is a {type(R).__name__}, "
+                        f"not a key -> entry map; nothing linted")
+        R = {}
+    legacy = [k for k, e in R.items() if not isinstance(e, dict)]
+    for k in legacy:
+        add(soft, "H0", f"legacy entry shape: {k} ({type(R[k]).__name__}), not linted")
+    R = {k: e for k, e in R.items() if isinstance(e, dict)}
     if not a.json:
-        print(f"registry_lint - {a.registry.name}: {len(R)} keys\n")
+        extra = f" ({len(legacy)} legacy, not linted)" if legacy else ""
+        print(f"registry_lint - {a.registry.name}: {n_keys} keys{extra}\n")
 
     # ---- H1 label present
     for k, e in R.items():
-        if not (e.get("label") or "").strip():
+        if not label_of(e).strip():
             add(hard, "H1", f"no label: {k}")
 
     # ---- H2 effect keys carry a CI
     for k, e in R.items():
         if any(h in k for h in EFFECT_HINTS) and not any(o in k for o in NO_CI_OK):
-            if not (e.get("current", {}).get("ci")):
+            if not cur_of(e).get("ci"):
                 add(soft, "H2", f"effect key without CI: {k}")
 
     # ---- H3 margin mentioned -> verdict stated
     for k, e in R.items():
-        lab = e.get("label") or ""
+        lab = label_of(e)
         if not re.search(r"margin", lab, re.I):
             continue
-        val = str((e.get("current", {}) or {}).get("value", "")).upper()
+        val = str(cur_of(e).get("value", "")).upper()
         # a key whose VALUE is itself the verdict need not repeat it in the label
         if any(w in val for w in VERDICT_WORDS) or "verdict" in k.lower():
             continue
@@ -159,7 +188,7 @@ def main() -> int:
 
     # ---- H4 specification in the key, not only the label
     for k, e in R.items():
-        lab = (e.get("label") or "").lower()
+        lab = label_of(e).lower()
         if re.search(r"\b1:\d\b|\bmatched\b", lab):
             if not any(t in k.lower() for t in ("matched", "psm", "match")):
                 add(hard, "H4", f"label says matched but the KEY does not: {k}")
@@ -207,14 +236,14 @@ def main() -> int:
     # ---- H6 pooled keys carry a scope annotation
     for k, e in R.items():
         if any(h in k.lower() for h in POOLED_HINTS):
-            blob = (ann_text(e) + " " + (e.get("label") or "")).upper()
+            blob = (ann_text(e) + " " + label_of(e)).upper()
             if "POOLED" not in blob and "SCOPE" not in blob:
                 add(soft, "H6", f"possibly-pooled key without a SCOPE/POOLED note: {k}")
 
     # ---- H7 orphan results in result JSONs
     if a.results_dir and a.results_dir.exists():
-        registered_files = {(e.get("current", {}) or {}).get("source_file")
-                            for e in R.values()}
+        registered_files = {cur_of(e).get("source_file") for e in R.values()
+                            if isinstance(cur_of(e).get("source_file"), str)}
         registered_files = {f for f in registered_files if f}
         seen = set()
         for jf in sorted(a.results_dir.glob("*.json")):
@@ -235,7 +264,7 @@ def main() -> int:
         body = text.split("[END OF ABSTRACT BODY]")[0]
         vals = set()
         for e in R.values():
-            cur = e.get("current", {})
+            cur = cur_of(e)
             for f in ("value", "ci"):
                 v = cur.get(f)
                 if v is None:
