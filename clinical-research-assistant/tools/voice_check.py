@@ -9,7 +9,7 @@ Run it on every CRA prose deliverable before declaring it submission-ready.
 
     python3 tools/voice_check.py draft.md
     python3 tools/voice_check.py draft.md --venue asc      # adds venue limit checks
-    python3 tools/voice_check.py draft.md --sections       # adds abstract section-weight check
+    python3 tools/voice_check.py draft.md --sections       # adds abstract section-weight check (largest = hard; 2x = review)
     python3 tools/voice_check.py draft.docx --venue asc --sections
     python3 tools/voice_check.py draft.md --style none     # skip AMA typesetting items
 
@@ -160,7 +160,7 @@ def main() -> int:
     ap.add_argument("path", type=Path)
     ap.add_argument("--venue", choices=sorted(VENUES), help="apply venue character limits")
     ap.add_argument("--sections", action="store_true",
-                    help="check structured-abstract section weight (Results >= 2x Methods and Conclusions)")
+                    help="check structured-abstract section weight (Results the largest section is hard; Results >= 2x Methods and Conclusions is a review item)")
     ap.add_argument("--style", choices=["ama", "none"], default="ama",
                     help="typesetting convention for soft checks (default ama, JAMA family)")
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
@@ -236,12 +236,14 @@ def main() -> int:
             met = sec_chars.get("Methods")
             con = sec_chars.get("Conclusions") or sec_chars.get("Conclusion") \
                 or sec_chars.get("Interpretation")
+            # The 2x ratios are review items, not hard failures (author directive 2026-10-05,
+            # L106); only "Results is the largest section" stays hard.
             if res and met and res < 2 * met:
-                hard.append(f"section weight: Results ({res}) < 2x Methods ({met}) "
-                            f"= ratio {res/met:.2f}, need >= 2.00")
+                soft.append(f"section weight: Results ({res}) < 2x Methods ({met}) "
+                            f"= ratio {res/met:.2f}, target >= 2.00")
             if res and con and res < 2 * con:
-                hard.append(f"section weight: Results ({res}) < 2x Conclusions ({con}) "
-                            f"= ratio {res/con:.2f}, need >= 2.00")
+                soft.append(f"section weight: Results ({res}) < 2x Conclusions ({con}) "
+                            f"= ratio {res/con:.2f}, target >= 2.00")
             if res and res != max(sec_chars.values()):
                 hard.append("section weight: Results is not the largest section")
 
