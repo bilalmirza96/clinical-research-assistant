@@ -44,7 +44,7 @@ Every element in an abstract must earn its place by serving a single mechanistic
 
 ### 2. Hypothesis-falsification narratives are publication-strong
 
-A pre-registered candidate mechanism that fails, paired with an alternative mechanism that succeeds, is the *Mariathasan 2018* architecture and is preferable to either a pure positive finding or a pure negative one.
+A pre-specified candidate mechanism that fails, paired with an alternative mechanism that succeeds, is the *Mariathasan 2018* architecture and is preferable to either a pure positive finding or a pure negative one.
 
 **Required structure:** prior literature anchors the candidate → we tested it → it failed → here's what we found instead.
 
@@ -74,14 +74,14 @@ For Translational Oncology / genomics-immunology categories, reviewers are cance
 - **Use specific cell types** (regulatory T cells, M2 macrophages, exhausted CD8 T cells) over abstracted categories (suppressive cells).
 - **Use specific pathway names** (TGF-β, EMT, KRAS, CAF signatures) over generic descriptors (stromal exclusion).
 - Spell out abbreviations at first use **unless they appear on the AATS-accepted list** (CABG, FEV1, GERD, CPR).
-- Translate effect-size statistics for clinicians (η² → "% variance accounted for") without removing the rigor signals (FDR-controlled, pre-registered, CIs reported).
+- Translate effect-size statistics for clinicians (η² → "% variance accounted for") without removing the rigor signals (FDR-controlled, CIs reported).
 
 ### 6. Section weight signals priority
 
 | Section | Approximate share of body |
 |---|---|
-| Results | **largest** — at least twice Methods and twice Conclusions |
-| Methods | minimum needed to establish rigor (pre-registration, FDR control, key analytic move) |
+| Results | **largest** (hard gate); aim for about twice Methods and twice Conclusions (review target, not a hard failure; L106), or the venue's own share rule where it has one (SSO: Results 50-66% of the abstract) |
+| Methods | minimum needed to establish rigor (FDR control, key analytic move) |
 | Objective | frames the question and the prior hypothesis |
 | Conclusions | states what the findings mean and what comes next — **not a summary of results** |
 
@@ -160,7 +160,7 @@ For every draft, answer each question explicitly. **Where a principle is violate
 | 3 | Is **language calibrated to epistemic standing**? | No "predicts", "refutes", "characterizes", "drives" without warrant; cohort qualifiers added | "drives" with N<100 → "is consistent with" / "supports" |
 | 4 | Does **race terminology match what was measured**? | Uses dataset's labels; no ancestry vocabulary unless germline SNPs measured; "self-reported race" appears once in Methods | "European American" without ancestry data → revert to "Non-Hispanic White" |
 | 5 | Is the **audience calibration** correct (biologist for translational; clinician for outcomes)? | Specific cell types / pathway names where translational; effect sizes translated where clinical | "suppressive cells" → "regulatory T cells and M2 macrophages" |
-| 6 | Is **Results the largest section**? Is Conclusions interpretation, not recap? | Results ≥ 2× Methods AND Results ≥ 2× Conclusions; Conclusions states meaning not numbers | Methods ≈ Results → trim Methods to rigor essentials |
+| 6 | Is **Results the largest section**? Is Conclusions interpretation, not recap? | Results is the single largest section (hard); about 2× Methods and 2× Conclusions is a review target (L106); venue share rule met; Conclusions states meaning not numbers | Methods ≈ Results → trim Methods to rigor essentials |
 | 7 | Are **therapeutic implications claimed at the level the data supports**? | "Supports rationale for testing"; not "predicts benefit" unless treatment-response analysis done | "predicts preferential benefit from pembrolizumab" → "supports rationale for testing pembrolizumab in this subgroup" |
 | 8 | Are **major confounders absent from abstract** but ready in Q&A? | No mention of TSS / batch effects / immortal time in abstract | Confounder mentioned → move to manuscript limitations |
 | 9 | When **honesty and impact conflict, did honesty win**? | No "is refuted", "is characterized by", "independent of", "predicts", "drives" without warrant | "drives" → "is consistent with" |
