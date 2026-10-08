@@ -16,7 +16,7 @@ and lessons L087-L098. Import them; do not re-derive their rules per project.
 
 - **`skills/internal/analyze/scripts/gates.py`** - between-rung invariants for the analysis
   ladder, each a `(ok, message)` function: `cohort_n` (exact-N reconciliation across
-  crude/modelA/modelB and every exposure group, against a pre-registered curated cohort size),
+  crude/modelA/modelB and every exposure group, against a registered curated cohort size),
   `denominator_named` (every result states its population/denominator), `dictionary_labels`
   (every categorical level used to slice a result is dossier-defined; reuses
   `dictionary_audit.py`), `two_adjusted_models` (no third adjusted model; reuses
