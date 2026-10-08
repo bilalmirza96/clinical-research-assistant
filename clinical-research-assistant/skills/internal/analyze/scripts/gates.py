@@ -11,7 +11,7 @@ Checks
   cohort_n(registry, expected_by_group, keys_by_group=None)
       Exact-N reconciliation across every constant-N rung (crude/modelA/modelB) and every
       exposure group: the reported N must be identical across those rungs and must equal the
-      pre-registered, curated cohort size for that group (L088, L090). No "close enough".
+      registered, curated cohort size for that group (L088, L090). No "close enough".
   denominator_named(registry)
       Every current result carries a stated population/denominator: an explicit n (or N), a
       "n/N" or "n of N" value, or a label naming an explicit N= count (L090: one denominator,
