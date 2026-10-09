@@ -705,3 +705,25 @@ def test_L108_no_preregistration_in_pipeline():
     assert not offenders, "pre-registration still referenced:\n" + "\n".join(offenders)
     lessons = json.loads((ROOT / "skills" / "references" / "lessons-log.json").read_text())["lessons"]
     assert any(e["id"].startswith("L108-") for e in lessons)
+
+
+def test_L109_sections_start_on_new_page():
+    # Author directive 2026-10-08: every section of any document or report starts on a new page.
+    import tempfile
+    sys.path.insert(0, str(TOOLS))
+    import house_style as HS
+    from docx import Document
+    tmp = Path(tempfile.mkdtemp())
+    d = Document()
+    d.add_heading("Introduction", level=1); d.add_paragraph("text")
+    d.add_heading("Methods", level=1); d.add_paragraph("text")
+    d.add_page_break(); d.add_heading("Results", level=1); d.add_paragraph("text")
+    f = tmp / "sections.docx"; d.save(f)
+    v = HS.section_breaks(Document(f), check=True)
+    assert len(v) == 1 and "Methods" in v[0], v          # first section and page-broken Results pass
+    HS.enforce_docx(str(f), check=False)                  # fixer adds pageBreakBefore
+    assert HS.section_breaks(Document(f), check=True) == []
+    ref = tmp / "ref.docx"; HS.make_reference_doc(str(ref))
+    assert Document(ref).styles["Heading 1"].paragraph_format.page_break_before is True
+    lessons = json.loads((ROOT / "skills" / "references" / "lessons-log.json").read_text())["lessons"]
+    assert any(e["id"].startswith("L109-") for e in lessons)

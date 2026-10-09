@@ -212,6 +212,15 @@ defect the author must strip by hand from every tab and every table.
 BH-FDR q<0.05 in `Table_2`, `Sensitivity`, and `Supplementary_*`. Bold is monochrome emphasis and
 remains the correct significance flag.
 
+## Every section starts on a new page. Always.
+
+*Added 2026-10-08 per author instruction (lesson **L109**).* In every document or report, each
+top-level section (title page, Introduction, Methods, Results, Discussion, Significance,
+References, appendices) begins on a new page. Use `pageBreakBefore` on the section heading, not an
+empty paragraph holding a manual break, and leave no empty paragraphs above it. Subsections,
+tables and figures within a section flow normally. `house_style.py --check` flags a Heading 1
+that does not start a page, and its pandoc reference doc sets the break on the Heading 1 style.
+
 ## The default font is Times New Roman. Always.
 
 Every document deliverable and every table. Fallback chain: Times New Roman → Liberation Serif →

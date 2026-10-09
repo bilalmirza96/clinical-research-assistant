@@ -13,6 +13,9 @@ The standard, from skills/references/writing-style.md
     monochrome emphasis and remains the correct significance flag.
   * Figures keep colour ONLY where colour encodes a variable, and must stay
     greyscale-separable.
+  * Every top-level section starts on a new page (L109, author directive 2026-10-08).
+    In .docx, every Heading 1 paragraph other than the document's first content carries
+    pageBreakBefore; the pandoc reference doc sets it on the Heading 1 style.
 
 Usage
 -----
@@ -84,6 +87,9 @@ def enforce_docx(path: str, check: bool = False) -> list[str]:
         for r in p.runs:
             fix_run(r, f"para {i}")
 
+    # L109: every top-level section (Heading 1) starts on a new page
+    v.extend(section_breaks(doc, check))
+
     for ti, t in enumerate(doc.tables):
         if t.style is not None and t.style.name not in ("Table Grid", "Normal Table"):
             v.append(f"table {ti}: style {t.style.name!r} (not monochrome)")
@@ -114,6 +120,34 @@ def enforce_docx(path: str, check: bool = False) -> list[str]:
                         fix_run(r, f"table {ti}")
     if not check:
         doc.save(path)
+    return v
+
+
+def _starts_new_page(p) -> bool:
+    from docx.oxml.ns import qn
+    if p.paragraph_format.page_break_before or (p.style is not None and p.style.paragraph_format.page_break_before):
+        return True
+    prev = p._p.getprevious()
+    while prev is not None and prev.tag == qn("w:p") and not "".join(t.text or "" for t in prev.iter(qn("w:t"))).strip() \
+            and not prev.xpath(".//w:drawing"):
+        if prev.xpath('.//w:br[@w:type="page"]') or prev.xpath(".//w:sectPr"):
+            return True
+        prev = prev.getprevious()
+    return False
+
+
+def section_breaks(doc, check: bool = False) -> list[str]:
+    """L109: each Heading 1 after the document's first content starts on a new page."""
+    v: list[str] = []
+    seen_content = False
+    for i, p in enumerate(doc.paragraphs):
+        is_h1 = p.style is not None and p.style.name == "Heading 1"
+        if is_h1 and seen_content and not _starts_new_page(p):
+            v.append(f"para {i}: section {p.text.strip()[:40]!r} does not start on a new page")
+            if not check:
+                p.paragraph_format.page_break_before = True
+        if p.text.strip() or p._p.xpath(".//w:drawing"):
+            seen_content = True
     return v
 
 
@@ -231,6 +265,8 @@ def make_reference_doc(out: str):
             rF = rPr.makeelement(qn("w:rFonts"), {}); rPr.append(rF)
         for slot in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
             rF.set(qn(slot), FONT)
+        if name == "Heading 1":
+            st.paragraph_format.page_break_before = True   # L109: sections start on a new page
     d.save(out)
     return out
 

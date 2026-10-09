@@ -3010,6 +3010,27 @@
    "enforced_by": "tools/tests/test_linters.py::test_L108_no_preregistration_in_pipeline",
    "status": "active",
    "regression_check": "tools/tests/test_linters.py::test_L108_no_preregistration_in_pipeline"
+  },
+  {
+   "id": "L109-sections-start-on-new-page",
+   "date_added": "2026-10-08",
+   "originating_session": "NCDB-HER2-EAC-pCR INTERNAL proposal document (author directive)",
+   "category": "Document formatting: house standard",
+   "trigger_patterns": [
+    ".docx",
+    "report",
+    "document assembly",
+    "python-docx",
+    "pandoc --reference-doc",
+    "Heading 1",
+    "section"
+   ],
+   "lesson": "The author directed on 2026-10-08: \"different sections in any document or report should start on the next page\". Every top-level section (Introduction, Methods, Results, Discussion, Significance, References, appendices, and the title page before them) begins on a new page in every CRA document deliverable.",
+   "action": "In python-docx builders set paragraph_format.page_break_before = True on each top-level heading (not a manual empty paragraph with a break), and remove empty paragraphs immediately above it so no blank page appears. Build pandoc outputs with the house_style.py --reference-doc, whose Heading 1 style carries pageBreakBefore. Run house_style.py --check, which flags any Heading 1 after the first content that does not start a page. Subsections (Heading 2+), tables and figures inside a section do not force a page break.",
+   "severity": "MEDIUM",
+   "enforced_by": "tools/house_style.py::section_breaks",
+   "status": "active",
+   "regression_check": "tools/tests/test_linters.py::test_L109_sections_start_on_new_page"
   }
  ]
 }
