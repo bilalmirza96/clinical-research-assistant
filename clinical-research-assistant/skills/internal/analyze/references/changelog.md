@@ -4,6 +4,13 @@
 
 ---
 
+### 2026-10-10 — ladder_table change column undefined at the null (L111)
+
+A SEER stage III chemoradiation ladder with a crude OR of 0.997 printed "change from unadjusted" of -7777.8%,
+because the percent change divides by log(crude). `ladder_table.py` now prints "n/a (unadjusted at null)" when
+|log crude| < 0.01 (`NEAR_NULL_LOG`). Test: `tools/tests/test_linters.py::test_ladder_change_suppressed_when_crude_at_null`.
+
+
 ### 2026-09-28 — Scope-triage step for bounded/quick requests (L100)
 
 Regression eval evidence: asked for one adjusted model plus its E-value, `/analyze` insisted on

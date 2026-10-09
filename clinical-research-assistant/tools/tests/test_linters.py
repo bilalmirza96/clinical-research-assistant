@@ -798,3 +798,16 @@ def test_L110_conference_voice_wired():
     assert "conference-abstract-voice.md" in style
     router = (ROOT / "skills" / "clinical-research-assistant" / "SKILL.md").read_text()
     assert "conference-abstract-voice.md" in router
+
+
+def test_ladder_change_suppressed_when_crude_at_null():
+    """L111: a crude OR of 0.997 made 'change from unadjusted' print -7777.8%; it must print n/a instead."""
+    rungs = [dict(rung="crude", est=0.997, lo=0.95, hi=1.05, n=1000),
+             dict(rung="modelA", est=0.789, lo=0.755, hi=0.825, n=1000),
+             dict(rung="modelB", est=0.798, lo=0.763, hi=0.834, n=1000)]
+    t, _ = LT.ladder_table(rungs, measure="OR", common=True, skipped={"iptw": "x", "mediation": "x", "ml": "x"})
+    assert "n/a (unadjusted at null)" in t and "7777" not in t
+    rungs[0]["est"] = 0.80
+    t2, _ = LT.ladder_table(rungs, measure="OR", common=True, skipped={"iptw": "x", "mediation": "x", "ml": "x"})
+    assert "n/a" not in t2
+

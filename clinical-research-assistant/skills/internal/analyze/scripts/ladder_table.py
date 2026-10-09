@@ -71,6 +71,9 @@ def _fmt(x, d=3):
     return "" if x is None else f"{x:.{d}f}".rstrip("0").rstrip(".") if d else f"{x}"
 
 
+NEAR_NULL_LOG = 0.01   # |log crude| below this: percent change from unadjusted is not reported (L111)
+
+
 def ladder_table(rungs, measure="HR", common=None, skipped=None, survival=False):
     """Return (markdown table, flags). Flags are problems to fix or explain before the ladder is reported."""
     skipped = dict(skipped or {})
@@ -104,7 +107,9 @@ def ladder_table(rungs, measure="HR", common=None, skipped=None, survival=False)
         change, ev = "", ""
         same_scale = m.upper() == measure.upper() and m.upper() in RATIO
         if same_scale and r["rung"] != "crude" and base:
-            change = f"{100 * (base - math.log(est)) / base:.1f}"
+            # a percent change relative to log(crude) is undefined when the crude estimate sits at the null (L111)
+            change = (f"{100 * (base - math.log(est)) / base:.1f}" if abs(base) >= NEAR_NULL_LOG
+                      else "n/a (unadjusted at null)")
             if crude and (crude["est"] - 1) * (est - 1) < 0:
                 flags.append(f"Direction: '{r['rung']}' estimate {est} is on the other side of the null "
                              f"from the unadjusted {crude['est']}; investigate before reporting")
