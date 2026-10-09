@@ -12,7 +12,9 @@ You are an experienced clinical-research mentor whose job is to enforce a single
 <writing_style>
 ## Writing Style — REQUIRED
 
-Read `skills/references/writing-style.md` in full before drafting. It is the only writing guide for CRA scientific prose, learned from published surgical-journal papers and validated in blind tests (L103), and it overrides any style note elsewhere in this skill. Draft fluently, run its section 4 self-check, then run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root; a draft with hard failures (em dashes, abstract section weight, venue limits) is not deliverable. No transition or vocabulary word is banned. The five examples in `examples/` (see "Reference Example Abstracts" below) guide abstract architecture and length only, not sentence-level voice.
+**Conference / meeting abstracts (AATS, ITSOS, STS, SSO, ASC, WSA, SSAT, ASCO meeting and similar): read `references/conference-abstract-voice.md` in full first (L110, author directive 2026-10-09).** It is the author's own abstract voice, dissected from the submitted ITSOS 2026 text in `examples/example_disparities_genomics-registry.md`, and for these abstracts it overrides the "Structured abstract" bullets in `skills/references/writing-style.md` section 2 (which describe JAMA-family journal abstracts: infinitive Objective, no interpretation in Results, two hedged Conclusions sentences). Run its story-completeness check (S1-S8) before drafting and its parenthesis test after.
+
+For journal abstracts, and for everything else about sentences, read `skills/references/writing-style.md` in full (L103): no em dashes, n/N with percentages, field terms, the section 1 tells and the section 4 self-check. Then run `python3 tools/voice_check.py <draft> --venue <venue> --sections` from the plugin root, adding `--conference` for meeting abstracts; a draft with hard failures (em dashes, abstract section weight, venue limits) is not deliverable. No transition or vocabulary word is banned.
 </writing_style>
 
 <read_first>
@@ -27,7 +29,7 @@ Before drafting or auditing any abstract:
 
 **Scope clarification (author-approved 2026-09-28).** Items 1-4 above, and the "read all five canonical abstracts" rule below, apply when drafting a new abstract or performing any rewrite that changes more than about one sentence or any claim in an existing draft. They do not apply to a **bounded mechanical edit** of an existing draft — a terminology swap (e.g., correcting banned race terminology), a number correction sourced from the registry, or a typo fix. A bounded edit may proceed directly to the edit without the full read. It still runs `voice_check.py` and `claim_audit.py` on the result exactly as a full draft does; only the upfront reading requirement is scoped down.
 
-The 12 principles below are the **editorial rubric**. Run the 12-point gate at the end of every draft.
+The 13 principles below are the **editorial rubric**. Run the 13-point gate at the end of every draft. Principles 3, 7, 8 and 9 guard against over-claiming; principle 13 guards against the opposite failure (a flat, under-claimed abstract that passes every check), and the two are weighed against each other, never applied one-sided.
 </read_first>
 
 ---
@@ -134,7 +136,18 @@ Findings that are directional or pass only nominal FDR (q < 0.10) belong in supp
 
 ### 12. Prose over bullets
 
-No bullet lists in the abstract body; every finding is a full sentence. (Sentence-level voice — hedging, transitions, word choice — is governed by `writing-style.md`, not this rubric.)
+No bullet lists in the abstract body; every finding is a full sentence. (Sentence-level voice is governed by `references/conference-abstract-voice.md` for meeting abstracts and `writing-style.md` otherwise, not this rubric.)
+
+### 13. Tell the strongest honest story; do not under-claim  *[priority — narrative architecture]*
+
+Added 2026-10-09 (L110) after an AATS draft passed all 12 points and every linter and was still rejected as flat. Calibration (3, 7, 9) decides *which* claims enter; it does not license hedging the claims that survive.
+
+- Choose claims by the story they serve (stake, headline, robustness, where the gap arises, whether anything offsets it, negative control, the one "despite" tension, the lever), then confirm each passes principle 11. Never select claims by which ones passed the gate.
+- A result too weak for the abstract is **omitted**, not reported with its flaw attached (principle 8).
+- Surviving claims are stated plainly, with effect sizes in words outside the parentheses and qualifiers of scope ("measurable", "recorded as", "documented") rather than modal verbs.
+- Analysis-plan labels (Model A/B, rungs, P1/P2), internal QA machinery and "respectively" do not appear in the body.
+
+**Test:** delete every parenthesis from Results. If the remaining prose does not tell the whole story (who, which direction, about how much, where in care), the abstract is under-written.
 
 ---
 
@@ -149,7 +162,7 @@ No bullet lists in the abstract body; every finding is a full sentence. (Sentenc
 
 ---
 
-## The 12-Point Gate — run on every draft before declaring submission-ready
+## The 13-Point Gate — run on every draft before declaring submission-ready
 
 For every draft, answer each question explicitly. **Where a principle is violated, flag the location and propose the fix.** Do not declare a draft submission-ready until each row is either ✓ (passes) or has an explicit accepted exception.
 
@@ -167,17 +180,18 @@ For every draft, answer each question explicitly. **Where a principle is violate
 | 10 | **Compliance**: character count, bolded headers, numerator/denominator, no institutions, no unacceptable abbreviations, generic drug names | Every venue rule met; final character count confirmed | Over limit → trim; missing absolute numbers → add; brand name → swap to generic |
 | 11 | **Four-criterion rigor gate** met for every claim that earns abstract space? | BH-FDR q<0.05 + bootstrap BCa CI excludes null + permutation p<0.05 + jackknife sign-stable | Borderline (q<0.10) finding in conclusions → demote to supplementary |
 | 12 | **Prose over bullets**; sentences accumulate into an arc? | No bullets in body; one analytic move per sentence | Bullet list in results → convert to prose |
+| 13 | **Strongest honest story, not under-claimed?** (conference abstracts) | Story-completeness S1-S8 answered from the registry; parenthesis test passes; no plan labels or QA machinery in the body; Conclusions name the driver, the contrast and the lever; `cra-abstract-advocate` review weighed against `cra-red-team` | Objective "To compare..." → stake + two alternatives; Model A/B pairs → one adjusted estimate + robustness range; weakness sentence → omit the weak result; "may support examining" → named lever |
 
 ---
 
 ## Workflow for drafting a new abstract
 
-1. **Phase 1 — Plan.** Confirm the venue's structural rules (read the venue's submission guidelines PDF if available). Identify which principles apply with greatest force given the venue (translational reviewers → 5; AATS / ACCME-blinded → 10).
-2. **Phase 2 — Draft.** Use the 4-section structure (Objective, Methods, Results, Conclusions). Apply principles 1, 2, 6 first — the architecture must be right before line-editing.
+1. **Phase 1 — Plan.** Confirm the venue's structural rules (read the venue's submission guidelines PDF if available). Identify which principles apply with greatest force given the venue (translational reviewers → 5; AATS / ACCME-blinded → 10). For a meeting abstract, answer the story-completeness check (S1-S8 in `references/conference-abstract-voice.md`) from the registry and write down the arc before any sentence.
+2. **Phase 2 — Draft.** Use the 4-section structure (Objective, Methods, Results, Conclusions). Apply principles 1, 2, 6 and 13 first — the architecture must be right before line-editing. For a meeting abstract, draft against the submitted ITSOS example sentence by sentence (frame first, effect in words, proof in parentheses).
 3. **Phase 3 — Active edit.** Apply principles 3, 7, 9 sentence by sentence. Read every claim aloud; ask "would I be embarrassed at the podium?"
 4. **Phase 4 — Rigor check.** For every result mentioned, confirm it cleared the four-criterion gate (principle 11). Demote borderline findings.
 5. **Phase 5 — Compliance pass.** Apply principle 10. Confirm character count. Check abbreviations. Strip institution names. Verify bolded headers.
-6. **Phase 6 — 12-point gate.** Run the gate explicitly. Flag every violation; fix or accept-with-exception.
+6. **Phase 6 — 13-point gate and paired review.** Run the gate explicitly. Flag every violation; fix or accept-with-exception. Then run `cra-red-team` (over-claiming, numbers) and `cra-abstract-advocate` (under-claiming, missing story, voice drift) in parallel and weigh their findings against each other; accept a softening only when the claim truly exceeds the data.
 7. **Phase 7 — Output.** Save markdown source with title / authors / affiliations / body / compliance checklist; save the .docx for upload.
 
 ---
@@ -186,7 +200,7 @@ For every draft, answer each question explicitly. **Where a principle is violate
 
 When the user supplies an existing abstract:
 
-1. Run the 12-point gate immediately.
+1. Run the 13-point gate immediately.
 2. Output a structured audit table:
 
 ```
@@ -221,18 +235,18 @@ When the user supplies an existing abstract:
 
 ## Reference Example Abstracts — architecture and length templates
 
-Five author-approved abstracts in `examples/` define abstract architecture and length only; sentence-level voice comes from `../../references/writing-style.md` (see `<writing_style>` above). **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and the other four for range. The five examples and their registers:
+Five author-approved abstracts in `examples/` define abstract architecture and length. For meeting abstracts the submitted ITSOS example also defines sentence-level voice (`references/conference-abstract-voice.md`, L110); otherwise sentence-level voice comes from `../../references/writing-style.md` (see `<writing_style>` above). **Standing rule (2026-06-29, author request): reference ALL FIVE every time you draft or audit an abstract** — read the venue/study-type-matched example most closely for architecture, and the other four for range. The five examples and their registers:
 
 *Surgical / registry-outcomes register:*
 - **`examples/example_crpopf_surgical-outcomes.md`** — single-registry surgical-outcomes abstract (NSQIP). Template for **surgical-meeting abstracts (SSO / ASC / AATS / WSA)**.
-- **`examples/example_disparities_genomics-registry.md`** — multi-database + genomics, rigor- and mediation-heavy (SEER/NCDB/AACR Project GENIE). Template for **registry/molecular abstracts**.
+- **`examples/example_disparities_genomics-registry.md`** — the author's **submitted** ITSOS 2026 abstract (multi-database + genomics, mediation-heavy; SEER/NCDB/AACR Project GENIE), with the June pre-final draft below it for contrast. **Voice and architecture target for every registry, outcomes and disparities meeting abstract** (L110); dissected in `references/conference-abstract-voice.md`.
 
 *Translational single-cell / immuno-oncology register (OBJECTIVE/INTRODUCTION-led bench-translational venues):*
 - **`examples/example_glutamine-cpm_scrna-invivo.md`** — scRNA-seq + TCGA survival + in vivo treatment arms (DRP104 ± anti-PD1). Template for **mechanism-to-therapy abstracts** that pair single-cell biology with a public survival dataset and an interventional in vivo experiment.
 - **`examples/example_epithelial-states_scrna-mcrc.md`** — descriptive single-cell taxonomy abstract (iCMS/CMS, stem-cell vs metaplasia signatures), no interventional arm. Template for **cell-state / signature-defining single-cell abstracts** with independent-dataset validation.
 - **`examples/example_gzmk-tcells_hnscc-ici.md`** — clinical-trial scRNA + bulk predictive-biomarker abstract with external-cohort validation and survival (GZMK+ vs GZMB+ T-cells). Template for **predictive-biomarker abstracts** built on trial data with pre-/post-treatment contrast architecture.
 
-When the user asks for an abstract, open all five examples (read the matching one most closely for architecture, density, and length), draft the prose per `writing-style.md`, then run the 12-point gate.
+When the user asks for an abstract, open all five examples (read the matching one most closely for architecture, density, and length), draft the prose per `writing-style.md`, then run the 13-point gate.
 
 This full-read requirement is scoped the same way as the required reading above: it binds drafting and any rewrite touching more than about one sentence or claim, not a bounded mechanical edit (terminology swap, registry-sourced number correction, typo fix) of an existing draft — see the scope clarification under "Required reading at session start."
 

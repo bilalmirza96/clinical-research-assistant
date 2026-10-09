@@ -22,8 +22,12 @@
    It hard-fails on em dashes, structured-abstract section weight (Results the largest section)
    and venue character limits, and flags non-statistical "significant". A draft with hard
    failures is not deliverable.
-5. Abstracts only: also run the 12-point editorial gate in `write-abstract/SKILL.md` and use the
-   venue-matched example in `write-abstract/examples/` for architecture and length.
+5. Abstracts only: also run the 13-point editorial gate in `write-abstract/SKILL.md` and use the
+   venue-matched example in `write-abstract/examples/` for architecture and length. **Conference
+   and meeting abstracts** (AATS, ITSOS, STS, SSO, ASC and similar) follow
+   `write-abstract/references/conference-abstract-voice.md` (L110), the author's own abstract voice
+   from the submitted ITSOS 2026 text; for them it overrides the "Structured abstract" bullets in
+   section 2 below. Everything else in this guide still applies to them.
 
 A bounded mechanical edit of an existing draft (terminology swap, registry-sourced number
 correction, typo fix) may skip step 1 but still runs `voice_check.py` and `claim_audit.py` (L101).
@@ -120,7 +124,8 @@ Sentences are long here (about 30 words on average) and subordinated. Participia
 - Sentence 1 repeats the design and the main association without numbers.
 - Sentence 2 gives one implication at the level the design supports, with "may" or "should consider". Stop there.
 
-### Structured abstract
+### Structured abstract (journal abstracts, JAMA family)
+Meeting abstracts do not follow these bullets: see `write-abstract/references/conference-abstract-voice.md` (L110).
 - Importance: one or two sentences, the stake and the gap in the field's own phrasing.
 - Objective: an infinitive ("To compare...").
 - Design, Setting, and Participants: dense, dates included.

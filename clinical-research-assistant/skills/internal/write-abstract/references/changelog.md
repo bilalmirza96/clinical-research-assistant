@@ -4,6 +4,10 @@
 
 ---
 
+### 2026-10-09 — Conference abstract voice restored (L110)
+
+The author rejected the AATS 2027 lung disparities draft (built under the L103 JAMA guide) as flat and asked why abstracts are not written like the submitted ITSOS 2026 abstract. Added `references/conference-abstract-voice.md` (architecture, sentence-level texture measured against the rejected draft, story-completeness check S1-S8, the author's June-to-submitted edits, worked contrast); replaced the example with the submitted text (June draft kept below it); added principle 13 and gate row 13; paired review with the new `cra-abstract-advocate` agent; `voice_check.py --conference` soft checks. For meeting abstracts the new file overrides writing-style.md's "Structured abstract" bullets.
+
 ### 2026-09-28 — Bounded mechanical edits skip the full reference read (L101)
 
 Regression eval evidence: asked to fix three banned race terms in an existing abstract, the router

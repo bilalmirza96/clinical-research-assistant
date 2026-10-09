@@ -727,3 +727,74 @@ def test_L109_sections_start_on_new_page():
     assert Document(ref).styles["Heading 1"].paragraph_format.page_break_before is True
     lessons = json.loads((ROOT / "skills" / "references" / "lessons-log.json").read_text())["lessons"]
     assert any(e["id"].startswith("L109-") for e in lessons)
+
+
+# =====================================================================================
+# L110 - conference abstracts follow the author's submitted ITSOS 2026 voice, not the JAMA
+# journal-abstract bullets; voice_check --conference flags data-dump drafts and passes the
+# author's text; write-abstract, writing-style.md and the router are wired to the voice file.
+# =====================================================================================
+_L110_GOOD = (
+    "**Objective:** Surgery is curative for early-stage cancer, but whether it is offered equitably by race is "
+    "uncertain. We assessed whether Black patients undergo resection less often and, if so, whether the gap reflects "
+    "patient refusal or the treatment recommendation.\n\n"
+    "**Methods:** Retrospective cohort study of the National Cancer Database (n=1,000). Multivariable models adjusted "
+    "for age, sex, stage, comorbidity, insurance and income.\n\n"
+    "**Results:** Among stage I-II patients, Black patients underwent resection at a lower rate than White patients "
+    "(54.1% vs 60.9%; adjusted odds ratio [OR], 0.70; 95% CI, 0.67-0.73), robust within every stage and across "
+    "matched analyses (OR range, 0.60-0.77). Surgery was recorded as not part of the planned treatment more often for "
+    "Black patients, whereas documented refusal was uncommon in both groups, identifying the treatment-planning step "
+    "as the largest measurable contributor. Postoperative chemotherapy was equitable (OR, 0.95; 95% CI, 0.90-1.01), "
+    "despite the lower rate of the operation that precedes it.\n\n"
+    "**Conclusions:** Black patients with early-stage cancer were less likely to undergo resection. The dominant "
+    "measurable driver was the treatment-planning step rather than patient refusal. Care after surgery was equitable, "
+    "indicating a gap in the decision to operate rather than generalized undertreatment. Structured operability review "
+    "is the highest-leverage target.\n\n[END OF ABSTRACT BODY]\n")
+_L110_FLAT = (
+    "**Objective:** To compare resection and survival between NHB and NHW patients.\n\n"
+    "**Methods:** Model A adjusted for clinical factors and Model B added insurance.\n\n"
+    "**Results:** The cohort included 1,442,160 patients, of whom 169,465 were NHB and 1,171,167 were NHW. Resection "
+    "was performed in 24,412 of 45,136 NHB patients and 241,912 of 397,477 NHW patients (Model B OR, 0.70; 95% CI, "
+    "0.67-0.73), and survival differed under Model A and Model B (HR, 1.08 and 1.01, respectively).\n\n"
+    "**Conclusions:** NHB patients were less likely to undergo resection. These findings may support examining "
+    "operability decisions.\n\n[END OF ABSTRACT BODY]\n")
+
+
+def test_L110_conference_voice(tmp_path):
+    import subprocess, sys as _sys
+    vc = str(ROOT / "tools" / "voice_check.py")
+    good, flat = tmp_path / "good.md", tmp_path / "flat.md"
+    good.write_text(_L110_GOOD)
+    flat.write_text(_L110_FLAT)
+    r = subprocess.run([_sys.executable, vc, str(good), "--conference", "--sections", "--style", "none", "--json"],
+                       capture_output=True, text=True)
+    out = json.loads(r.stdout)
+    assert r.returncode == 0, r.stdout
+    assert not [s for s in out["soft"] if s.startswith("conference voice")], out["soft"]
+    assert out["results_without_parentheses"] and "lower rate" in out["results_without_parentheses"]
+    r = subprocess.run([_sys.executable, vc, str(flat), "--conference", "--style", "none", "--json"],
+                       capture_output=True, text=True)
+    soft = json.loads(r.stdout)["soft"]
+    assert r.returncode == 0  # all conference findings are review items, never hard failures
+    for needle in ("infinitive", "analysis-plan label 'Model A'", "'respectively'", "modal hedge 'may'",
+                   "Conclusions has 2 sentence", "stress position holds data", "opens on a cohort count"):
+        assert any(needle in s for s in soft), (needle, soft)
+    # without --conference none of these fire (journal abstracts keep the L103 guide)
+    r = subprocess.run([_sys.executable, vc, str(flat), "--style", "none", "--json"], capture_output=True, text=True)
+    assert not [s for s in json.loads(r.stdout)["soft"] if s.startswith("conference voice")]
+
+
+def test_L110_conference_voice_wired():
+    wa = ROOT / "skills" / "internal" / "write-abstract"
+    voice = (wa / "references" / "conference-abstract-voice.md").read_text()
+    for marker in ("parenthesis test", "Stress position", "Story-completeness check", "rather than"):
+        assert marker.lower() in voice.lower(), marker
+    ex = (wa / "examples" / "example_disparities_genomics-registry.md").read_text()
+    assert "submitted" in ex and "Equitable operability review, surgical referral, and ICI-trial inclusion" in ex
+    sk = (wa / "SKILL.md").read_text()
+    assert "conference-abstract-voice.md" in sk and "### 13." in sk and "| 13 |" in sk and "--conference" in sk
+    assert "cra-abstract-advocate" in sk and (ROOT / "agents" / "cra-abstract-advocate.md").exists()
+    style = (ROOT / "skills" / "references" / "writing-style.md").read_text()
+    assert "conference-abstract-voice.md" in style
+    router = (ROOT / "skills" / "clinical-research-assistant" / "SKILL.md").read_text()
+    assert "conference-abstract-voice.md" in router

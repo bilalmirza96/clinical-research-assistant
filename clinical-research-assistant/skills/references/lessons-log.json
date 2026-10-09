@@ -3031,6 +3031,31 @@
    "enforced_by": "tools/house_style.py::section_breaks",
    "status": "active",
    "regression_check": "tools/tests/test_linters.py::test_L109_sections_start_on_new_page"
+  },
+  {
+   "id": "L110-conference-abstract-voice-is-the-authors",
+   "date_added": "2026-10-09",
+   "originating_session": "LUNG DISPARITIES PROJECT, AATS 2027 abstract (author rejected the draft and supplied the submitted ITSOS 2026 text)",
+   "category": "Abstract writing: voice",
+   "trigger_patterns": [
+    "abstract",
+    "AATS",
+    "ITSOS",
+    "STS",
+    "SSO",
+    "ASC",
+    "meeting abstract",
+    "conference abstract",
+    "write-abstract",
+    "draft abstract"
+   ],
+   "lesson": "An AATS 2027 abstract built under the L103 JAMA-corpus guide passed voice_check, claim_audit, registry_lint, the 12-point gate, a four-criterion rigor gate and a red team, and the author still rejected it: 'ITSOS abstract reads well, flows well, and has the reader at the center, your abstract seems like bunch of data being presented.' Root causes: (1) L103 replaced the abstract voice distilled from the author's own abstracts with a journal-paper guide whose abstract rules (infinitive Objective, no interpretation in Results, two hedged Conclusions sentences) contradict the author's meeting-abstract voice; (2) every check pushed toward hedging and none toward under-claiming or missing story; (3) the CRA example was the June pre-final draft, not the submitted text; (4) claims were selected by gate status, not by story, and analysis-plan labels (Model A/B) leaked into prose. Linguistically, the draft put counts, model labels, years, a weakness and a null in the stress positions, broke the topic chain, made nominalizations and statistics the agents, and left the reader to interpret every estimate; the ITSOS text puts a meaning in every stress position, chains given-to-new topics around one gap, answers the reader's questions in the order the Objective's fork raises them, and hedges by scope ('measurable', 'recorded as') rather than modal verbs.",
+   "action": "For every conference/meeting abstract read write-abstract/references/conference-abstract-voice.md in full (it overrides writing-style.md's journal-abstract bullets for these abstracts), answer story-completeness S1-S8 from the registry before drafting, draft against the submitted ITSOS example, run voice_check.py --conference (stress positions, plan labels, infinitive Objective, modal hedges in Conclusions, parenthesis test), apply principle 13, and run cra-abstract-advocate in parallel with cra-red-team, weighing their findings against each other. Omit a result too weak for the abstract rather than reporting its flaw.",
+   "severity": "HIGH",
+   "enforced_by": "tools/voice_check.py --conference; write-abstract principle 13 and gate row 13; agents/cra-abstract-advocate.md",
+   "status": "active",
+   "supersedes_in_part": "L103 (for conference/meeting abstracts only; journal prose unchanged)",
+   "regression_check": "tools/tests/test_linters.py::test_L110_conference_voice; tools/tests/test_linters.py::test_L110_conference_voice_wired"
   }
  ]
 }

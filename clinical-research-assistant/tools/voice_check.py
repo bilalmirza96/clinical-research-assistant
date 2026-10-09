@@ -84,6 +84,52 @@ ABSTRACT_HEADS = ["Introduction", "Objective", "Background", "Methods", "Results
 
 BODY_END_SENTINEL = "[END OF ABSTRACT BODY]"
 
+# Conference-abstract voice (L110, skills/internal/write-abstract/references/conference-abstract-voice.md).
+# Reported SOFT under --conference: the author's meeting-abstract voice puts meaning, not data, in
+# each sentence's stress position and keeps analysis-plan labels and modal hedges out of the body.
+PLAN_LABEL_RX = re.compile(r"\bModel [A-D]\b|\brungs?\b|\b[PS][1-9]\b|\bEra ?[0-9]_")
+MODAL_RX = re.compile(r"\b(may|might|could)\b", re.I)
+_DATAWORD = re.compile(r"^[\d,.%\-]+$|^(NHB|NHW|vs|and|of|in|to|the|a|an|for|after|under|with|from|Model|[A-D])$")
+
+
+def strip_parens(text: str) -> str:
+    prev = None
+    while prev != text:
+        prev, text = text, re.sub(r"\s*[\(\[][^\(\)\[\]]*[\)\]]", "", text)
+    return text
+
+
+def sentences(text: str) -> list[str]:
+    return [x for x in re.split(r"(?<=[.])\s+(?=[A-Z])", text.strip()) if x]
+
+
+def conference_checks(secs: dict) -> list[str]:
+    out = []
+    obj = secs.get("Objective") or secs.get("Introduction") or ""
+    if obj.strip().startswith("To "):
+        out.append("conference voice: Objective opens with an infinitive ('To ...'); state the stake and the "
+                   "uncertainty, then pose the question with its alternatives ('We assessed whether ...')")
+    body = "\n".join(secs.values())
+    for m in PLAN_LABEL_RX.finditer(body):
+        out.append(f"conference voice: analysis-plan label '{m.group(0)}' in the body (name the adjustment, not the model)")
+    for m in re.finditer(r"\brespectively\b", body):
+        out.append("conference voice: 'respectively' (give each estimate its own clause)")
+    con = secs.get("Conclusions") or secs.get("Conclusion") or ""
+    for m in MODAL_RX.finditer(con):
+        out.append(f"conference voice: modal hedge '{m.group(0)}' in Conclusions (qualify by scope: "
+                   "'measurable', 'recorded as', or omit the claim)")
+    if con and len(sentences(con)) < 3:
+        out.append(f"conference voice: Conclusions has {len(sentences(con))} sentence(s); state the driver, the "
+                   "contrast and the lever as separate declaratives")
+    res = secs.get("Results") or secs.get("Findings") or ""
+    for sent in sentences(strip_parens(res)) + sentences(strip_parens(con)):
+        tail = sent.rstrip(".").split()[-5:]
+        if tail and sum(bool(_DATAWORD.match(w.strip(",;:"))) for w in tail) >= 3:
+            out.append(f"conference voice: stress position holds data, not meaning: '... {' '.join(tail)}'")
+    if res and re.match(r"(The )?(cohort|study|analysis) (included|comprised)", res.strip()):
+        out.append("conference voice: Results opens on a cohort count; open on the headline finding")
+    return out
+
 
 # --------------------------------------------------------------------------------------
 
@@ -163,6 +209,9 @@ def main() -> int:
                     help="check structured-abstract section weight (Results the largest section is hard; Results >= 2x Methods and Conclusions is a review item)")
     ap.add_argument("--style", choices=["ama", "none"], default="ama",
                     help="typesetting convention for soft checks (default ama, JAMA family)")
+    ap.add_argument("--conference", action="store_true",
+                    help="meeting-abstract voice checks (L110): infinitive Objective, plan labels, modal hedges in "
+                         "Conclusions, data in stress positions; also prints the Results with parentheses removed")
     ap.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     ap.add_argument("--stop-at", default=BODY_END_SENTINEL,
                     help=f"ignore everything from this marker onward (default: {BODY_END_SENTINEL!r}); "
@@ -247,6 +296,15 @@ def main() -> int:
             if res and res != max(sec_chars.values()):
                 hard.append("section weight: Results is not the largest section")
 
+    # --- Conference voice (L110) --------------------------------------------------------
+    parens_free = None
+    if args.conference:
+        if not secs:
+            soft.append("--conference requested but no structured-abstract headings were found")
+        else:
+            soft.extend(conference_checks(secs))
+            parens_free = strip_parens(secs.get("Results") or secs.get("Findings") or "")
+
     # --- Venue limits ------------------------------------------------------------------
     body_chars = sum(sec_chars.values()) if secs else len(prose.strip())
     if args.venue:
@@ -265,6 +323,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({"file": str(args.path), "body_chars": body_chars,
                           "sections": sec_chars, "hard": hard, "soft": soft,
+                          "results_without_parentheses": parens_free,
                           "pass": not hard, "error": None}, indent=2))
         return 1 if hard else 0
 
@@ -282,6 +341,10 @@ def main() -> int:
         print(f"REVIEW ({len(soft)}) — judgement calls, clear each one deliberately")
         for s in soft:
             print(f"  ? {s}")
+        print()
+    if parens_free:
+        print("PARENTHESIS TEST (L110) — Results with parentheses removed; it should still tell the whole story:")
+        print("  " + parens_free)
         print()
     if not hard and not soft:
         print("clean: no hard failures, nothing flagged for review")
